@@ -236,7 +236,7 @@
     <nav class="footer-links">
       <a href="#" onclick="showSection('agenda');return false;">Agenda</a>
       <a href="#" onclick="showSection('partager');return false;">Partager un événement</a>
-      <a href="mailto:agenda.de.la.save@gmail.com">Contact</a>
+      <a href="/cdn-cgi/l/email-protection#e58482808b8184cb8180cb8984cb96849380a58288848c89cb868a88">Contact</a>
     </nav>
   </footer>
 
@@ -255,7 +255,7 @@
       </div>
     </div>
   </div>
-  <script>
+  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
     var AT_TOKEN = 'patSdOMvX4XOLQmSK.852014d3c7cd4ae40e0e84792104d3089ca1dae655f0a0c2b3125bbe950681a4';
     var AT_BASE  = 'appHgiuv0ClNd8qsV';
     var AT_TABLE = 'tbl6Um2XQPq4JPxCg';
@@ -390,8 +390,13 @@
       document.getElementById('modal-organiser').innerHTML = org;
       var footer = '';
       if (e['Date']) {
-        footer += '<button class="cal-btn" onclick="generateICS()">Ajouter au calendrier (.ics)</button>';
-        footer += '<a class="cal-btn" href="' + getGoogleCalURL(e) + '" target="_blank" rel="noopener">Google Calendar</a>';
+        footer += '<div style="font-size:11px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px;width:100%">Ajouter \u00e0 mon calendrier</div>';
+        footer += '<button class="cal-btn" onclick="generateICS()">';
+        footer += '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="2" width="14" height="13" rx="2" fill="#f5f5f7"/><rect x="1" y="2" width="14" height="4.5" rx="2" fill="#ff3b30"/><rect x="1" y="5" width="14" height="1.5" fill="#ff3b30"/><rect x="3.5" y="8.5" width="2" height="2" rx="0.4" fill="#1a1a1a"/><rect x="7" y="8.5" width="2" height="2" rx="0.4" fill="#1a1a1a"/><rect x="10.5" y="8.5" width="2" height="2" rx="0.4" fill="#1a1a1a"/><rect x="3.5" y="11.5" width="2" height="1.5" rx="0.4" fill="#1a1a1a"/><rect x="7" y="11.5" width="2" height="1.5" rx="0.4" fill="#1a1a1a"/></svg>';
+        footer += ' Apple Calendar</button>';
+        footer += '<a class="cal-btn" href="' + getGoogleCalURL(e) + '" target="_blank" rel="noopener">';
+        footer += '<svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="2" width="14" height="13" rx="1.5" fill="white"/><rect x="1" y="2" width="14" height="4" rx="1.5" fill="#4285f4"/><rect x="1" y="4.5" width="14" height="1.5" fill="#4285f4"/><line x1="5.5" y1="2" x2="5.5" y2="5.5" stroke="white" stroke-width="1.2"/><line x1="10.5" y1="2" x2="10.5" y2="5.5" stroke="white" stroke-width="1.2"/><rect x="3" y="7.5" width="2.5" height="2.5" rx="0.3" fill="#34a853"/><rect x="6.75" y="7.5" width="2.5" height="2.5" rx="0.3" fill="#fbbc04"/><rect x="10.5" y="7.5" width="2.5" height="2.5" rx="0.3" fill="#ea4335"/><rect x="3" y="11" width="2.5" height="2" rx="0.3" fill="#ea4335"/><rect x="6.75" y="11" width="2.5" height="2" rx="0.3" fill="#34a853"/></svg>';
+        footer += ' Google Calendar</a>';
       }
       document.getElementById('modal-footer').innerHTML = footer;
       document.getElementById('modal-overlay').classList.add('open');
@@ -482,7 +487,6 @@
           console.error(err);
           btn.textContent = "Envoyer l'\u00e9v\u00e9nement";
           btn.disabled = false;
-          alert('Une erreur est survenue. R\u00e9essayez ou contactez-nous directement.');
         });
     });
 
