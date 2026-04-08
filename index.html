@@ -60,6 +60,9 @@
     .hero-title { font-family: 'Playfair Display', serif; font-size: clamp(36px,6vw,64px); font-weight: 900; line-height: 1.05; color: var(--text); margin-bottom: 1rem; max-width: 700px; }
     .hero-title em { font-style: italic; color: var(--gold); }
     .hero-sub { font-size: 15px; color: var(--text-mid); max-width: 440px; line-height: 1.6; }
+
+    #commune-suggestions div, #tarif-suggestions div { padding: 9px 14px; font-size: 14px; color: var(--text); cursor: pointer; transition: background 0.1s; }
+    #commune-suggestions div:hover, #commune-suggestions div.active, #tarif-suggestions div:hover, #tarif-suggestions div.active { background: var(--bg-hover); color: var(--gold); }
     #section-agenda .hero { position: relative; overflow: hidden; min-height: 420px; padding: 0; display: flex; align-items: flex-end; border-bottom: none; }
     .hero-bg { position: absolute; inset: 0; background-size: cover; background-position: center 60%; }
     .hero-overlay { position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(15,14,11,0.15) 0%, rgba(15,14,11,0.65) 55%, rgba(15,14,11,0.98) 82%, rgba(15,14,11,1) 100%); }
@@ -233,9 +236,10 @@
                 <option>Conférence / Atelier</option><option>Autre</option>
               </select>
             </div>
-            <div class="form-group">
+            <div class="form-group" style="position:relative">
               <label class="form-label">Commune *</label>
-              <input class="form-input" type="text" id="f-commune" placeholder="Saint-Paul-sur-Save…" required />
+              <input class="form-input" type="text" id="f-commune" placeholder="Tapez le nom de votre commune…" autocomplete="off" required />
+              <div id="commune-suggestions" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--bg-dark);border:1px solid var(--gold);border-top:none;border-radius:0 0 4px 4px;z-index:200;max-height:200px;overflow-y:auto;"></div>
             </div>
           </div>
           <div class="form-row">
@@ -280,15 +284,28 @@
             <textarea class="form-textarea" id="f-desc" placeholder="Décrivez l'événement en quelques lignes…"></textarea>
           </div>
           <div class="form-row">
-            <div class="form-group">
+            <div class="form-group" style="position:relative">
               <label class="form-label">Tarif</label>
-              <input class="form-input" type="text" id="f-tarif" placeholder="Gratuit / 5 € / Sur réservation…" />
+              <input class="form-input" type="text" id="f-tarif" placeholder="Gratuit / 5 € / Sur réservation…" autocomplete="off" />
+              <div id="tarif-suggestions" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--bg-dark);border:1px solid var(--gold);border-top:none;border-radius:0 0 4px 4px;z-index:200;max-height:220px;overflow-y:auto;"></div>
             </div>
             <div class="form-group">
-              <label class="form-label">Site / réseau social</label>
-              <input class="form-input" type="text" id="f-contact" placeholder="facebook.com/… ou site web" />
+              <label class="form-label">Réseaux sociaux / site</label>
+              <div style="display:flex;flex-direction:column;gap:6px;">
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <span style="width:20px;display:flex;align-items:center;color:var(--text-muted);flex-shrink:0;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg></span>
+                  <input class="form-input" type="text" id="f-insta" placeholder="instagram.com/votre_compte" style="flex:1;" />
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <span style="width:20px;display:flex;align-items:center;color:var(--text-muted);flex-shrink:0;"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.41c0-3.025 1.792-4.697 4.533-4.697 1.312 0 2.686.236 2.686.236v2.97h-1.513c-1.491 0-1.956.93-1.956 1.886v2.267h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z"/></svg></span>
+                  <input class="form-input" type="text" id="f-fb" placeholder="facebook.com/votre_page" style="flex:1;" />
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <span style="width:20px;display:flex;align-items:center;color:var(--text-muted);flex-shrink:0;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2c-2.5 3-4 6.5-4 10s1.5 7 4 10M12 2c2.5 3 4 6.5 4 10s-1.5 7-4 10" stroke-linecap="round"/></svg></span>
+                  <input class="form-input" type="text" id="f-site" placeholder="www.votre-site.fr" style="flex:1;" />
+                </div>
+              </div>
             </div>
-          </div>
           <div class="form-group">
             <label class="form-label">Votre nom ou organisation</label>
             <input class="form-input" type="text" id="f-org" placeholder="Marie Dupont / Association Les Amis de…" />
@@ -480,15 +497,18 @@
         org += '<div class="modal-org-label">Organisateur</div>';
         if (e['Organisation']) org += '<div class="modal-org-name">' + e['Organisation'] + '</div>';
         if (e['Contact']) {
-          var ct = e['Contact'];
-          if (ct.indexOf('http') === 0 || ct.indexOf('www') === 0 || ct.indexOf('.com') > -1 || ct.indexOf('.fr') > -1 || ct.indexOf('facebook') > -1 || ct.indexOf('instagram') > -1) {
-            var href = ct.indexOf('http') === 0 ? ct : 'https://' + ct;
-            org += '<a class="modal-org-link" href="' + href + '" target="_blank" rel="noopener">' + ct + '</a>';
-          } else if (ct.indexOf('@') > -1) {
-            org += '<a class="modal-org-link" href="mailto:' + ct + '">' + ct + '</a>';
-          } else {
-            org += '<div style="font-size:13px;color:var(--text-mid);margin-top:2px">' + ct + '</div>';
-          }
+          var links = e['Contact'].split(' | ');
+          links.forEach(function(ct) {
+            ct = ct.trim();
+            if (!ct) return;
+            var label = ct;
+            var icon = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M2 12h20M12 2c-2.5 3-4 6.5-4 10s1.5 7 4 10M12 2c2.5 3 4 6.5 4 10s-1.5 7-4 10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+            if (ct.indexOf('instagram') > -1) { icon = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="2" width="20" height="20" rx="5.5" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4.5" stroke="currentColor" stroke-width="2"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>'; label = '@' + ct.split('/').pop(); }
+            else if (ct.indexOf('facebook') > -1) { icon = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.41c0-3.025 1.792-4.697 4.533-4.697 1.312 0 2.686.236 2.686.236v2.97h-1.513c-1.491 0-1.956.93-1.956 1.886v2.267h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z"/></svg>'; label = ct.split('/').pop(); }
+            else if (ct.indexOf('@') > -1) { icon = '\u2709\ufe0f'; }
+            var href = ct.indexOf('http') === 0 ? ct : (ct.indexOf('@') > -1 ? 'mailto:' + ct : 'https://' + ct);
+            org += '<a class="modal-org-link" href="' + href + '" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;margin-top:6px;">' + icon + ' ' + label + '</a>';
+          });
         }
       }
       document.getElementById('modal-organiser').innerHTML = org;
@@ -573,7 +593,14 @@
       fields['Lieu'] = document.getElementById('f-lieu').value.trim();
       fields['Description'] = document.getElementById('f-desc').value.trim();
       fields['Tarif'] = document.getElementById('f-tarif').value.trim();
-      fields['Contact'] = document.getElementById('f-contact').value.trim();
+      var insta = document.getElementById('f-insta').value.trim().replace('instagram.com/','').replace('@','');
+      var fb = document.getElementById('f-fb').value.trim().replace('facebook.com/','');
+      var site = document.getElementById('f-site').value.trim();
+      var contactParts = [];
+      if (insta) contactParts.push('https://instagram.com/' + insta);
+      if (fb) contactParts.push('https://facebook.com/' + fb);
+      if (site) contactParts.push(site.indexOf('http') === 0 ? site : 'https://' + site);
+      fields['Contact'] = contactParts.join(' | ');
       fields['Organisation'] = document.getElementById('f-org').value.trim();
       fields['Statut'] = 'En attente';
       fields['\u00c0 la une'] = false;
@@ -596,6 +623,144 @@
           btn.disabled = false;
         });
     });
+
+
+    // Autocomplétion commune
+    var COMMUNES = [
+      'Saint-Paul-sur-Save','Grenade-sur-Garonne','Merville','Daux','Aussonne',
+      'Levignac','Pelleport','Lasserre','Saint-Jory',"Castelnau-d'Estretefonds",
+      'Ondes','Pibrac','Seilh','Cornebarrieu','Villeneuve-lès-Bouloc','Bouloc',
+      'Fenouillet','Saint-Alban','Gagnac-sur-Garonne'
+    ];
+
+    function normalize(str) {
+      return str.toLowerCase()
+        .replace(/[àâä]/g,'a').replace(/[éèêë]/g,'e').replace(/[îï]/g,'i')
+        .replace(/[ôö]/g,'o').replace(/[ùûü]/g,'u').replace(/[ç]/g,'c')
+        .replace(/[-'\s]+/g,' ').trim();
+    }
+
+    var communeInput = document.getElementById('f-commune');
+    var suggBox = document.getElementById('commune-suggestions');
+    var activeIdx = -1;
+
+    communeInput.addEventListener('input', function() {
+      var val = normalize(this.value);
+      suggBox.innerHTML = '';
+      activeIdx = -1;
+      if (!val || val.length < 2) { suggBox.style.display = 'none'; return; }
+      var matches = COMMUNES.filter(function(c) {
+        var n = normalize(c);
+        return n.indexOf(val) > -1 || n.replace(/\s/g,'').indexOf(val.replace(/\s/g,'')) > -1;
+      });
+      // Aussi chercher abbréviations courantes
+      var abbr = { 'st':'saint', 'ste':'sainte', 'sur':'sur', 'gde':'grande' };
+      var valWords = val.split(' ');
+      var expandedVal = valWords.map(function(w) { return abbr[w] || w; }).join(' ');
+      if (expandedVal !== val) {
+        COMMUNES.forEach(function(c) {
+          var n = normalize(c);
+          if (n.indexOf(expandedVal) > -1 && matches.indexOf(c) === -1) matches.push(c);
+        });
+      }
+      if (!matches.length) { suggBox.style.display = 'none'; return; }
+      matches.forEach(function(c, i) {
+        var div = document.createElement('div');
+        div.textContent = c;
+        div.addEventListener('mousedown', function(e) {
+          e.preventDefault();
+          communeInput.value = c;
+          suggBox.style.display = 'none';
+        });
+        suggBox.appendChild(div);
+      });
+      suggBox.style.display = 'block';
+    });
+
+    communeInput.addEventListener('keydown', function(e) {
+      var items = suggBox.querySelectorAll('div');
+      if (!items.length) return;
+      if (e.key === 'ArrowDown') { e.preventDefault(); activeIdx = Math.min(activeIdx+1, items.length-1); items.forEach(function(el,i){el.classList.toggle('active',i===activeIdx);}); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); activeIdx = Math.max(activeIdx-1, 0); items.forEach(function(el,i){el.classList.toggle('active',i===activeIdx);}); }
+      else if (e.key === 'Enter' && activeIdx > -1) { e.preventDefault(); communeInput.value = items[activeIdx].textContent; suggBox.style.display='none'; }
+      else if (e.key === 'Escape') { suggBox.style.display='none'; }
+    });
+
+    communeInput.addEventListener('blur', function() {
+      setTimeout(function() { suggBox.style.display='none'; }, 150);
+    });
+    // Autocomplétion tarif
+    var TARIFS = [
+      'Gratuit', 'Entrée libre', 'Sur réservation', 'Participation libre',
+      '1 €', '2 €', '3 €', '4 €', '5 €', '6 €', '7 €', '8 €', '10 €',
+      '12 €', '15 €', '20 €', '25 €', '30 €',
+      '5 € / 3 € tarif réduit', '10 € / 7 € tarif réduit',
+      '5 € adulte / gratuit enfant', '10 € adulte / 5 € enfant',
+      'Adhérents gratuit / 5 € non-adhérents'
+    ];
+
+    var tarifInput = document.getElementById('f-tarif');
+    var tarifBox = document.getElementById('tarif-suggestions');
+    var tarifActiveIdx = -1;
+
+    function normalizeTarif(str) {
+      return str.toLowerCase()
+        .replace(/euros?/gi, '€').replace(/eur/gi, '€')
+        .replace(/gratuit(e)?/gi, 'gratuit')
+        .trim();
+    }
+
+    function showTarifSuggestions(val) {
+      tarifBox.innerHTML = '';
+      tarifActiveIdx = -1;
+      var norm = normalizeTarif(val);
+      // Si le champ contient un nombre, normaliser € et proposer formats
+      var numMatch = val.match(/(\d+)/);
+      var suggestions = [];
+      if (!norm || norm.length === 0) {
+        suggestions = TARIFS.slice(0, 6);
+      } else {
+        suggestions = TARIFS.filter(function(t) {
+          return normalizeTarif(t).indexOf(norm) > -1;
+        });
+        // Si l'utilisateur tape un nombre, proposer des formats avec €
+        if (numMatch && !norm.includes('€')) {
+          var n = numMatch[1];
+          var extra = [n + ' €', n + ' € / ' + Math.round(n*0.6) + ' € tarif réduit', n + ' € adulte / gratuit enfant'];
+          extra.forEach(function(e) { if (suggestions.indexOf(e) === -1) suggestions.unshift(e); });
+        }
+      }
+      if (!suggestions.length) { tarifBox.style.display = 'none'; return; }
+      suggestions.slice(0, 8).forEach(function(t) {
+        var div = document.createElement('div');
+        div.textContent = t;
+        div.addEventListener('mousedown', function(e) {
+          e.preventDefault();
+          tarifInput.value = t;
+          tarifBox.style.display = 'none';
+        });
+        tarifBox.appendChild(div);
+      });
+      tarifBox.style.display = 'block';
+    }
+
+    tarifInput.addEventListener('focus', function() { showTarifSuggestions(this.value); });
+    tarifInput.addEventListener('input', function() { showTarifSuggestions(this.value); });
+    tarifInput.addEventListener('keydown', function(e) {
+      var items = tarifBox.querySelectorAll('div');
+      if (!items.length) return;
+      if (e.key === 'ArrowDown') { e.preventDefault(); tarifActiveIdx = Math.min(tarifActiveIdx+1, items.length-1); items.forEach(function(el,i){el.classList.toggle('active',i===tarifActiveIdx);}); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); tarifActiveIdx = Math.max(tarifActiveIdx-1,0); items.forEach(function(el,i){el.classList.toggle('active',i===tarifActiveIdx);}); }
+      else if (e.key === 'Enter' && tarifActiveIdx > -1) { e.preventDefault(); tarifInput.value = items[tarifActiveIdx].textContent; tarifBox.style.display='none'; }
+      else if (e.key === 'Escape') { tarifBox.style.display='none'; }
+    });
+    tarifInput.addEventListener('blur', function() {
+      // Normaliser € à la sortie
+      var v = tarifInput.value.replace(/euros?/gi,'€').replace(/\beur\b/gi,'€').replace(/\s*€/g,' €').trim();
+      if (v) tarifInput.value = v;
+      setTimeout(function() { tarifBox.style.display='none'; }, 150);
+    });
+
 
     loadEvents();
 
