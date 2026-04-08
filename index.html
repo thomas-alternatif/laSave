@@ -29,6 +29,18 @@
       .featured-card { background: #f4f0ea; }
       .featured-card:first-child { background: #ede8e0; }
       .modal { background: #f0ece4; }
+      .cat-concert { background: #f5e8c8; color: #7a5a10; }
+      .cat-festival { background: #d8f0dc; color: #2a6835; }
+      .cat-marche { background: #d0e4f5; color: #1a4f7a; }
+      .cat-expo { background: #f5ddd8; color: #7a2e20; }
+      .cat-spectacle { background: #ecdcf5; color: #5a1a7a; }
+      .cat-sport { background: #d8f0ec; color: #1a5a50; }
+      .recurrence-badge { color: #a0782a; border-color: rgba(160,120,42,0.4); }
+      .modal-desc { color: #3a342c; }
+      .modal-org-label { color: #6a6258; }
+      .modal-org-name { color: #1a1814; }
+      .card-more { color: #a0782a; }
+      .filter-chip.on { background: #a0782a; border-color: #a0782a; }
     }
     html { scroll-behavior: smooth; }
     body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
@@ -246,6 +258,14 @@
                 <option value="Annuelle">Annuelle</option>
               </select>
             </div>
+            <div class="form-group" id="f-jour-group" style="display:none">
+              <label class="form-label">Jour</label>
+              <select class="form-select" id="f-jour">
+                <option value="">— Choisir —</option>
+                <option>Lundi</option><option>Mardi</option><option>Mercredi</option>
+                <option>Jeudi</option><option>Vendredi</option><option>Samedi</option><option>Dimanche</option>
+              </select>
+            </div>
             <div class="form-group" id="f-periode-group" style="display:none">
               <label class="form-label">Période</label>
               <input class="form-input" type="text" id="f-periode" placeholder="Ex : chaque samedi soir, 1er vendredi du mois…" />
@@ -340,6 +360,19 @@
       return dt.toLocaleDateString('fr-FR', {weekday:'short', day:'numeric', month:'long', year:'numeric'});
     }
 
+    function formatRecurrence(e) {
+      var rec = e['R\u00e9currence'];
+      var jour = e['Jour'];
+      var periode = e['P\u00e9riode'];
+      if (periode) return periode;
+      if (rec === 'Hebdomadaire' && jour) return 'Chaque ' + jour.toLowerCase();
+      if (rec === 'Mensuelle' && jour) return 'Chaque mois, le ' + jour.toLowerCase();
+      if (rec === 'Annuelle') return 'Chaque ann\u00e9e';
+      if (rec === 'Hebdomadaire') return 'Chaque semaine';
+      if (rec === 'Mensuelle') return 'Chaque mois';
+      return rec || '';
+    }
+
     function loadEvents() {
       var url = AT_URL + '?filterByFormula=' + encodeURIComponent("{Statut}='Publi\u00e9'") + '&sort[0][field]=Date&sort[0][direction]=asc';
       fetch(url, {headers: HEADS})
@@ -392,8 +425,8 @@
         h += '<p class="card-venue"><strong>' + (e['Commune'] || '') + '</strong>' + (e['Lieu'] ? ' \u00b7 ' + e['Lieu'] : '') + '</p>';
         var isRec = e['R\u00e9currence'] && e['R\u00e9currence'] !== 'Aucune';
         if (isRec) {
-          var periode = e['P\u00e9riode'] || e['R\u00e9currence'];
-          h += '<div class="card-date"><div class="date-dot"></div>' + periode + '</div>';
+          var recText = formatRecurrence(e);
+          h += '<div class="card-date"><div class="date-dot"></div>' + recText + (e['Heure'] ? ' \u00b7 ' + e['Heure'] : '') + '</div>';
           h += '<div class="recurrence-badge"><svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2 6a4 4 0 0 1 4-4 4 4 0 0 1 3.46 2" stroke="#c8a96e" stroke-width="1.3" stroke-linecap="round"/><path d="M10 6a4 4 0 0 1-4 4 4 4 0 0 1-3.46-2" stroke="#c8a96e" stroke-width="1.3" stroke-linecap="round"/><polyline points="8.5,3.5 10,2 11.5,3.5" fill="none" stroke="#c8a96e" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><polyline points="3.5,8.5 2,10 0.5,8.5" fill="none" stroke="#c8a96e" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>' + e['R\u00e9currence'] + '</div>';
         } else {
           h += '<div class="card-date"><div class="date-dot"></div>' + formatDate(e['Date']) + (e['Heure'] ? ' \u00b7 ' + e['Heure'] : '') + '</div>';
@@ -431,8 +464,8 @@
       var meta = '';
       var isRecModal = e['R\u00e9currence'] && e['R\u00e9currence'] !== 'Aucune';
       if (isRecModal) {
-        var periodeModal = e['P\u00e9riode'] || e['R\u00e9currence'];
-        meta += '<div class="modal-meta-item" style="color:var(--gold);border:1px solid rgba(200,169,110,0.3);padding:2px 8px;border-radius:20px;font-size:11px">\ud83d\udd01 ' + periodeModal + '</div>';
+        var recTextModal = formatRecurrence(e);
+        meta += '<div class="modal-meta-item" style="color:var(--gold);border:1px solid rgba(200,169,110,0.3);padding:2px 8px;border-radius:20px;font-size:11px">\ud83d\udd01 ' + recTextModal + (e['Heure'] ? ' \u00b7 ' + e['Heure'] : '') + '</div>';
       } else if (e['Date']) {
         meta += '<div class="modal-meta-item"><strong>' + formatDate(e['Date']) + '</strong></div>';
       }
@@ -546,6 +579,7 @@
       fields['\u00c0 la une'] = false;
       fields['R\u00e9currence'] = document.getElementById('f-recurrence').value || 'Aucune';
       fields['P\u00e9riode'] = document.getElementById('f-periode').value.trim();
+      fields['Jour'] = document.getElementById('f-jour').value || '';
       fetch(AT_URL, {method: 'POST', headers: HEADS, body: JSON.stringify({records: [{fields: fields}]})})
         .then(function(r) {
           if (r.ok) {
