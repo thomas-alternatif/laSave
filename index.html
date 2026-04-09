@@ -11,36 +11,9 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
       --gold: #c8a96e; --gold-light: #dbbe87;
-      --bg: #0f0e0b; --bg-dark: #0a0907; --bg-featured: #1a1510; --bg-hover: #1c1a16;
-      --border: #2e2b26; --border-inner: #242118;
-      --text: #f5f0e8; --text-mid: #b0a090; --text-muted: #7a7060; --text-faint: #5a5448;
-    }
-    @media (prefers-color-scheme: light) {
-      :root {
-        --gold: #a0782a; --gold-light: #b8893a;
-        --bg: #f4f0ea; --bg-dark: #e8e2d8; --bg-featured: #ede8e0; --bg-hover: #e8e2d8;
-        --border: #ccc4b8; --border-inner: #d8d0c4;
-        --text: #1a1814; --text-mid: #4a4438; --text-muted: #7a7268; --text-faint: #9a9288;
-      }
-      .filters { background: #edeae4; }
-      .header { background: #f4f0ea; border-bottom-color: #ccc4b8; }
-      .card { background: #f4f0ea; }
-      .card:hover { background: #e8e2d8; }
-      .featured-card { background: #f4f0ea; }
-      .featured-card:first-child { background: #ede8e0; }
-      .modal { background: #f0ece4; }
-      .cat-concert { background: #f5e8c8; color: #7a5a10; }
-      .cat-festival { background: #d8f0dc; color: #2a6835; }
-      .cat-marche { background: #d0e4f5; color: #1a4f7a; }
-      .cat-expo { background: #f5ddd8; color: #7a2e20; }
-      .cat-spectacle { background: #ecdcf5; color: #5a1a7a; }
-      .cat-sport { background: #d8f0ec; color: #1a5a50; }
-      .recurrence-badge { color: #a0782a; border-color: rgba(160,120,42,0.4); }
-      .modal-desc { color: #3a342c; }
-      .modal-org-label { color: #6a6258; }
-      .modal-org-name { color: #1a1814; }
-      .card-more { color: #a0782a; }
-      .filter-chip.on { background: #a0782a; border-color: #a0782a; }
+      --bg: #181818; --bg-dark: #111111; --bg-featured: #1e1e1e; --bg-hover: #222222;
+      --border: #2e2e2e; --border-inner: #262626;
+      --text: #f0ede8; --text-mid: #b8b0a4; --text-muted: #807870; --text-faint: #585450;
     }
     html { scroll-behavior: smooth; }
     body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
@@ -51,8 +24,9 @@
     .nav-btn { background: none; border: none; cursor: pointer; color: var(--text-mid); font-family: 'DM Sans', sans-serif; font-size: 13px; padding: 0 16px; height: 60px; transition: color 0.15s; }
     .nav-btn:hover { color: var(--text); }
     .nav-btn.active { color: var(--gold); }
-    .share-btn { background: var(--gold); border: none; cursor: pointer; color: var(--bg); font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500; padding: 5px 12px; border-radius: 3px; margin-left: 12px; transition: background 0.15s; }
-    .share-btn:hover { background: var(--gold-light); }
+    .share-btn { background: transparent; border: 1px solid rgba(200,169,110,0.4); cursor: pointer; color: var(--gold); font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500; padding: 5px 14px; border-radius: 20px; margin-left: 16px; transition: all 0.2s; letter-spacing: 0.02em; display: inline-flex; align-items: center; gap: 7px; }
+    .share-btn:hover { background: var(--gold); color: var(--bg); border-color: var(--gold); }
+    .share-btn.active { background: var(--gold); color: var(--bg); border-color: var(--gold); }
     .section { display: none; }
     .section.active { display: block; }
     .hero { padding: 4rem 2rem 2rem; border-bottom: 1px solid var(--border); }
@@ -66,9 +40,6 @@
     #section-agenda .hero { position: relative; overflow: hidden; min-height: 420px; padding: 0; display: flex; align-items: flex-end; border-bottom: none; }
     .hero-bg { position: absolute; inset: 0; background-size: cover; background-position: center 60%; }
     .hero-overlay { position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(15,14,11,0.15) 0%, rgba(15,14,11,0.65) 55%, rgba(15,14,11,0.98) 82%, rgba(15,14,11,1) 100%); }
-    @media (prefers-color-scheme: light) {
-      .hero-overlay { background: linear-gradient(to bottom, rgba(10,9,7,0.25) 0%, rgba(10,9,7,0.72) 55%, rgba(10,9,7,1) 82%, rgba(10,9,7,1) 100%); }
-    }
     .hero-content { position: relative; z-index: 2; padding: 0 2rem 2.5rem; width: 100%; color: #f5f0e8; }
     .hero-content .hero-tag { color: #c8a96e; }
     .hero-content .hero-title { color: #f5f0e8; }
@@ -178,7 +149,7 @@
     <a class="logo" href="#" onclick="showSection('agenda');return false;">la<span>Save</span></a>
     <nav class="nav">
       <button class="nav-btn active" onclick="showSection('agenda', this)">Agenda</button>
-      <button class="nav-btn share-btn" onclick="showSection('partager', this)">+ Partager mon événement</button>
+      <button class="nav-btn share-btn" onclick="showSection('partager', this)"><svg width="13" height="13" viewBox="0 0 13 13" fill="none" xmlns="http://www.w3.org/2000/svg"><line x1="6.5" y1="1" x2="6.5" y2="12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="1" y1="6.5" x2="12" y2="6.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg> Partager mon événement</button>
     </nav>
   </header>
 
@@ -195,12 +166,12 @@
     <div class="filters">
       <span class="filter-label">Filtrer :</span>
       <button class="filter-chip on" onclick="filterCat('all', this)">Tout</button>
-      <button class="filter-chip" onclick="filterCat('Concert', this)">Concerts</button>
-      <button class="filter-chip" onclick="filterCat('Festival', this)">Festivals</button>
-      <button class="filter-chip" onclick="filterCat('Marché / Brocante', this)">Marchés</button>
-      <button class="filter-chip" onclick="filterCat('Exposition', this)">Expos</button>
-      <button class="filter-chip" onclick="filterCat('Spectacle', this)">Spectacles</button>
-      <button class="filter-chip" onclick="filterCat('Sport / Loisir', this)">Sport</button>
+      <button class="filter-chip" data-cat="Concert" onclick="filterCat('Concert', this)">Concerts</button>
+      <button class="filter-chip" data-cat="Festival" onclick="filterCat('Festival', this)">Festivals</button>
+      <button class="filter-chip" data-cat="Marché / Brocante" onclick="filterCat('Marché / Brocante', this)">Marchés</button>
+      <button class="filter-chip" data-cat="Exposition" onclick="filterCat('Exposition', this)">Expos</button>
+      <button class="filter-chip" data-cat="Spectacle" onclick="filterCat('Spectacle', this)">Spectacles</button>
+      <button class="filter-chip" data-cat="Sport / Loisir" onclick="filterCat('Sport / Loisir', this)">Sport</button>
     </div>
     <div class="inner">
       <div class="section-head"><h2 class="section-title">À la une</h2></div>
@@ -294,11 +265,11 @@
               <div style="display:flex;flex-direction:column;gap:6px;">
                 <div style="display:flex;align-items:center;gap:8px;">
                   <span style="width:20px;display:flex;align-items:center;color:var(--text-muted);flex-shrink:0;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg></span>
-                  <input class="form-input" type="text" id="f-insta" placeholder="instagram.com/votre_compte" style="flex:1;" />
+                  <input class="form-input" type="text" id="f-insta" placeholder="nom_du_compte" style="flex:1;" />
                 </div>
                 <div style="display:flex;align-items:center;gap:8px;">
                   <span style="width:20px;display:flex;align-items:center;color:var(--text-muted);flex-shrink:0;"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.41c0-3.025 1.792-4.697 4.533-4.697 1.312 0 2.686.236 2.686.236v2.97h-1.513c-1.491 0-1.956.93-1.956 1.886v2.267h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z"/></svg></span>
-                  <input class="form-input" type="text" id="f-fb" placeholder="facebook.com/votre_page" style="flex:1;" />
+                  <input class="form-input" type="text" id="f-fb" placeholder="nom_de_la_page" style="flex:1;" />
                 </div>
                 <div style="display:flex;align-items:center;gap:8px;">
                   <span style="width:20px;display:flex;align-items:center;color:var(--text-muted);flex-shrink:0;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2c-2.5 3-4 6.5-4 10s1.5 7 4 10M12 2c2.5 3 4 6.5 4 10s-1.5 7-4 10" stroke-linecap="round"/></svg></span>
@@ -311,6 +282,17 @@
             <input class="form-input" type="text" id="f-org" placeholder="Marie Dupont / Association Les Amis de…" />
           </div>
 
+          <div style="border-top:1px solid var(--border);margin-top:1rem;padding-top:1rem;">
+            <div style="font-size:11px;font-weight:600;letter-spacing:0.09em;color:var(--text-muted);text-transform:uppercase;margin-bottom:1rem;">Informations privées — non publiées</div>
+            <div class="form-group">
+              <label class="form-label">Votre contact (email ou téléphone)</label>
+              <input class="form-input" type="text" id="f-contact-prive" placeholder="email@exemple.fr ou 06 xx xx xx xx" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Message privé pour les modérateurs</label>
+              <textarea class="form-textarea" id="f-message-prive" placeholder="Informations complémentaires, questions, demandes particulières…" style="min-height:80px;"></textarea>
+            </div>
+          </div>
           <button class="submit-btn" type="submit" id="submit-btn">Envoyer l'événement</button>
         </form>
         <div class="success-msg" id="success-msg">Merci ! Votre proposition a bien été reçue. Elle sera examinée et publiée sous 48 h.</div>
@@ -324,13 +306,13 @@
       <div class="footer-copy">Une initiative de la <a href="http://www.mairie-saintpaulsursave.fr" target="_blank" rel="noopener" style="color:#b0a090;text-decoration:none;">Mairie de Saint-Paul-sur-Save</a> (31)</div>
       <div style="margin-top:6px;display:flex;flex-direction:column;gap:3px;">
         <a href="http://www.mairie-saintpaulsursave.fr" target="_blank" rel="noopener" style="font-size:11px;color:#7a7060;text-decoration:none;transition:color 0.15s;">www.mairie-saintpaulsursave.fr</a>
-        <a href="/cdn-cgi/l/email-protection#76151918021715023605171f18020617031a05030405170013581004" style="font-size:11px;color:#7a7060;text-decoration:none;transition:color 0.15s;"><span class="__cf_email__" data-cfemail="bdded2d3c9dcdec9fdcedcd4d3c9cddcc8d1cec8cfcedccbd893dbcf">[email&#160;protected]</span></a>
+        <a href="#" id="lnk-mairie2" style="font-size:11px;color:#7a7060;text-decoration:none;transition:color 0.15s;"><span class="__cf_email__" data-cfemail="bdded2d3c9dcdec9fdcedcd4d3c9cddcc8d1cec8cfcedccbd893dbcf">[email&#160;protected]</span></a>
       </div>
     </div>
     <nav class="footer-links">
       <a href="#" onclick="showSection('agenda');return false;">Agenda</a>
       <a href="#" onclick="showSection('partager');return false;">Partager un événement</a>
-      <a href="/cdn-cgi/l/email-protection#0a6b6d6f646e6b246e6f24666b24796b7c6f4a6d676b636624696567">Contact agenda</a>
+      <a href="#" onclick="window.location='mail'+'to:'+ 'agenda.de.la.save@gmail.com';return false;">Contact agenda</a>
     </nav>
   </footer>
 
@@ -607,6 +589,8 @@
       fields['R\u00e9currence'] = document.getElementById('f-recurrence').value || 'Aucune';
       fields['P\u00e9riode'] = document.getElementById('f-periode').value.trim();
       fields['Jour'] = document.getElementById('f-jour').value || '';
+      fields['Contact priv\u00e9'] = document.getElementById('f-contact-prive').value.trim();
+      fields['Message priv\u00e9'] = document.getElementById('f-message-prive').value.trim();
       fetch(AT_URL, {method: 'POST', headers: HEADS, body: JSON.stringify({records: [{fields: fields}]})})
         .then(function(r) {
           if (r.ok) {
@@ -761,6 +745,21 @@
       setTimeout(function() { tarifBox.style.display='none'; }, 150);
     });
 
+
+
+    // Liens email anti-Cloudflare
+    (function() {
+      var m1 = ['contact','saintpaulsursave.fr'].join('@');
+      var m2 = ['agenda.de.la.save','gmail.com'].join('@');
+      ['lnk-mairie','lnk-mairie2'].forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el) { el.href = 'mailto:' + m1; if (el.querySelector('span')) el.querySelector('span').textContent = m1; }
+      });
+      var t2 = document.getElementById('txt-mairie2');
+      if (t2) t2.textContent = m1;
+      var a2 = document.getElementById('lnk-agenda');
+      if (a2) a2.href = 'mailto:' + m2;
+    })();
 
     loadEvents();
 
