@@ -251,7 +251,7 @@
                 <option value="Annuelle">Annuelle</option>
               </select>
             </div>
-            <div class="form-group" id="f-jour-group" style="display:none">
+            <div class="form-group" id="f-jour-group" style="display:none;visibility:hidden;height:0;overflow:hidden;">
               <label class="form-label">Jour</label>
               <select class="form-select" id="f-jour">
                 <option value="">— Choisir —</option>
@@ -662,7 +662,9 @@
       var cat     = document.getElementById('f-cat').value;
       var commune = document.getElementById('f-commune').value.trim();
       var date    = document.getElementById('f-date').value;
-      if (!titre || !cat || !commune || !date) { alert('Merci de remplir les champs obligatoires (*)'); return; }
+      var rec = document.getElementById('f-recurrence').value || 'Aucune';
+      if (!titre || !cat || !commune) { alert('Merci de remplir les champs obligatoires (*)'); return; }
+      if (rec === 'Aucune' && !date) { alert('Merci de renseigner une date pour un événement ponctuel.'); return; }
       var btn = document.getElementById('submit-btn');
       btn.textContent = 'Envoi en cours...';
       btn.disabled = true;
@@ -685,12 +687,24 @@
       fields['Contact'] = contactParts.join(' | ');
       fields['Organisation'] = document.getElementById('f-org').value.trim();
       fields['Statut'] = 'En attente';
-      fields['\u00c0 la une'] = false;
       fields['R\u00e9currence'] = document.getElementById('f-recurrence').value || 'Aucune';
       fields['P\u00e9riode'] = document.getElementById('f-periode').value.trim();
-      fields['Jour'] = document.getElementById('f-jour').value || '';
+      // Calculer automatiquement le jour de la semaine depuis la date
+      var jourVal = document.getElementById('f-jour').value || '';
+      if (!jourVal && document.getElementById('f-date').value) {
+        var jours = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
+        var dateVal = new Date(document.getElementById('f-date').value + 'T00:00:00');
+        jourVal = jours[dateVal.getDay()];
+      }
+      fields['Jour'] = jourVal;
       fields['Contact priv\u00e9'] = document.getElementById('f-contact-prive').value.trim();
       fields['Message priv\u00e9'] = document.getElementById('f-message-prive').value.trim();
+      // Nettoyer les champs vides pour éviter les erreurs Airtable
+      Object.keys(fields).forEach(function(k) {
+        if (fields[k] === '' || fields[k] === null || fields[k] === undefined) {
+          delete fields[k];
+        }
+      });
       fetch(AT_URL, {method: 'POST', headers: HEADS, body: JSON.stringify({records: [{fields: fields}]})})
         .then(function(r) {
           if (r.ok) {
