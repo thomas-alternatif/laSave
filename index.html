@@ -29,7 +29,7 @@
     .share-btn.active { background: var(--gold); color: var(--bg); border-color: var(--gold); }
     .section { display: none; }
     .section.active { display: block; }
-    .hero { padding: 4rem 2rem 2rem; border-bottom: 1px solid var(--border); }
+    .hero { padding: 4rem 4rem 2rem; border-bottom: 1px solid var(--border); }
     .hero-tag { font-size: 11px; font-weight: 500; letter-spacing: 0.15em; color: var(--gold); text-transform: uppercase; margin-bottom: 1rem; }
     .hero-title { font-family: 'Playfair Display', serif; font-size: clamp(36px,6vw,64px); font-weight: 900; line-height: 1.05; color: var(--text); margin-bottom: 1rem; max-width: 700px; }
     .hero-title em { font-style: italic; color: var(--gold); }
@@ -45,7 +45,7 @@
     .hero-content .hero-title { color: #f5f0e8; }
     .hero-content .hero-title em { color: #c8a96e; }
     .hero-content .hero-sub { color: #c0b8a8; }
-    .filters { padding: 1.25rem 2rem; border-bottom: 1px solid var(--border); display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .filters { padding: 1.25rem 4rem; border-bottom: 1px solid var(--border); display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
     .filter-label { font-size: 12px; color: var(--text-muted); font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; margin-right: 4px; }
     .filter-chip { background: none; border: 1px solid var(--border); cursor: pointer; color: var(--text-mid); font-family: 'DM Sans', sans-serif; font-size: 12px; padding: 5px 14px; border-radius: 20px; transition: all 0.15s; }
     .filter-chip:hover { border-color: var(--gold); color: var(--gold); }
@@ -54,7 +54,7 @@
     .section-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 1.5rem; }
     .section-title { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; color: var(--text); }
     .section-count { font-size: 12px; color: var(--text-muted); }
-    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1px; background: var(--border); border: 1px solid var(--border); }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 2px; background: var(--border); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
     .card { background: var(--bg); padding: 1.5rem; cursor: pointer; transition: background 0.12s; }
     .card:hover { background: var(--bg-hover); }
     .card-cat { font-size: 10px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 10px; display: inline-block; padding: 3px 8px; border-radius: 2px; }
@@ -103,7 +103,7 @@
     .success-msg { display: none; background: #0d1a10; border: 1px solid #1a4025; color: #6dbf7e; padding: 1rem 1.25rem; border-radius: 4px; font-size: 14px; margin-top: 1rem; line-height: 1.5; }
     .footer {
       border-top: none;
-      padding: 2.5rem 2rem;
+      padding: 2.5rem 4rem;
       display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 2rem;
       margin-top: 4rem;
       background: #1c1a16;
@@ -160,7 +160,17 @@
       <div class="hero-content">
         <div class="hero-tag">Vallée de la Save — Haute-Garonne</div>
         <h1 class="hero-title">Ce qui se passe<br><em>près de chez vous</em></h1>
-        <p class="hero-sub">Concerts, fêtes de village, expos, marchés et spectacles. Tout l'agenda culturel et festif de la vallée de la Save.</p>
+        <p class="hero-sub">Concerts, fêtes de village, expos, marchés et spectacles. Tout l'agenda culturel et festif de la vallée de la Save et de ses alentours.</p>
+        <div class="hero-stats" id="hero-stats" style="display:none;margin-top:1.5rem;display:flex;gap:2rem;flex-wrap:wrap;">
+          <div class="hero-stat">
+            <span class="hero-stat-num" id="stat-total">0</span>
+            <span class="hero-stat-label">événements à venir</span>
+          </div>
+          <div class="hero-stat" id="stat-soon-wrap" style="display:none;">
+            <span class="hero-stat-num" id="stat-soon" style="color:var(--gold)">0</span>
+            <span class="hero-stat-label">cette semaine</span>
+          </div>
+        </div>
       </div>
     </div>
     <div class="filters">
@@ -188,15 +198,19 @@
     <div class="hero">
       <div class="hero-tag">Participez</div>
       <h1 class="hero-title">Partagez<br><em>votre événement</em></h1>
+      <p class="hero-sub" style="margin-top:1rem;">Association, mairie, collectif ou particulier. Si vous organisez un événement dans la vallée de la Save, signalez-le ici. Les propositions sont examinées et publiées sous 48 h.</p>
     </div>
-    <div style="padding: 0 2rem 4rem;">
-      <div class="share-section">
-        <p class="share-intro">Association, mairie, collectif ou particulier. Si vous organisez un événement dans la vallée de la Save, signalez-le ici. Les propositions sont examinées et publiées sous 48 h.</p>
+    <div style="padding: 2.5rem 4rem 4rem;">
+      <div class="share-section" style="max-width:800px;margin:0 auto;">
         <form id="agenda-form" novalidate>
+
+          <!-- Ligne 1 : Titre -->
           <div class="form-group">
             <label class="form-label">Titre de l'événement *</label>
             <input class="form-input" type="text" id="f-titre" placeholder="Ex : Concert de jazz au lavoir…" required />
           </div>
+
+          <!-- Ligne 2 : Catégorie + Commune -->
           <div class="form-row">
             <div class="form-group">
               <label class="form-label">Catégorie *</label>
@@ -213,6 +227,8 @@
               <div id="commune-suggestions" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--bg-dark);border:1px solid var(--gold);border-top:none;border-radius:0 0 4px 4px;z-index:200;max-height:200px;overflow-y:auto;"></div>
             </div>
           </div>
+
+          <!-- Ligne 3 : Date + Heure -->
           <div class="form-row">
             <div class="form-group">
               <label class="form-label">Date *</label>
@@ -223,6 +239,8 @@
               <input class="form-input" type="time" id="f-heure" />
             </div>
           </div>
+
+          <!-- Ligne 4 : Récurrence + Jour -->
           <div class="form-row">
             <div class="form-group">
               <label class="form-label">Récurrence</label>
@@ -241,20 +259,28 @@
                 <option>Jeudi</option><option>Vendredi</option><option>Samedi</option><option>Dimanche</option>
               </select>
             </div>
-            <div class="form-group" id="f-periode-group" style="display:none">
-              <label class="form-label">Période</label>
-              <input class="form-input" type="text" id="f-periode" placeholder="Ex : chaque samedi soir, 1er vendredi du mois…" />
-            </div>
           </div>
+
+          <!-- Ligne 5 : Période (si récurrent) -->
+          <div class="form-group" id="f-periode-group" style="display:none">
+            <label class="form-label">Précision sur la période</label>
+            <input class="form-input" type="text" id="f-periode" placeholder="Ex : chaque samedi soir, 1er vendredi du mois…" />
+          </div>
+
+          <!-- Ligne 6 : Lieu -->
           <div class="form-group">
             <label class="form-label">Lieu / salle</label>
             <input class="form-input" type="text" id="f-lieu" placeholder="Nom du lieu ou adresse" />
           </div>
+
+          <!-- Ligne 7 : Description -->
           <div class="form-group">
             <label class="form-label">Description</label>
             <textarea class="form-textarea" id="f-desc" placeholder="Décrivez l'événement en quelques lignes…"></textarea>
           </div>
-          <div class="form-row">
+
+          <!-- Ligne 8 : Tarif + Réseaux sociaux -->
+          <div class="form-row" style="align-items:start;">
             <div class="form-group" style="position:relative">
               <label class="form-label">Tarif</label>
               <input class="form-input" type="text" id="f-tarif" placeholder="Gratuit / 5 € / Sur réservation…" autocomplete="off" />
@@ -277,23 +303,30 @@
                 </div>
               </div>
             </div>
+          </div>
+
+          <!-- Ligne 9 : Nom/Organisation -->
           <div class="form-group">
             <label class="form-label">Votre nom ou organisation</label>
             <input class="form-input" type="text" id="f-org" placeholder="Marie Dupont / Association Les Amis de…" />
           </div>
 
-          <div style="border-top:1px solid var(--border);margin-top:1rem;padding-top:1rem;">
+          <!-- Séparateur infos privées -->
+          <div style="border-top:1px solid var(--border);margin-top:1.5rem;padding-top:1.5rem;">
             <div style="font-size:11px;font-weight:600;letter-spacing:0.09em;color:var(--text-muted);text-transform:uppercase;margin-bottom:1rem;">Informations privées — non publiées</div>
-            <div class="form-group">
-              <label class="form-label">Votre contact (email ou téléphone)</label>
-              <input class="form-input" type="text" id="f-contact-prive" placeholder="email@exemple.fr ou 06 xx xx xx xx" />
-            </div>
-            <div class="form-group">
-              <label class="form-label">Message privé pour les modérateurs</label>
-              <textarea class="form-textarea" id="f-message-prive" placeholder="Informations complémentaires, questions, demandes particulières…" style="min-height:80px;"></textarea>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Votre contact (email ou téléphone)</label>
+                <input class="form-input" type="text" id="f-contact-prive" placeholder="email@exemple.fr ou 06 xx xx xx xx" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Message privé pour les modérateurs</label>
+                <textarea class="form-textarea" id="f-message-prive" placeholder="Questions, demandes particulières…" style="min-height:80px;"></textarea>
+              </div>
             </div>
           </div>
-          <button class="submit-btn" type="submit" id="submit-btn">Envoyer l'événement</button>
+
+          <button class="submit-btn" type="submit" id="submit-btn" style="width:auto;padding:12px 40px;">Envoyer l'événement</button>
         </form>
         <div class="success-msg" id="success-msg">Merci ! Votre proposition a bien été reçue. Elle sera examinée et publiée sous 48 h.</div>
       </div>
@@ -351,6 +384,30 @@
       return m[cat] || 'cat-concert';
     }
 
+    function catColor(cat) {
+      var m = {
+        'Concert':          '#c8a96e',
+        'Festival':         '#6dbf7e',
+        'March\u00e9 / Brocante': '#6ab0e8',
+        'Exposition':       '#e88a6a',
+        'Spectacle':        '#b06ae8',
+        'Sport / Loisir':   '#6ab8a8'
+      };
+      return m[cat] || '#c8a96e';
+    }
+
+    function catBg(cat) {
+      var m = {
+        'Concert':          'rgba(200,169,110,0.06)',
+        'Festival':         'rgba(109,191,126,0.06)',
+        'March\u00e9 / Brocante': 'rgba(106,176,232,0.06)',
+        'Exposition':       'rgba(232,138,106,0.06)',
+        'Spectacle':        'rgba(176,106,232,0.06)',
+        'Sport / Loisir':   'rgba(106,184,168,0.06)'
+      };
+      return m[cat] || 'rgba(200,169,110,0.06)';
+    }
+
     function pad(n) { return n < 10 ? '0' + n : '' + n; }
 
     function formatDate(d) {
@@ -365,7 +422,7 @@
       var periode = e['P\u00e9riode'];
       if (periode) return periode;
       if (rec === 'Hebdomadaire' && jour) return 'Chaque ' + jour.toLowerCase();
-      if (rec === 'Mensuelle' && jour) return 'Chaque mois, le ' + jour.toLowerCase();
+      if (rec === 'Mensuelle' && jour) return 'Chaque mois le ' + jour.toLowerCase();
       if (rec === 'Annuelle') return 'Chaque ann\u00e9e';
       if (rec === 'Hebdomadaire') return 'Chaque semaine';
       if (rec === 'Mensuelle') return 'Chaque mois';
@@ -381,6 +438,7 @@
           featuredEvents = allEvents.filter(function(e) { return e['\u00c0 la une'] === true; });
           renderFeatured();
           renderEvents(activeFilter);
+          updateHeroStats();
         })
         .catch(function() {
           document.getElementById('events-container').innerHTML = '<div class="empty-state">Impossible de charger les \u00e9v\u00e9nements.</div>';
@@ -392,8 +450,9 @@
       if (!featuredEvents.length) { c.innerHTML = ''; return; }
       var h = '';
       featuredEvents.forEach(function(e, i) {
-        h += '<article class="featured-card">';
-        h += '<div class="featured-label">' + (e['Cat\u00e9gorie'] || '') + '</div>';
+        h += '<article class="featured-card" style="border-top:2px solid '+fcc+'">';
+        var fcc = catColor(e['Cat\u00e9gorie']);
+        h += '<div class="featured-label" style="color:'+fcc+'">' + (e['Cat\u00e9gorie'] || '') + '</div>';
         h += '<h2 class="featured-title">' + (e['Titre'] || '') + '</h2>';
         h += '<p class="featured-desc">' + (e['Description'] || '') + '</p>';
         h += '<div class="featured-meta">';
@@ -418,31 +477,72 @@
       if (!list.length) { c.innerHTML = '<div class="empty-state">Aucun \u00e9v\u00e9nement dans cette cat\u00e9gorie.</div>'; return; }
       var h = '';
       list.forEach(function(e) {
-        h += '<article class="card">';
+        var cc = catColor(e['Cat\u00e9gorie']);
+        var cbg = catBg(e['Cat\u00e9gorie']);
+        h += '<article class="card" style="border-left:3px solid '+cc+';background:linear-gradient(135deg,'+cbg+' 0%,transparent 50%);">';
         h += '<span class="card-cat ' + catClass(e['Cat\u00e9gorie']) + '">' + (e['Cat\u00e9gorie'] || '') + '</span>';
-        h += '<h3 class="card-title">' + (e['Titre'] || '') + '</h3>';
-        h += '<p class="card-venue"><strong>' + (e['Commune'] || '') + '</strong>' + (e['Lieu'] ? ' \u00b7 ' + e['Lieu'] : '') + '</p>';
+        var soon = '';
+        if (e['Date']) {
+          var evDate = new Date(e['Date'] + 'T00:00:00');
+          var now2 = new Date();
+          var diff = (evDate - now2) / (1000*60*60*24);
+          if (diff >= 0 && diff <= 7) soon = '<span class="soon-badge">Bientôt</span>';
+        }
+        h += '<h3 class="card-title">' + (e['Titre'] || '') + soon + '</h3>';
+        h += '<p class="card-venue" style="color:'+cc+'"><strong>' + (e['Commune'] || '') + '</strong>' + (e['Lieu'] ? ' \u00b7 ' + e['Lieu'] : '') + '</p>';
         var isRec = e['R\u00e9currence'] && e['R\u00e9currence'] !== 'Aucune';
         if (isRec) {
           var recText = formatRecurrence(e);
           h += '<div class="card-date"><div class="date-dot"></div>' + recText + (e['Heure'] ? ' \u00b7 ' + e['Heure'] : '') + '</div>';
           h += '<div class="recurrence-badge"><svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2 6a4 4 0 0 1 4-4 4 4 0 0 1 3.46 2" stroke="#c8a96e" stroke-width="1.3" stroke-linecap="round"/><path d="M10 6a4 4 0 0 1-4 4 4 4 0 0 1-3.46-2" stroke="#c8a96e" stroke-width="1.3" stroke-linecap="round"/><polyline points="8.5,3.5 10,2 11.5,3.5" fill="none" stroke="#c8a96e" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><polyline points="3.5,8.5 2,10 0.5,8.5" fill="none" stroke="#c8a96e" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>' + e['R\u00e9currence'] + '</div>';
         } else {
-          h += '<div class="card-date"><div class="date-dot"></div>' + formatDate(e['Date']) + (e['Heure'] ? ' \u00b7 ' + e['Heure'] : '') + '</div>';
+          h += '<div class="card-date"><div class="date-dot" style="background:'+cc+'"></div>' + formatDate(e['Date']) + (e['Heure'] ? ' \u00b7 ' + e['Heure'] : '') + '</div>';
         }
-        h += '<div class="card-bottom"><div class="card-price"><strong>' + (e['Tarif'] || '') + '</strong></div>';
-        h += '<div class="card-more">D\u00e9tails</div></div></article>';
+        h += '<div class="card-bottom" style="border-top-color:'+cc+'22"><div class="card-price"><strong>' + (e['Tarif'] || '') + '</strong></div>';
+        h += '<div class="card-more" style="color:'+cc+'">D\u00e9tails \u2192</div></div></article>';
       });
       c.innerHTML = h;
       c.querySelectorAll('.card').forEach(function(el, i) {
+        el.style.animationDelay = (i * 0.05) + 's';
         el.onclick = function() { openModal(list[i]); };
       });
     }
 
+    function updateHeroStats() {
+      var now = new Date();
+      var inWeek = new Date(now.getTime() + 7*24*60*60*1000);
+      var total = allEvents.filter(function(e) {
+        if (!e['Date']) return true;
+        return new Date(e['Date'] + 'T00:00:00') >= now;
+      }).length;
+      var soon = allEvents.filter(function(e) {
+        if (!e['Date']) return false;
+        var d = new Date(e['Date'] + 'T00:00:00');
+        return d >= now && d <= inWeek;
+      }).length;
+      document.getElementById('stat-total').textContent = total;
+      document.getElementById('hero-stats').style.display = 'flex';
+      if (soon > 0) {
+        document.getElementById('stat-soon').textContent = soon;
+        document.getElementById('stat-soon-wrap').style.display = 'flex';
+      }
+    }
+
     function filterCat(cat, btn) {
       activeFilter = cat;
-      document.querySelectorAll('.filter-chip').forEach(function(b) { b.classList.remove('on'); });
+      document.querySelectorAll('.filter-chip').forEach(function(b) {
+        b.classList.remove('on');
+        b.style.background = '';
+        b.style.borderColor = '';
+        b.style.color = '';
+      });
       btn.classList.add('on');
+      if (cat !== 'all') {
+        var c = catColor(cat);
+        btn.style.background = c;
+        btn.style.borderColor = c;
+        btn.style.color = '#111';
+      }
       renderEvents(cat);
     }
 
@@ -760,6 +860,14 @@
       var a2 = document.getElementById('lnk-agenda');
       if (a2) a2.href = 'mailto:' + m2;
     })();
+
+
+    // Scroll to top visibility
+    window.addEventListener('scroll', function() {
+      var btn = document.getElementById('scroll-top');
+      if (window.scrollY > 400) btn.classList.add('visible');
+      else btn.classList.remove('visible');
+    });
 
     loadEvents();
 
