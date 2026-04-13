@@ -166,6 +166,8 @@
 
     /* Modale filet coloré haut */
     .modal-header { border-radius: 6px 6px 0 0; }
+    .modal-overlay.open .modal { animation: modalIn 0.2s ease both; }
+    @keyframes modalIn { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
 
     /* Footer trait doré */
     .footer { border-top: 2px solid rgba(200,169,110,0.25) !important; }
@@ -183,6 +185,35 @@
     @keyframes pulse-btn { 0%,100% { box-shadow:0 4px 16px rgba(0,0,0,0.4); } 50% { box-shadow:0 4px 24px rgba(200,169,110,0.35); } }
     .scroll-top { animation: pulse-btn 3s ease-in-out infinite; }
     .scroll-top:hover { animation: none; box-shadow:0 8px 24px rgba(0,0,0,0.5); }
+
+  
+    /* Grain photo hero */
+    #section-agenda .hero::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      opacity: 0.6;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+      background-size: 128px 128px;
+      pointer-events: none;
+      mix-blend-mode: overlay;
+    }
+    /* Le hero-content doit être au-dessus du grain */
+    .hero-content { z-index: 3 !important; }
+    .hero-overlay { z-index: 0; }
+    .hero-bg { z-index: -1; }
+
+  
+    /* Photo dans featured card */
+    .featured-card-photo { width: 100%; height: 220px; object-fit: cover; border-radius: 4px; margin-bottom: 1.25rem; display: block; }
+    .featured-card:first-child .featured-card-photo { height: 280px; }
+
+    /* Photo dans la modale */
+    .modal-photo { width: 100%; height: 220px; object-fit: cover; border-radius: 6px 6px 0 0; display: block; }
+
+    /* Photo dans les cards normales */
+    .card-photo { width: 100%; height: 160px; object-fit: cover; margin-bottom: 1rem; border-radius: 3px; display: block; }
 
   </style>
 </head>
@@ -385,6 +416,12 @@
             <input class="form-input" type="text" id="f-org" placeholder="Marie Dupont / Association Les Amis de…" />
           </div>
 
+          <!-- Ligne 10 : Photo -->
+          <div class="form-group">
+            <label class="form-label">Photo de l'événement <span style="font-size:10px;color:var(--text-faint);font-weight:400;text-transform:none;letter-spacing:0;">optionnelle</span></label>
+            <p style="font-size:12px;color:var(--text-muted);line-height:1.6;">Envoyez votre photo par email à <span id="mail-agenda-photo" style="color:var(--gold);"></span> en indiquant le nom de votre événement. Elle sera ajoutée lors de la validation.</p>
+          </div>
+
           <!-- Séparateur infos privées -->
           <div style="border-top:1px solid var(--border);margin-top:1.5rem;padding-top:1.5rem;">
             <div style="font-size:11px;font-weight:600;letter-spacing:0.09em;color:var(--text-muted);text-transform:uppercase;margin-bottom:1rem;">Informations privées — non publiées</div>
@@ -424,7 +461,7 @@
   </footer>
 
   <div class="modal-overlay" id="modal-overlay">
-    <div class="modal">
+    <div class="modal" id="modal">
       <button class="modal-close" id="modal-close">x</button>
       <div class="modal-header">
         <span class="modal-cat" id="modal-cat"></span>
@@ -526,6 +563,7 @@
         .then(function(r) { return r.json(); })
         .then(function(data) {
           allEvents = (data.records || []).map(function(r) { return Object.assign({id: r.id}, r.fields); });
+          if (allEvents.length > 0) console.log('Champs disponibles:', Object.keys(allEvents[0]));
           featuredEvents = allEvents.filter(function(e) { return e['\u00c0 la une'] === true; });
           renderFeatured();
           renderEvents(activeFilter);
@@ -543,6 +581,10 @@
       featuredEvents.forEach(function(e, i) {
         h += '<article class="featured-card" style="border-top:2px solid '+fcc+'">';
         var fcc = catColor(e['Cat\u00e9gorie']);
+        // Photo featured
+        var photoUrl = '';
+        if (e['Photo'] && e['Photo'].length > 0) { var p = e['Photo'][0]; photoUrl = (p.thumbnails && p.thumbnails.large) ? p.thumbnails.large.url : p.url; }
+        if (photoUrl) h += '<img class="featured-card-photo" src="' + photoUrl + '" alt="' + (e['Titre'] || '') + '" loading="lazy" />';
         h += '<div class="featured-label" style="color:'+fcc+'">' + (e['Cat\u00e9gorie'] || '') + '</div>';
         h += '<h2 class="featured-title">' + (e['Titre'] || '') + '</h2>';
         h += '<p class="featured-desc">' + (e['Description'] || '') + '</p>';
@@ -555,7 +597,7 @@
       });
       c.innerHTML = h;
       c.querySelectorAll('.featured-card').forEach(function(el, i) {
-        el.onclick = function() { openModal(featuredEvents[i]); };
+        (function(evt) { el.onclick = function() { openModal(evt); }; })(featuredEvents[i]);
       });
     }
 
@@ -596,7 +638,7 @@
       c.innerHTML = h;
       c.querySelectorAll('.card').forEach(function(el, i) {
         el.style.animationDelay = (i * 0.05) + 's';
-        el.onclick = function() { openModal(list[i]); };
+        (function(evt) { el.onclick = function() { openModal(evt); }; })(list[i]);
       });
     }
 
@@ -653,6 +695,17 @@
       document.getElementById('modal-cat').className = 'modal-cat ' + catClass(e['Cat\u00e9gorie']);
       var mh = document.getElementById('modal').querySelector('.modal-header');
       if (mh) mh.style.borderTopColor = catColor(e['Cat\u00e9gorie']);
+      // Photo modale
+      var existingPhoto = document.getElementById('modal-photo');
+      if (existingPhoto) existingPhoto.remove();
+      if (e['Photo'] && e['Photo'].length > 0) {
+        var photoEl = document.createElement('img');
+        photoEl.id = 'modal-photo';
+        photoEl.className = 'modal-photo';
+        var mp = e['Photo'][0]; photoEl.src = (mp.thumbnails && mp.thumbnails.large) ? mp.thumbnails.large.url : mp.url;
+        photoEl.alt = e['Titre'] || '';
+        document.getElementById('modal').insertBefore(photoEl, document.getElementById('modal').firstChild);
+      }
       document.getElementById('modal-title').textContent = e['Titre'] || '';
       var meta = '';
       var isRecModal = e['R\u00e9currence'] && e['R\u00e9currence'] !== 'Aucune';
@@ -683,7 +736,7 @@
             else if (ct.indexOf('facebook') > -1) { icon = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.41c0-3.025 1.792-4.697 4.533-4.697 1.312 0 2.686.236 2.686.236v2.97h-1.513c-1.491 0-1.956.93-1.956 1.886v2.267h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z"/></svg>'; label = ct.split('/').pop(); }
             else if (ct.indexOf('@') > -1) { icon = '\u2709\ufe0f'; }
             var href = ct.indexOf('http') === 0 ? ct : (ct.indexOf('@') > -1 ? 'mailto:' + ct : 'https://' + ct);
-            org += '<a class="modal-org-link" href="' + href + '" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;margin-top:6px;">' + icon + ' ' + label + '</a>';
+            org += '<a class="modal-org-link" href="' + href + '" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;margin-top:10px;margin-right:16px;">' + icon + ' ' + label + '</a>';
           });
         }
       }
@@ -961,6 +1014,8 @@
     (function() {
       var m1 = ['contact','saintpaulsursave.fr'].join('@');
       var m2 = ['agenda.de.la.save','gmail.com'].join('@');
+      var photoMailEl = document.getElementById('mail-agenda-photo');
+      if (photoMailEl) photoMailEl.textContent = m2;
       ['lnk-mairie','lnk-mairie2'].forEach(function(id) {
         var el = document.getElementById(id);
         if (el) { el.href = 'mailto:' + m1; if (el.querySelector('span')) el.querySelector('span').textContent = m1; }
