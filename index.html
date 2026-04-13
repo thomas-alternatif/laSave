@@ -19,6 +19,9 @@
     body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
     .header { border-bottom: 1px solid var(--border); padding: 0 2rem; position: sticky; top: 0; z-index: 100; background: var(--bg); display: flex; align-items: center; justify-content: space-between; height: 60px; }
     .logo { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 900; color: var(--text); text-decoration: none; }
+
+    .logo-tagline { font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 400; color: var(--text-muted); letter-spacing: 0.06em; text-transform: uppercase; line-height: 1; white-space: nowrap; }
+    @media (max-width: 600px) { .logo-tagline { display: none; } }
     .logo span { color: var(--gold); }
     .nav { display: flex; align-items: center; }
     .nav-btn { background: none; border: none; cursor: pointer; color: var(--text-mid); font-family: 'DM Sans', sans-serif; font-size: 13px; padding: 0 16px; height: 60px; transition: color 0.15s; }
@@ -64,6 +67,8 @@
     .cat-expo { background: #1a0f0d; color: #e88a6a; }
     .cat-spectacle { background: #170d1a; color: #b06ae8; }
     .cat-sport { background: #0d1a16; color: #6ab8a8; }
+    .cat-guinguette { background: #1a1200; color: #f5a623; }
+    .cat-fete { background: #1a0d12; color: #f06292; }
     .card-title { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700; color: var(--text); line-height: 1.25; margin-bottom: 8px; }
     .card-venue { font-size: 13px; color: var(--text-mid); margin-bottom: 12px; }
     .card-venue strong { color: var(--gold); font-weight: 500; }
@@ -141,12 +146,53 @@
     .modal-close:hover { color: var(--text); }
     @media (max-width: 700px) { .featured-grid { grid-template-columns: 1fr; } .featured-card:first-child { grid-column: 1; } .form-row { grid-template-columns: 1fr; } .nav-btn:not(.share-btn) { padding: 0 10px; font-size: 12px; } .inner { padding: 1.25rem 1.25rem 0; } .footer { padding: 2rem 1.25rem; } }
     @media (max-width: 480px) { .header { padding: 0 1rem; } }
+  
+    /* Filet doré header au scroll */
+    .header { border-top: 2px solid transparent; transition: border-color 0.3s; }
+    .header.scrolled { border-top-color: var(--gold); }
+
+    /* Accent doré titres de section */
+    .section-title { position: relative; padding-left: 14px; }
+    .section-title::before { content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 3px; height: 70%; background: var(--gold); border-radius: 2px; }
+
+    /* Point animé hero tag */
+    .hero-tag { display: flex; align-items: center; gap: 8px; }
+    .hero-tag::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--gold); display: inline-block; animation: pulse-gold 2s ease-in-out infinite; flex-shrink: 0; }
+    @keyframes pulse-gold { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:0.4; transform:scale(0.6); } }
+
+    /* Stats en doré */
+    #stat-total { color: var(--gold); }
+    .section-count { color: var(--gold); font-weight: 500; }
+
+    /* Modale filet coloré haut */
+    .modal-header { border-radius: 6px 6px 0 0; }
+
+    /* Footer trait doré */
+    .footer { border-top: 2px solid rgba(200,169,110,0.25) !important; }
+
+    /* Featured halo */
+    .featured-card:first-child { box-shadow: inset 0 0 60px rgba(200,169,110,0.04); }
+
+    /* Badge bientôt dégradé */
+    .soon-badge { background: linear-gradient(135deg,#c8a96e,#e88a6a); color:#111; }
+
+    /* Recurrence badge teinté */
+    .recurrence-badge { background: rgba(106,176,232,0.08); }
+
+    /* Scroll top pulse */
+    @keyframes pulse-btn { 0%,100% { box-shadow:0 4px 16px rgba(0,0,0,0.4); } 50% { box-shadow:0 4px 24px rgba(200,169,110,0.35); } }
+    .scroll-top { animation: pulse-btn 3s ease-in-out infinite; }
+    .scroll-top:hover { animation: none; box-shadow:0 8px 24px rgba(0,0,0,0.5); }
+
   </style>
 </head>
 <body>
 
   <header class="header">
-    <a class="logo" href="#" onclick="showSection('agenda');return false;">la<span>Save</span></a>
+    <a class="logo" href="#" onclick="showSection('agenda');return false;" style="display:flex;align-items:baseline;gap:12px;">
+        <span style="letter-spacing:-0.5px;color:var(--text);">la<span style="color:var(--gold);">Save</span></span>
+        <span class="logo-tagline">L'agenda festif & culturel</span>
+      </a>
     <nav class="nav">
       <button class="nav-btn active" onclick="showSection('agenda', this)">Agenda</button>
       <button class="nav-btn share-btn" onclick="showSection('partager', this)"><svg width="13" height="13" viewBox="0 0 13 13" fill="none" xmlns="http://www.w3.org/2000/svg"><line x1="6.5" y1="1" x2="6.5" y2="12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="1" y1="6.5" x2="12" y2="6.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg> Partager mon événement</button>
@@ -173,12 +219,31 @@
         </div>
       </div>
     </div>
+  <!-- Rivière décorative animée -->
+  <div style="height:56px;overflow:hidden;position:relative;background:var(--bg);">
+    <style>
+      @keyframes river1 { 0%,100% { d: path("M0 28 C120 18, 180 38, 360 26 C540 14, 600 34, 720 24 C840 14, 960 36, 1080 22 C1200 10, 1320 32, 1440 20"); } 50% { d: path("M0 24 C120 34, 200 16, 360 30 C520 42, 620 20, 720 32 C860 44, 960 22, 1080 34 C1220 46, 1340 24, 1440 30"); } }
+      @keyframes river2 { 0%,100% { d: path("M0 34 C100 24, 200 44, 400 30 C560 18, 640 38, 800 28 C920 18, 1040 38, 1200 26 C1320 16, 1380 36, 1440 28"); } 50% { d: path("M0 30 C100 40, 220 20, 400 36 C580 50, 660 28, 800 40 C940 50, 1040 28, 1200 38 C1340 48, 1400 30, 1440 36"); } }
+      @keyframes river3 { 0%,100% { d: path("M0 22 C140 32, 220 14, 440 28 C620 40, 700 16, 880 30 C1040 42, 1160 18, 1320 32 C1380 38, 1420 26, 1440 30"); } 50% { d: path("M0 26 C140 16, 240 36, 440 22 C600 10, 720 34, 880 18 C1020 6, 1160 30, 1320 16 C1380 10, 1420 24, 1440 18"); } }
+      .river-path1 { animation: river1 8s ease-in-out infinite; }
+      .river-path2 { animation: river2 10s ease-in-out infinite; }
+      .river-path3 { animation: river3 12s ease-in-out infinite; }
+    </style>
+    <svg viewBox="0 0 1440 56" preserveAspectRatio="none" style="width:100%;height:100%;display:block;" xmlns="http://www.w3.org/2000/svg">
+      <path class="river-path1" d="M0 28 C120 18, 180 38, 360 26 C540 14, 600 34, 720 24 C840 14, 960 36, 1080 22 C1200 10, 1320 32, 1440 20" stroke="rgba(106,176,232,0.3)" stroke-width="2" fill="none"/>
+      <path class="river-path2" d="M0 34 C100 24, 200 44, 400 30 C560 18, 640 38, 800 28 C920 18, 1040 38, 1200 26 C1320 16, 1380 36, 1440 28" stroke="rgba(106,176,232,0.18)" stroke-width="1.5" fill="none"/>
+      <path class="river-path3" d="M0 22 C140 32, 220 14, 440 28 C620 40, 700 16, 880 30 C1040 42, 1160 18, 1320 32 C1380 38, 1420 26, 1440 30" stroke="rgba(106,176,232,0.1)" stroke-width="1" fill="none"/>
+    </svg>
+  </div>
+
     <div class="filters">
       <span class="filter-label">Filtrer :</span>
       <button class="filter-chip on" onclick="filterCat('all', this)">Tout</button>
       <button class="filter-chip" data-cat="Concert" onclick="filterCat('Concert', this)">Concerts</button>
       <button class="filter-chip" data-cat="Festival" onclick="filterCat('Festival', this)">Festivals</button>
-      <button class="filter-chip" data-cat="Marché / Brocante" onclick="filterCat('Marché / Brocante', this)">Marchés</button>
+      <button class="filter-chip" data-cat="Marché" onclick="filterCat('Marché', this)">Marchés</button>
+      <button class="filter-chip" data-cat="Guinguette" onclick="filterCat('Guinguette', this)">Guinguettes</button>
+      <button class="filter-chip" data-cat="Fête &amp; Célébration" onclick="filterCat('Fête & Célébration', this)">Fêtes</button>
       <button class="filter-chip" data-cat="Exposition" onclick="filterCat('Exposition', this)">Expos</button>
       <button class="filter-chip" data-cat="Spectacle" onclick="filterCat('Spectacle', this)">Spectacles</button>
       <button class="filter-chip" data-cat="Sport / Loisir" onclick="filterCat('Sport / Loisir', this)">Sport</button>
@@ -204,6 +269,8 @@
       <div class="share-section" style="max-width:800px;margin:0 auto;">
         <form id="agenda-form" novalidate>
 
+          <p style="font-size:11px;color:var(--text-faint);margin-bottom:1.25rem;">* Champs obligatoires</p>
+
           <!-- Ligne 1 : Titre -->
           <div class="form-group">
             <label class="form-label">Titre de l'événement *</label>
@@ -216,7 +283,9 @@
               <label class="form-label">Catégorie *</label>
               <select class="form-select" id="f-cat" required>
                 <option value="">— Choisir —</option>
-                <option>Concert</option><option>Festival</option><option>Marché / Brocante</option>
+                <option>Concert</option><option>Festival</option><option>Marché</option>
+                <option>Guinguette</option>
+                <option>Fête & Célébration</option>
                 <option>Exposition</option><option>Spectacle</option><option>Sport / Loisir</option>
                 <option>Conférence / Atelier</option><option>Autre</option>
               </select>
@@ -228,17 +297,22 @@
             </div>
           </div>
 
-          <!-- Ligne 3 : Date + Heure -->
-          <div class="form-row">
+          <!-- Ligne 3 : Date + Date de fin + Heure -->
+          <div class="form-row" style="grid-template-columns:1fr 1fr 1fr;">
             <div class="form-group">
               <label class="form-label">Date *</label>
               <input class="form-input" type="date" id="f-date" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Date de fin <span style="font-size:10px;color:var(--text-faint);font-weight:400;text-transform:none;letter-spacing:0;">multi-jours</span></label>
+              <input class="form-input" type="date" id="f-date-fin" />
             </div>
             <div class="form-group">
               <label class="form-label">Heure</label>
               <input class="form-input" type="time" id="f-heure" />
             </div>
           </div>
+
 
           <!-- Ligne 4 : Récurrence + Jour -->
           <div class="form-row">
@@ -380,7 +454,7 @@
     var currentEvent = null;
 
     function catClass(cat) {
-      var m = {'Concert':'cat-concert','Festival':'cat-festival','Marche / Brocante':'cat-marche','March\u00e9 / Brocante':'cat-marche','Exposition':'cat-expo','Spectacle':'cat-spectacle','Sport / Loisir':'cat-sport'};
+      var m = {'Concert':'cat-concert','Festival':'cat-festival','Marche / Brocante':'cat-marche','March\u00e9':'cat-marche','Guinguette':'cat-guinguette','F\u00eate & C\u00e9l\u00e9bration':'cat-fete','Exposition':'cat-expo','Spectacle':'cat-spectacle','Sport / Loisir':'cat-sport'};
       return m[cat] || 'cat-concert';
     }
 
@@ -388,7 +462,7 @@
       var m = {
         'Concert':          '#c8a96e',
         'Festival':         '#6dbf7e',
-        'March\u00e9 / Brocante': '#6ab0e8',
+        'March\u00e9': '#6ab0e8','Guinguette': '#f5a623','F\u00eate & C\u00e9l\u00e9bration': '#f06292',
         'Exposition':       '#e88a6a',
         'Spectacle':        '#b06ae8',
         'Sport / Loisir':   '#6ab8a8'
@@ -400,7 +474,7 @@
       var m = {
         'Concert':          'rgba(200,169,110,0.06)',
         'Festival':         'rgba(109,191,126,0.06)',
-        'March\u00e9 / Brocante': 'rgba(106,176,232,0.06)',
+        'March\u00e9': 'rgba(106,176,232,0.06)','Guinguette': 'rgba(245,166,35,0.06)','F\u00eate & C\u00e9l\u00e9bration': 'rgba(240,98,146,0.06)',
         'Exposition':       'rgba(232,138,106,0.06)',
         'Spectacle':        'rgba(176,106,232,0.06)',
         'Sport / Loisir':   'rgba(106,184,168,0.06)'
@@ -414,6 +488,23 @@
       if (!d) return '';
       var dt = new Date(d + 'T00:00:00');
       return dt.toLocaleDateString('fr-FR', {weekday:'short', day:'numeric', month:'long', year:'numeric'});
+    }
+
+    function formatDateRange(e) {
+      if (!e['Date']) return '';
+      var start = new Date(e['Date'] + 'T00:00:00');
+      var fin = e['Date de fin'] ? new Date(e['Date de fin'] + 'T00:00:00') : null;
+      if (!fin || fin <= start) return formatDate(e['Date']);
+      // Même mois et année
+      var sameMonth = start.getMonth() === fin.getMonth() && start.getFullYear() === fin.getFullYear();
+      if (sameMonth) {
+        var startStr = start.toLocaleDateString('fr-FR', {weekday:'short', day:'numeric'});
+        var finStr = fin.toLocaleDateString('fr-FR', {weekday:'short', day:'numeric', month:'long', year:'numeric'});
+        return 'du ' + startStr + ' au ' + finStr;
+      }
+      var startStr2 = start.toLocaleDateString('fr-FR', {weekday:'short', day:'numeric', month:'long'});
+      var finStr2 = fin.toLocaleDateString('fr-FR', {weekday:'short', day:'numeric', month:'long', year:'numeric'});
+      return 'du ' + startStr2 + ' au ' + finStr2;
     }
 
     function formatRecurrence(e) {
@@ -484,9 +575,10 @@
         var soon = '';
         if (e['Date']) {
           var evDate = new Date(e['Date'] + 'T00:00:00');
+          var evDateFin = e['Date de fin'] ? new Date(e['Date de fin'] + 'T00:00:00') : evDate;
           var now2 = new Date();
           var diff = (evDate - now2) / (1000*60*60*24);
-          if (diff >= 0 && diff <= 7) soon = '<span class="soon-badge">Bientôt</span>';
+          if (diff >= 0 && diff <= 7 && evDateFin >= now2) soon = '<span class="soon-badge">Bientôt</span>';
         }
         h += '<h3 class="card-title">' + (e['Titre'] || '') + soon + '</h3>';
         h += '<p class="card-venue" style="color:'+cc+'"><strong>' + (e['Commune'] || '') + '</strong>' + (e['Lieu'] ? ' \u00b7 ' + e['Lieu'] : '') + '</p>';
@@ -496,7 +588,7 @@
           h += '<div class="card-date"><div class="date-dot"></div>' + recText + (e['Heure'] ? ' \u00b7 ' + e['Heure'] : '') + '</div>';
           h += '<div class="recurrence-badge"><svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2 6a4 4 0 0 1 4-4 4 4 0 0 1 3.46 2" stroke="#c8a96e" stroke-width="1.3" stroke-linecap="round"/><path d="M10 6a4 4 0 0 1-4 4 4 4 0 0 1-3.46-2" stroke="#c8a96e" stroke-width="1.3" stroke-linecap="round"/><polyline points="8.5,3.5 10,2 11.5,3.5" fill="none" stroke="#c8a96e" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><polyline points="3.5,8.5 2,10 0.5,8.5" fill="none" stroke="#c8a96e" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>' + e['R\u00e9currence'] + '</div>';
         } else {
-          h += '<div class="card-date"><div class="date-dot" style="background:'+cc+'"></div>' + formatDate(e['Date']) + (e['Heure'] ? ' \u00b7 ' + e['Heure'] : '') + '</div>';
+          h += '<div class="card-date"><div class="date-dot" style="background:'+cc+'"></div>' + formatDateRange(e) + (e['Heure'] && !e['Date de fin'] ? ' \u00b7 ' + e['Heure'] : '') + '</div>';
         }
         h += '<div class="card-bottom" style="border-top-color:'+cc+'22"><div class="card-price"><strong>' + (e['Tarif'] || '') + '</strong></div>';
         h += '<div class="card-more" style="color:'+cc+'">D\u00e9tails \u2192</div></div></article>';
@@ -559,6 +651,8 @@
       currentEvent = e;
       document.getElementById('modal-cat').textContent = e['Cat\u00e9gorie'] || '';
       document.getElementById('modal-cat').className = 'modal-cat ' + catClass(e['Cat\u00e9gorie']);
+      var mh = document.getElementById('modal').querySelector('.modal-header');
+      if (mh) mh.style.borderTopColor = catColor(e['Cat\u00e9gorie']);
       document.getElementById('modal-title').textContent = e['Titre'] || '';
       var meta = '';
       var isRecModal = e['R\u00e9currence'] && e['R\u00e9currence'] !== 'Aucune';
@@ -566,7 +660,7 @@
         var recTextModal = formatRecurrence(e);
         meta += '<div class="modal-meta-item" style="color:var(--gold);border:1px solid rgba(200,169,110,0.3);padding:2px 8px;border-radius:20px;font-size:11px">\ud83d\udd01 ' + recTextModal + (e['Heure'] ? ' \u00b7 ' + e['Heure'] : '') + '</div>';
       } else if (e['Date']) {
-        meta += '<div class="modal-meta-item"><strong>' + formatDate(e['Date']) + '</strong></div>';
+        meta += '<div class="modal-meta-item"><strong>' + formatDateRange(e) + '</strong></div>';
       }
       if (e['Heure']) meta += '<div class="modal-meta-item">\u00b7 ' + e['Heure'] + '</div>';
       if (e['Commune'] || e['Lieu']) meta += '<div class="modal-meta-item">\ud83d\udccd ' + (e['Commune'] || '') + (e['Lieu'] ? ' \u00b7 ' + e['Lieu'] : '') + '</div>';
@@ -653,8 +747,8 @@
       return 'https://calendar.google.com/calendar/render?action=TEMPLATE&text=' + encodeURIComponent(e['Titre'] || '') + '&dates=' + start + '/' + end + '&details=' + encodeURIComponent(e['Description'] || '') + '&location=' + encodeURIComponent((e['Lieu'] || '') + (e['Commune'] ? ', ' + e['Commune'] : ''));
     }
 
-    document.getElementById('modal-overlay').addEventListener('click', function(ev) { if (ev.target === this) closeModal(); });
-    document.getElementById('modal-close').addEventListener('click', closeModal);
+    var mo = document.getElementById('modal-overlay'); if (mo) mo.addEventListener('click', function(ev) { if (ev.target === this) closeModal(); });
+    var mc = document.getElementById('modal-close'); if (mc) mc.addEventListener('click', closeModal);
 
     document.getElementById('agenda-form').addEventListener('submit', function(e) {
       e.preventDefault();
@@ -673,6 +767,8 @@
       fields['Cat\u00e9gorie'] = cat;
       fields['Commune'] = commune;
       fields['Date'] = date;
+      var dateFin = document.getElementById('f-date-fin').value;
+      if (dateFin) fields['Date de fin'] = dateFin;
       fields['Heure'] = document.getElementById('f-heure').value || '';
       fields['Lieu'] = document.getElementById('f-lieu').value.trim();
       fields['Description'] = document.getElementById('f-desc').value.trim();
@@ -876,17 +972,32 @@
     })();
 
 
-    // Scroll to top visibility
+
+    // Header doré au scroll
     window.addEventListener('scroll', function() {
+      var header = document.querySelector('.header');
+      if (header) {
+        if (window.scrollY > 60) header.classList.add('scrolled');
+        else header.classList.remove('scrolled');
+      }
+    });
+
+
+    // Header doré au scroll
+    window.addEventListener('scroll', function() {
+      var header = document.querySelector('.header');
+      if (header) { if (window.scrollY > 60) header.classList.add('scrolled'); else header.classList.remove('scrolled'); }
       var btn = document.getElementById('scroll-top');
+      if (!btn) return;
       if (window.scrollY > 400) btn.classList.add('visible');
       else btn.classList.remove('visible');
     });
 
+
     loadEvents();
 
     // Afficher/masquer période + rendre date optionnelle selon récurrence
-    document.getElementById('f-recurrence').addEventListener('change', function() {
+    var fRec = document.getElementById('f-recurrence'); if (fRec) fRec.addEventListener('change', function() {
       var rec = this.value;
       var periodeGroup = document.getElementById('f-periode-group');
       var dateInput = document.getElementById('f-date');
