@@ -322,6 +322,39 @@
     @media(max-width:700px){ .ns-thumbs{ display:none; } }
     #ns-prog { position:absolute;top:0;left:0;height:3px;z-index:6;background:linear-gradient(90deg,#E8609A,#7B5EA7);width:0%; }
     #featured-container::after { content:'';position:absolute;top:0;right:0;bottom:0;width:200px;z-index:2;background:linear-gradient(to left,rgba(10,9,15,.45),transparent);pointer-events:none; }
+
+    /* LIGHTBOX AFFICHE */
+    #lightbox {
+      display: none; position: fixed; inset: 0; z-index: 2000;
+      background: rgba(0,0,0,.92); backdrop-filter: blur(16px);
+      align-items: center; justify-content: center;
+      padding: 1.5rem;
+    }
+    #lightbox.open { display: flex; }
+    #lightbox img {
+      max-width: min(90vw, 600px); max-height: 90vh;
+      border-radius: 6px; box-shadow: 0 40px 80px rgba(0,0,0,.9);
+      animation: lbIn .25s ease;
+      object-fit: contain;
+    }
+    @keyframes lbIn { from{opacity:0;transform:scale(.94)} to{opacity:1;transform:none} }
+    #lightbox-close {
+      position: absolute; top: 1.25rem; right: 1.25rem;
+      background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.15);
+      cursor: pointer; color: #fff; width: 38px; height: 38px;
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      font-size: 18px; transition: background .15s;
+    }
+    #lightbox-close:hover { background: rgba(255,255,255,.2); }
+    .btn-affiche {
+      display: inline-flex; align-items: center; gap: 7px;
+      background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12);
+      cursor: pointer; color: rgba(242,238,255,.7);
+      font-family: 'DM Sans',sans-serif; font-size: 12px; font-weight: 600;
+      padding: 8px 16px; border-radius: 999px; transition: all .2s;
+      margin-top: .75rem;
+    }
+    .btn-affiche:hover { background: rgba(255,255,255,.12); color: #fff; border-color: rgba(255,255,255,.3); }
   </style>
 </head>
 <body>
@@ -772,6 +805,18 @@
       document.getElementById('modal-cat').textContent=e['Catégorie']||'';
       document.getElementById('modal-cat').className='modal-cat '+catClass(e['Catégorie']);
       document.getElementById('modal-title').textContent=e['Titre']||'';
+      // Bouton affiche si photo disponible
+      var photoSrc = getPhoto(e);
+      var btnEl = document.getElementById('modal-affiche-btn');
+      if (btnEl) {
+        if (e['Photo'] && e['Photo'].length > 0) {
+          var afSrc = e['Photo'][0].url;
+          btnEl.style.display = 'inline-flex';
+          btnEl.onclick = function() { ouvrirAffiche(afSrc); };
+        } else {
+          btnEl.style.display = 'none';
+        }
+      }
       var mh=document.getElementById('modal').querySelector('.modal-header');
       if(mh)mh.style.borderTopColor=catColor(e['Catégorie']);
       var ep=document.getElementById('modal-photo');if(ep)ep.remove();
@@ -1023,7 +1068,39 @@
     }
 
 
+
+    function ouvrirAffiche(src) {
+      var lb = document.getElementById('lightbox');
+      var img = document.getElementById('lightbox-img');
+      img.src = src;
+      lb.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+    function fermerAffiche() {
+      document.getElementById('lightbox').classList.remove('open');
+      document.body.style.overflow = '';
+    }
+    // Listeners lightbox — initialisés après chargement du DOM
+    function _initLightbox() {
+      var lb = document.getElementById('lightbox');
+      if (!lb) return;
+      lb.addEventListener('click', function(e) {
+        if (e.target === this) fermerAffiche();
+      });
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') fermerAffiche();
+      });
+    }
+
+    _initLightbox();
     loadEvents();
   </script>
+  <!-- LIGHTBOX AFFICHE -->
+  <div id="lightbox">
+    <button id="lightbox-close" onclick="fermerAffiche()">✕</button>
+    <img id="lightbox-img" src="" alt="Affiche de l'événement"/>
+  </div>
+
+
 </body>
 </html>
