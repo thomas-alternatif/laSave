@@ -1,63 +1,13 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <!-- SEO & Meta -->
-  <meta name="description" content="laSave — Agenda festif et culturel de la vallée de la Save et de ses alentours. Concerts, fêtes de village, marchés, expositions, spectacles et guinguettes en Haute-Garonne (31)."/>
-  <meta name="keywords" content="agenda festif, vallée de la Save, Saint-Paul-sur-Save, Grenade-sur-Garonne, concerts Haute-Garonne, fêtes village 31, événements culturels Save, agenda culturel Haute-Garonne"/>
-  <meta name="author" content="Mairie de Saint-Paul-sur-Save"/>
-  <meta name="robots" content="index, follow"/>
-  <link rel="canonical" href="https://la-save.fr"/>
-
-  <!-- Open Graph / Facebook -->
+    <meta name="description" content="laSave — Agenda festif et culturel de la vallée de la Save. Concerts, fêtes, marchés, expositions et spectacles en Haute-Garonne (31)."/>
   <meta property="og:type" content="website"/>
   <meta property="og:url" content="https://la-save.fr"/>
   <meta property="og:title" content="laSave — Agenda festif de la vallée de la Save"/>
-  <meta property="og:description" content="Concerts, fêtes de village, marchés, expositions et spectacles en Haute-Garonne. Tout l'agenda culturel et festif de la vallée de la Save."/>
-  <meta property="og:image" content="https://la-save.fr/og-image.jpg"/>
-  <meta property="og:locale" content="fr_FR"/>
-  <meta property="og:site_name" content="laSave"/>
-
-  <!-- Twitter Card -->
-  <meta name="twitter:card" content="summary_large_image"/>
-  <meta name="twitter:title" content="laSave — Agenda festif de la vallée de la Save"/>
-  <meta name="twitter:description" content="Concerts, fêtes, marchés et spectacles en Haute-Garonne. L'agenda culturel de la vallée de la Save."/>
-  <meta name="twitter:image" content="https://la-save.fr/og-image.jpg"/>
-
-  <!-- Schema.org EventList -->
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-    "name": "laSave",
-    "url": "https://la-save.fr",
-    "description": "Agenda festif et culturel de la vallée de la Save, Haute-Garonne",
-    "publisher": {
-      "@type": "GovernmentOrganization",
-      "name": "Mairie de Saint-Paul-sur-Save",
-      "url": "http://www.mairie-saintpaulsursave.fr",
-      "address": {
-        "@type": "PostalAddress",
-        "addressLocality": "Saint-Paul-sur-Save",
-        "addressRegion": "Haute-Garonne",
-        "addressCountry": "FR"
-      }
-    },
-    "areaServed": {
-      "@type": "Place",
-      "name": "Vallée de la Save, Haute-Garonne",
-      "geo": {
-        "@type": "GeoCircle",
-        "geoMidpoint": { "@type": "GeoCoordinates", "latitude": 43.755, "longitude": 1.30 },
-        "geoRadius": "25000"
-      }
-    },
-    "potentialAction": {
-      "@type": "SearchAction",
-      "target": "https://la-save.fr"
-    }
-  }
-  </script>
-
+  <meta property="og:description" content="Concerts, fêtes, marchés et spectacles en Haute-Garonne. L'agenda culturel de la vallée de la Save."/>
+  <meta name="robots" content="index, follow"/>
+  <link rel="canonical" href="https://la-save.fr"/>
   <meta charset="UTF-8" />
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNjAgNjAiPjxyZWN0IHdpZHRoPSIxNjAiIGhlaWdodD0iNjAiIHJ4PSIxMiIgZmlsbD0idXJsKCNnKSIvPjxkZWZzPjxsaW5lYXJHcmFkaWVudCBpZD0iZyIgeDE9IjAiIHkxPSIwIiB4Mj0iMSIgeTI9IjEiPjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiNFODYwOUEiLz48c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiM3QjVFQTciLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48dGV4dCB4PSIxNCIgeT0iNDIiIGZvbnQtc2l6ZT0iMzQiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXdlaWdodD0iNDAwIiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuNikiPmxhPC90ZXh0Pjx0ZXh0IHg9IjUyIiB5PSI0MiIgZm9udC1zaXplPSIzNCIgZm9udC1mYW1pbHk9Ikdlb3JnaWEsc2VyaWYiIGZvbnQtd2VpZ2h0PSI5MDAiIGZvbnQtc3R5bGU9Iml0YWxpYyIgZmlsbD0id2hpdGUiPlNhdmU8L3RleHQ+PC9zdmc+">
   
@@ -201,7 +151,6 @@
     .card-venue { font-size:12px; color:var(--text-sub); margin-bottom:10px; }
     .card-date { font-size:12px; color:var(--text); display:flex; align-items:center; gap:6px; }
     .date-dot { width:4px; height:4px; border-radius:50%; flex-shrink:0; }
-    .soon-badge { display:inline-block; font-size:9px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; background:linear-gradient(135deg,#d4aa5f,#f07850); color:#111; padding:2px 6px; border-radius:var(--r-sm); margin-left:6px; vertical-align:middle; box-shadow:0 0 10px rgba(212,170,95,0.4); }
     .recurrence-badge { display:inline-flex; align-items:center; gap:5px; font-size:11px; font-weight:500; border:1px solid; padding:3px 8px; border-radius:var(--r-pill); margin-top:6px; }
     .card-bottom { margin-top:var(--sp-sm); padding-top:var(--sp-sm); border-top:1px solid var(--border-soft); display:flex; justify-content:space-between; align-items:center; }
     .card-price { font-size:12px; color:var(--text-sub); }
@@ -325,32 +274,152 @@
       .header { padding:0 var(--sp-sm); }
       .nav-btn:not(.share-btn) { padding:4px 8px; font-size:12px; }
     }
-    .tarif-quick {
-      background: var(--bg-3); border: 1px solid var(--line); cursor: pointer;
-      color: var(--ink-dim); font-family: 'DM Sans',sans-serif; font-size: 11px;
-      font-weight: 600; padding: 4px 10px; border-radius: 3px; transition: all .15s;
-    }
-    .tarif-quick:hover { border-color: var(--expo); color: var(--expo); }
-    .card-vues {
-      position: absolute; bottom: 10px; right: 10px; z-index: 3;
-      display: flex; align-items: center; gap: 5px;
-      background: rgba(0,0,0,.42); backdrop-filter: blur(10px) saturate(1.5);
-      color: #fff; font-size: 11px; font-weight: 700;
-      padding: 4px 10px 4px 8px; border-radius: 20px;
-      font-family: 'DM Sans',sans-serif; letter-spacing: .03em;
-      border: 1px solid rgba(255,255,255,.12);
-      transition: background .2s, transform .2s;
-    }
-    .card:hover .card-vues {
-      background: rgba(232,96,154,.55);
-      border-color: rgba(232,96,154,.4);
-      transform: scale(1.05);
-    }
-    .card-vues svg { opacity: .9; flex-shrink: 0; transition: opacity .2s; }
-    .card:hover .card-vues svg { opacity: 1; }
 
-      50% { box-shadow: 0 4px 16px rgba(232,96,154,.7); }
+    /* SLIDER */
+    #featured-container {
+      position: relative; overflow: hidden;
+      height: 540px; border-radius: 12px;
+      margin-bottom: var(--sp-lg);
+      background: #0a090f;
     }
+    @media(max-width:700px){ #featured-container{ height: 380px; border-radius: 8px; } }
+
+    /* Photo BG */
+    #ns-bg {
+      position: absolute; inset: 0;
+      background-size: cover; background-position: center 28%;
+      transform: scale(1.06);
+      transition: transform 10s ease;
+    }
+    #ns-bg.z { transform: scale(1.0); }
+    #ns-bg::after {
+      content: ''; position: absolute; inset: 0;
+      background:
+        linear-gradient(108deg, rgba(10,9,15,.98) 0%, rgba(10,9,15,.68) 40%, rgba(10,9,15,.08) 100%),
+        linear-gradient(to top, rgba(10,9,15,1) 0%, rgba(10,9,15,.5) 30%, transparent 60%);
+    }
+
+    /* Contenu */
+    #ns-content {
+      position: absolute; bottom: 88px; left: 0; z-index: 3;
+      padding: 0 2.75rem 0 4.5rem; max-width: 620px;
+      display: flex; flex-direction: column; gap: .55rem;
+    }
+    @media(max-width:700px){ #ns-content{ padding: 0 1.25rem; bottom: 1.5rem; } }
+
+    /* Eyebrow */
+    .ns-ey { display: flex; align-items: center; gap: 10px; }
+    .ns-pill { font-size: 9px; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; padding: 4px 11px; border-radius: 2px; }
+    .ns-slide-num { font-size:10px; font-weight:600; color:rgba(242,238,255,.35); letter-spacing:.08em; margin-right:auto; }
+
+    /* Titre */
+    .ns-t {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(30px, 5.2vw, 58px); font-weight: 900; font-style: normal;
+      color: #fff; line-height: 1.0; letter-spacing: -2px;
+      text-shadow: 0 2px 40px rgba(0,0,0,1), 0 1px 3px rgba(0,0,0,.8);
+      opacity: 0; transform: translateY(14px);
+      transition: opacity .55s ease, transform .55s cubic-bezier(.2,.8,.2,1);
+    }
+    .ns-t.in { opacity: 1; transform: none; }
+
+    /* Barre couleur */
+    .ns-bar { height: 3px; width: 0; border-radius: 2px; transition: width .65s ease .22s; }
+    .ns-bar.in { width: 52px; }
+
+    /* Meta */
+    .ns-m {
+      display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+      font-size: 12px; font-weight: 500; color: rgba(242,238,255,.52);
+      opacity: 0; transform: translateY(8px);
+      transition: opacity .5s ease .12s, transform .5s ease .12s;
+    }
+    .ns-m.in { opacity: 1; transform: none; }
+    .ns-s { width: 3px; height: 3px; border-radius: 50%; background: rgba(255,255,255,.2); flex-shrink: 0; }
+    .ns-badge {
+      background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.12);
+      border-radius: 99px; padding: 2px 9px;
+      font-size: 11px; font-weight: 700; color: rgba(255,255,255,.75);
+    }
+
+    /* Organisation */
+    .ns-org {
+      font-size: 12px; color: rgba(242,238,255,.35); font-style: italic;
+      opacity: 0; transform: translateY(6px);
+      transition: opacity .5s ease .18s, transform .5s ease .18s;
+    }
+    .ns-org.in { opacity: 1; transform: none; }
+    .ns-org strong { color: rgba(242,238,255,.6); font-style: normal; font-weight: 600; }
+
+    /* Description */
+    .ns-desc {
+      font-size: 13px; color: rgba(242,238,255,.42); line-height: 1.7; max-width: 430px;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+      opacity: 0; transition: opacity .5s ease .22s;
+    }
+    .ns-desc.in { opacity: 1; }
+
+    /* CTA */
+    .ns-cta {
+      display: inline-flex; align-items: center; gap: 9px; align-self: flex-start;
+      background: linear-gradient(135deg, #E8609A, #7B5EA7);
+      color: #fff; border: none; cursor: pointer;
+      font-family: 'DM Sans',sans-serif; font-size: 13px; font-weight: 700;
+      padding: 12px 26px; border-radius: 999px;
+      box-shadow: 0 4px 22px rgba(155,63,174,.45); letter-spacing: .025em;
+      opacity: 0; transform: translateY(8px);
+      transition: opacity .5s ease .28s, transform .5s ease .28s, filter .2s, box-shadow .2s;
+    }
+    .ns-cta.in { opacity: 1; transform: none; }
+    .ns-cta:hover { filter: brightness(1.1); box-shadow: 0 8px 30px rgba(232,96,154,.6); transform: translateY(-2px) !important; }
+
+    /* Flèches */
+    .ns-arr {
+      position: absolute; top: 44%; transform: translateY(-50%); z-index: 5;
+      background: rgba(10,9,15,.5); backdrop-filter: blur(14px);
+      border: 1px solid rgba(255,255,255,.1); cursor: pointer; color: rgba(255,255,255,.75);
+      width: 44px; height: 44px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; transition: opacity .2s, background .2s, transform .2s;
+    }
+    #featured-container:hover .ns-arr { opacity: 1; }
+    .ns-arr:hover { background: rgba(255,255,255,.15); color: #fff; transform: translateY(-50%) scale(1.06); }
+    .ns-prev { left: 1rem; }
+    .ns-next { right: 1rem; }
+
+    /* Thumbnails */
+    .ns-thumbs {
+      position: absolute; bottom: 0; right: 0; left: 0; z-index: 4;
+      display: flex; justify-content: flex-end; align-items: center; gap: 8px;
+      padding: .65rem 1.75rem .75rem;
+      background: linear-gradient(to top, rgba(10,9,15,.95) 0%, transparent 100%);
+    }
+    .ns-th {
+      width: 80px; height: 46px; border-radius: 5px; overflow: hidden;
+      cursor: pointer; opacity: .35; flex-shrink: 0;
+      border: 2px solid transparent;
+      transition: opacity .25s, transform .25s, border-color .25s;
+    }
+    .ns-th:hover { opacity: .7; transform: scale(1.04); }
+    .ns-th.on { opacity: 1; border-color: rgba(255,255,255,.75); transform: scale(1.05); }
+    .ns-th img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    @media(max-width:700px){ .ns-thumbs{ display:none; } }
+
+    /* Barre de progression */
+    #ns-prog {
+      position: absolute; top: 0; left: 0; height: 3px; z-index: 6;
+      background: linear-gradient(90deg, #E8609A, #7B5EA7); width: 0%;
+    }
+
+    /* Vignette droite */
+    #featured-container::after {
+      content: ''; position: absolute; top: 0; right: 0; bottom: 0; width: 200px; z-index: 2;
+      background: linear-gradient(to left, rgba(10,9,15,.45), transparent);
+      pointer-events: none;
+    }
+    .card-vues{position:absolute;bottom:10px;right:10px;z-index:3;display:flex;align-items:center;gap:4px;background:rgba(0,0,0,.42);backdrop-filter:blur(10px);color:#fff;font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;border:1px solid rgba(255,255,255,.12);transition:background .2s}.card:hover .card-vues{background:rgba(232,96,154,.55)}
+    .tq{background:var(--bg-3);border:1px solid var(--line);cursor:pointer;color:var(--ink-dim);font-family:"DM Sans",sans-serif;font-size:11px;font-weight:600;padding:4px 10px;border-radius:3px;transition:all .15s}.tq:hover{border-color:#E8609A;color:#E8609A}
+    .soon-top{position:absolute;top:10px;right:10px;z-index:3;background:linear-gradient(135deg,#E8609A,#7B5EA7);color:#fff;font-size:9px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;padding:4px 10px;border-radius:3px;pointer-events:none}
   </style>
 </head>
 <body>
@@ -411,8 +480,7 @@
     </div>
 
     <div class="inner">
-      <div class="section-head"><h2 class="section-title">À la une</h2></div>
-      <div class="featured-grid" id="featured-container"><div class="loading">Chargement…</div></div>
+      <div id="featured-container"></div>
       <div class="section-head">
         <h2 class="section-title">Tous les événements</h2>
         <span class="section-count" id="event-count"></span>
@@ -513,7 +581,8 @@
             <div class="form-row">
               <div class="form-group">
                 <label class="form-label">Tarif</label>
-                <input class="form-input" type="text" id="f-tarif" placeholder="Gratuit / 5 € / Sur réservation…" autocomplete="off" />
+                <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px"><button type="button" onclick="document.getElementById('f-tarif').value='Gratuit'" class="tq">Gratuit</button><button type="button" onclick="document.getElementById('f-tarif').value='Entrée libre'" class="tq">Entrée libre</button><button type="button" onclick="document.getElementById('f-tarif').value='Sur réservation'" class="tq">Sur réservation</button><button type="button" onclick="document.getElementById('f-tarif').value='Participation libre'" class="tq">Chapeau</button></div>
+                <input class="form-input" type="text" id="f-tarif" placeholder="ou saisir un tarif : 5 €…" autocomplete="off" />
                 <div class="suggestions-box" id="tarif-suggestions"></div>
               </div>
               <div class="form-group">
@@ -627,8 +696,7 @@
       <div class="modal-header">
         <span class="modal-cat" id="modal-cat"></span>
         <h2 class="modal-title" id="modal-title"></h2>
-        <div id="modal-vues" style="display:none;align-items:center;gap:5px;font-size:11px;color:rgba(255,255,255,.5);margin-top:6px;background:rgba(255,255,255,.06);padding:4px 10px;border-radius:20px;font-weight:700;width:fit-content;border:1px solid rgba(255,255,255,.08)"></div>
-        <div id="modal-views" style="font-size:11px;color:#5c5878;margin-top:5px;font-weight:500"></div>
+        <div id="modal-vues" style="display:none;margin-top:5px"></div>
       </div>
       <div class="modal-body">
         <div class="modal-meta" id="modal-meta"></div>
@@ -716,31 +784,10 @@
       if(soon>0){document.getElementById('stat-soon').textContent=soon;document.getElementById('stat-soon-wrap').style.display='flex';}
     }
 
-    function renderFeatured(){
-      var c=document.getElementById('featured-container');
-      if(!featuredEvents.length){c.innerHTML='';return;}
-      var h='';
-      featuredEvents.forEach(function(e,i){
-        var fcc=catColor(e['Catégorie']),fPhoto=getPhoto(e),isRec=e['Récurrence']&&e['Récurrence']!=='Aucune';
-        h+='<article class="featured-card" style="border-top:2px solid '+fcc+'">';
-        h+='<div class="featured-photo-wrap"><img class="featured-card-photo" src="'+fPhoto+'" alt="'+(e['Titre']||'')+'" loading="lazy" /></div>';
-        h+='<div class="featured-label" style="color:'+fcc+'">'+(e['Catégorie']||'')+'</div>';
-        h+='<h2 class="featured-title">'+(e['Titre']||'')+'</h2>';
-        h+='<p class="featured-desc">'+(e['Description']||'')+'</p>';
-        h+='<div class="featured-meta">';
-        if(isRec)h+='<div class="meta-pill"><span>'+formatRecurrence(e)+'</span></div>';
-        else if(e['Date'])h+='<div class="meta-pill"><span>'+formatDateRange(e)+'</span></div>';
-        if(e['Heure']&&!isRec){h+='<div class="divider-line"></div><div class="meta-pill"><span>'+e['Heure']+'</span></div>';}
-        if(e['Commune']){h+='<div class="divider-line"></div><div class="meta-pill">à <span>'+e['Commune']+'</span></div>';}
-        if(e['Tarif']){h+='<div class="divider-line"></div><div class="meta-pill"><span>'+e['Tarif']+'</span></div>';}
-        h+='</div></article>';
-      });
-      c.innerHTML=h;
-      c.querySelectorAll('.featured-card').forEach(function(el,i){(function(ev){el.onclick=function(){openModal(ev);};})(featuredEvents[i]);});
-    }
+
 
     function renderEvents(filter){
-      var list=allEvents.filter(function(e){return!e['À la une']&&(filter==='all'||e['Catégorie']===filter);});
+      var list=allEvents.filter(function(e){return filter==='all'||e['Catégorie']===filter;});
       document.getElementById('event-count').textContent=list.length+' événement'+(list.length>1?'s':'');
       var c=document.getElementById('events-container');
       if(!list.length){c.innerHTML='<div class="empty-state">Aucun événement dans cette catégorie.</div>';return;}
@@ -752,7 +799,7 @@
         h+='<article class="card" style="border-left:3px solid '+cc+';">';
         if(filter==='all'){
           var cPhoto=getPhoto(e);
-          h+='<div class="card-photo-wrap"><img class="card-photo" src="'+cPhoto+'" alt="'+(e['Titre']||'')+'" loading="lazy" /><span class="card-photo-cat card-cat '+catClass(e['Catégorie'])+'">'+(e['Catégorie']||'')+'</span></div>';
+          h+='<div class="card-photo-wrap"><img class="card-photo" src="'+cPhoto+'" alt="'+(e['Titre']||'')+'" loading="lazy" /><span class="card-photo-cat card-cat '+catClass(e['Catégorie'])+'">'+(e['Catégorie']||'')+'</span>'+(soon?'<div class="soon-top">Bientôt</div>':'')+'</div>';
         }
         h+='<div class="card-body">';
         if(filter!=='all')h+='<span class="card-cat '+catClass(e['Catégorie'])+'">'+(e['Catégorie']||'')+'</span>';
@@ -773,7 +820,6 @@
     }
 
     function filterCat(cat,btn){
-      _trackFilter(cat);
       activeFilter=cat;
       document.querySelectorAll('.filter-chip').forEach(function(b){b.classList.remove('on');b.style.background='';b.style.borderColor='';b.style.color='';});
       btn.classList.add('on');
@@ -791,7 +837,6 @@
     }
 
     function showSection(id,btn){
-      if(id==='partager')_initFormulaireAutos();
       document.querySelectorAll('.section').forEach(function(s){s.classList.remove('active');});
       document.querySelectorAll('.nav-btn').forEach(function(b){b.classList.remove('active');});
       var t=document.getElementById('section-'+id);if(t)t.classList.add('active');
@@ -800,17 +845,12 @@
     }
 
     function openModal(e){
-      // Tracker la vue de cet événement
-      if (e && e.id) _track(e.id, e['Vues'] || 0);
+      if(e&&e.id)fetch(AT_URL+'/'+e.id,{method:'PATCH',headers:HEADS,body:JSON.stringify({fields:{'Vues':(e['Vues']||0)+1}})}).catch(function(){});
       currentEvent=e;
       document.getElementById('modal-cat').textContent=e['Catégorie']||'';
       document.getElementById('modal-cat').className='modal-cat '+catClass(e['Catégorie']);
       document.getElementById('modal-title').textContent=e['Titre']||'';
-      var vuesEl=document.getElementById('modal-vues');
-      if(vuesEl&&e['Vues']){
-        vuesEl.innerHTML='<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> '+e['Vues']+' vue'+(e['Vues']>1?'s':'');
-        vuesEl.style.display='inline-flex';
-      } else if(vuesEl){ vuesEl.style.display='none'; }  
+      var vEl=document.getElementById('modal-vues');if(vEl&&e['Vues']){vEl.style.display='inline-flex';vEl.style.cssText='display:inline-flex;align-items:center;gap:5px;font-size:11px;color:#5c5878;margin-top:5px;background:rgba(255,255,255,.06);padding:3px 10px;border-radius:20px;font-weight:700;border:1px solid rgba(255,255,255,.08)';vEl.innerHTML='<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> '+e['Vues']+' vue'+(e['Vues']>1?'s':'');}else if(vEl)vEl.style.display='none';
       var mh=document.getElementById('modal').querySelector('.modal-header');
       if(mh)mh.style.borderTopColor=catColor(e['Catégorie']);
       var ep=document.getElementById('modal-photo');if(ep)ep.remove();
@@ -971,78 +1011,100 @@
     });
 
 
-    // ══ TRACKING EN TEMPS RÉEL ════════════════════════════
-    // Chaque ouverture de modale → incrémente "Vues" dans Airtable
-    // Chaque filtre cliqué → log dans un champ "Stats filtres"
-    
-    function _track(eventId, currentViews) {
-      // Incrémenter le compteur de vues silencieusement
-      fetch(AT_URL + '/' + eventId, {
-        method: 'PATCH',
-        headers: HEADS,
-        body: JSON.stringify({ fields: { 'Vues': (currentViews || 0) + 1 } })
-      }).catch(function(){}); // Silencieux — ne bloque pas l'UX
+    // ═══ SLIDER ═══════════════════════════════════════════════
+    var _SE=[], _SI=0, _ST=null, _SD=6000;
+
+    function renderFeatured(){
+      _SE = featuredEvents.length ? featuredEvents : allEvents.slice(0,5);
+      if(!_SE.length) return;
+      _SI=0; _buildSlider(); _showSlide(0); _autoPlay();
     }
 
-    // Tracker les filtres les plus utilisés (stocké dans localStorage)
-    var _stats = (function(){
-      try {
-        return JSON.parse(localStorage.getItem('lasave_stats') || '{}');
-      } catch(e) { return {}; }
-    })();
-
-    function _trackFilter(cat) {
-      _stats['filter_' + cat] = (_stats['filter_' + cat] || 0) + 1;
-      _stats['last_visit'] = new Date().toISOString();
-      _stats['total_sessions'] = (_stats['total_sessions'] || 0) + 1;
-      try { localStorage.setItem('lasave_stats', JSON.stringify(_stats)); } catch(e) {}
+    function _buildSlider(){
+      var c=document.getElementById('featured-container');
+      if(!c) return;
+      // Vider et recréer les éléments stables
+      c.innerHTML = 
+        '<div id="ns-bg"></div>'+
+        '<div id="ns-content"></div>'+
+        '<div id="ns-prog"></div>'+
+        '<button class="ns-arr ns-prev" onclick="nsNav(-1)" aria-label="Précédent">'+
+          '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>'+
+        '</button>'+
+        '<button class="ns-arr ns-next" onclick="nsNav(1)" aria-label="Suivant">'+
+          '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>'+
+        '</button>';
+      // Thumbs
+      if(_SE.length > 1){
+        var strip='<div class="ns-thumbs">'+'<span class="ns-slide-num">'+(_SI+1)+' / '+_SE.length+'</span>';
+        if(_SE.length>1) _SE.forEach(function(e,i){
+          strip+='<div class="ns-th'+(i===0?' on':'')+'" onclick="nsGo('+i+')"><img src="'+getPhoto(e)+'" alt="" loading="lazy"/></div>';
+        });
+        strip+='</div>';
+        c.innerHTML+=strip;
+      }
     }
 
-    function _trackSearch(term) {
-      if (!term || term.length < 2) return;
-      _stats['search_' + term.toLowerCase()] = (_stats['search_' + term.toLowerCase()] || 0) + 1;
-      try { localStorage.setItem('lasave_stats', JSON.stringify(_stats)); } catch(e) {}
-    }
+    function _showSlide(idx){
+      var e=_SE[idx]; if(!e) return;
+      var col=catColor(e['Catégorie']);
+      var dk=['#F5A623','#4DDE88','#DA853D','#FF6B35'].indexOf(col)>-1;
+      var isRec=e['Récurrence']&&e['Récurrence']!=='Aucune';
+      var ds=isRec?formatRecurrence(e):formatDateRange(e);
 
-    // Exposer les stats pour consultation
-    window._laSaveStats = function() {
-      console.table(_stats);
-      var top = Object.entries(_stats)
-        .filter(function(e){ return e[0].startsWith('filter_'); })
-        .sort(function(a,b){ return b[1]-a[1]; });
-      console.log('Filtres les plus utilisés:', top);
-      return _stats;
-    };
+      // BG + Ken Burns
+      var bg=document.getElementById('ns-bg');
+      if(bg){ bg.classList.remove('z'); bg.style.backgroundImage='url('+getPhoto(e)+')';
+        requestAnimationFrame(function(){ bg.classList.add('z'); }); }
 
+      // Contenu
+      var ct=document.getElementById('ns-content');
+      if(!ct) return;
+      ct.innerHTML=
+        '<div class="ns-ey">'+
+          '<span class="ns-pill" style="background:'+col+';color:'+(dk?'#111':'#fff')+'">'+(e['Catégorie']||'')+'</span>'+
+        '</div>'+
+        '<div class="ns-t" id="_t">'+( e['Titre']||'')+'</div>'+
+        '<div class="ns-bar" id="_b" style="background:'+col+'"></div>'+
+        '<div class="ns-m" id="_m">'+
+          (ds?'<span>'+ds+'</span><span class="ns-s"></span>':'')+
+          (e['Heure']&&!isRec?'<span>'+e['Heure']+'</span><span class="ns-s"></span>':'')+
+          (e['Commune']?'<span style="display:inline-flex;align-items:center;gap:5px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>'+e['Commune']+'</span>':'')+
+          (e['Tarif']?'<span class="ns-s"></span><span class="ns-badge">'+e['Tarif']+'</span>':'')+
+          (isRec?'<span class="ns-s"></span><span class="ns-badge" style="border-color:rgba(232,96,154,.3);color:rgba(232,96,154,.9)">↺ '+e['Récurrence']+'</span>':'')+
+        '</div>'+
+        (e['Organisation']?'<div class="ns-org" id="_o">par <strong>'+e['Organisation']+'</strong></div>':'')+
+        (e['Description']?'<div class="ns-desc" id="_d">'+e['Description']+'</div>':'')+
+        '<button class="ns-cta" id="_cta" onclick="nsOpen('+idx+')">'+
+          '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>'+
+          "Voir l'\u00e9v\u00e9nement"+
+        '</button>';
 
-    // ── Autocomplétion Lieu & Organisation (lazy) ────────
-    var LIEUX = ["Espace Culturel René Fontanilles","Salle des fêtes de Saint-Paul-sur-Save","Salle des fêtes de Grenade-sur-Garonne","Place de la mairie","Bords de la Save","Stade municipal","Salle polyvalente","Église","Parc municipal"];
-    var ORGS = ["Alternatif Event","Mairie de Saint-Paul-sur-Save","Save et Garonne FC","St Paul Rock and Roll","Les Copains de la Save","Art et Mouvement","Aviron Launac","Saint Paul sur Scène","Sav\'en Voix","Foyer Rural","Radio de la Save","COVS","Gym Fitness de la Save","Manava","CDF Saint-Paul"];
-    var _lieuInited=false,_orgInited=false;
-    function _makeAuto(inputId,boxId,list){
-      var inp=document.getElementById(inputId),box=document.getElementById(boxId);
-      if(!inp||!box)return;
-      inp.addEventListener('input',function(){
-        var val=this.value.toLowerCase();box.innerHTML='';
-        if(!val||val.length<2){box.style.display='none';return;}
-        var m=list.filter(function(x){return x.toLowerCase().indexOf(val)>-1;});
-        if(!m.length){box.style.display='none';return;}
-        m.forEach(function(x){var d=document.createElement('div');d.textContent=x;
-          d.addEventListener('mousedown',function(e){e.preventDefault();inp.value=x;box.style.display='none';});
-          box.appendChild(d);});
-        box.style.display='block';
+      // Animations
+      requestAnimationFrame(function(){
+        ['_t','_b','_m','_o','_d','_cta'].forEach(function(id){
+          var el=document.getElementById(id); if(el) el.classList.add('in');
+        });
       });
-      inp.addEventListener('blur',function(){setTimeout(function(){box.style.display='none';},150);});
-    }
-    function _initFormulaireAutos(){
-      if(!_lieuInited){_lieuInited=true;_makeAuto('f-lieu','lieu-suggestions',LIEUX);}
-      if(!_orgInited){_orgInited=true;_makeAuto('f-org','org-suggestions',ORGS);}
+
+      // Thumbs
+      document.querySelectorAll('.ns-th').forEach(function(d,i){ d.classList.toggle('on',i===idx); });
+
+      // Progress
+      var p=document.getElementById('ns-prog');
+      if(p){ p.style.transition='none'; p.style.width='0%';
+        requestAnimationFrame(function(){ requestAnimationFrame(function(){
+          p.style.transition='width '+_SD+'ms linear'; p.style.width='100%';
+        }); });
+      }
     }
 
-    // ── Tarif rapide ──────────────────────────────────────
-    function setTarif(val) {
-      var el = document.getElementById('f-tarif');
-      if (el) { el.value = val; el.dispatchEvent(new Event('input')); }
+    function nsGo(idx){ _SI=(idx+_SE.length)%_SE.length; _showSlide(_SI); _autoPlay(); }
+    function nsNav(dir){ nsGo(_SI+dir); }
+    function nsOpen(idx){ if(_SE[idx]) openModal(_SE[idx]); }
+    function _autoPlay(){
+      if(_ST) clearInterval(_ST);
+      _ST=setInterval(function(){ nsGo(_SI+1); }, _SD);
     }
 
     loadEvents();
