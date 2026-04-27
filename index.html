@@ -186,6 +186,7 @@
     @keyframes modalIn { from{opacity:0;transform:translateY(20px) scale(.97)} to{opacity:1;transform:translateY(0) scale(1)} }
     .modal { background:#1a1a1a; border:1px solid var(--border); border-radius:var(--r-lg); max-width:560px; width:100%; max-height:90vh; overflow-y:auto; position:relative; box-shadow:0 32px 80px rgba(0,0,0,.8); }
     .modal-photo { width:100%; height:200px; object-fit:cover; border-radius:var(--r-lg) var(--r-lg) 0 0; display:block; }
+    .modal-photo.portrait { height:320px; object-fit:contain; background:#0a090f; }
     .modal-header { padding:var(--sp-lg) var(--sp-lg) var(--sp-sm); border-bottom:1px solid var(--border-soft); }
     .modal-cat { font-size:10px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; margin-bottom:8px; display:inline-block; padding:3px 8px; border-radius:var(--r-sm); }
     .modal-title { font-family:'Playfair Display',serif; font-size:24px; font-weight:900; color:#ffffff; line-height:1.2; }
@@ -332,9 +333,9 @@
     }
     #lightbox.open { display: flex; }
     #lightbox img {
-      max-width: min(90vw, 600px); max-height: 90vh;
-      border-radius: 6px; box-shadow: 0 40px 80px rgba(0,0,0,.9);
-      animation: lbIn .25s ease;
+      max-width: min(88vw, 520px); max-height: 88vh;
+      border-radius: 8px; box-shadow: 0 40px 100px rgba(0,0,0,1);
+      animation: lbIn .3s cubic-bezier(.2,.8,.2,1);
       object-fit: contain;
     }
     @keyframes lbIn { from{opacity:0;transform:scale(.94)} to{opacity:1;transform:none} }
@@ -805,11 +806,28 @@
       document.getElementById('modal-cat').textContent=e['Catégorie']||'';
       document.getElementById('modal-cat').className='modal-cat '+catClass(e['Catégorie']);
       document.getElementById('modal-title').textContent=e['Titre']||'';
-      // Bouton affiche si photo disponible
+      // Photo : détecter affiche portrait ou photo paysage
       var photoSrc = getPhoto(e);
+      var hasAffiche = e['Photo'] && e['Photo'].length > 0;
       var btnEl = document.getElementById('modal-affiche-btn');
+      // Récupérer la photo de la modale et adapter si portrait
+      var mPhoto = document.getElementById('modal').querySelector('.modal-photo');
+      if (mPhoto && hasAffiche) {
+        var afUrl = e['Photo'][0].url;
+        var afW = e['Photo'][0].width || 1;
+        var afH = e['Photo'][0].height || 1;
+        var isPortrait = afH > afW;
+        if (isPortrait) {
+          mPhoto.src = afUrl;
+          mPhoto.classList.add('portrait');
+        } else {
+          mPhoto.classList.remove('portrait');
+        }
+      } else if (mPhoto) {
+        mPhoto.classList.remove('portrait');
+      }
       if (btnEl) {
-        if (e['Photo'] && e['Photo'].length > 0) {
+        if (hasAffiche) {
           var afSrc = e['Photo'][0].url;
           btnEl.style.display = 'inline-flex';
           btnEl.onclick = function() { ouvrirAffiche(afSrc); };
