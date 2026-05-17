@@ -1031,7 +1031,7 @@
   let shareEvt=null;
   function openShareModal(ev){
     shareEvt=ev;
-    const urlWorker=`https://lasave-og.thomas-nebout31.workers.dev/${ev.id}`;
+    const urlWorker=`https://lasave-og.partage.workers.dev/${ev.id}`;
     const urlDirect=`https://la-save.fr/#event-${ev.id}`;
     const titre=ev.Titre||'Événement';
     const desc=(ev.Description||'').slice(0,100)||(ev.Commune||'');
