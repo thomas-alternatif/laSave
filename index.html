@@ -1492,6 +1492,22 @@
     allEvents=await fetchEvents();
     buildCatMenu();setupSlider(allEvents);renderEvents();updateStats();injectJsonLd(allEvents);
     setupAdmin();
+
+    // Ouvrir un événement depuis un lien partagé (#event-ID)
+    const sharedHash = window.location.hash;
+    if(sharedHash.startsWith('#event-')){
+      const sharedId = sharedHash.replace('#event-','');
+      const sharedEv = allEvents.find(e => e.id === sharedId);
+      if(sharedEv) openModal(sharedEv);
+    }
+
+    // Ouverture automatique d'un événement si hash #event-ID dans l'URL
+    const hash = window.location.hash;
+    if(hash.startsWith('#event-')){
+      const id = hash.replace('#event-','');
+      const ev = allEvents.find(e => e.id === id);
+      if(ev) setTimeout(()=>openModal(ev), 300);
+    }
   }
   document.addEventListener('DOMContentLoaded',init);
 
