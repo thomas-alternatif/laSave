@@ -453,6 +453,9 @@
     .btn-archive-one { background:none; border:1px solid var(--border); cursor:pointer; color:var(--text-muted); font-family:inherit; font-size:11px; font-weight:500; padding:5px 12px; border-radius:99px; transition:all .15s; white-space:nowrap; }
     .btn-archive-one:hover { border-color:#ff5080; color:#ff5080; }
     .btn-archive-one:disabled { opacity:.4; cursor:not-allowed; }
+    .btn-republish { background:none; border:1px solid var(--border); cursor:pointer; color:var(--text-muted); font-family:inherit; font-size:11px; font-weight:500; padding:5px 12px; border-radius:99px; transition:all .15s; white-space:nowrap; }
+    .btn-republish:hover { border-color:#5dd470; color:#5dd470; }
+    .btn-republish:disabled { opacity:.4; cursor:not-allowed; }
     .admin-msg { padding:12px 16px; border-radius:8px; font-size:13px; margin-bottom:1.5rem; display:none; }
     .admin-msg.ok { background:rgba(93,212,112,.1); border:1px solid rgba(93,212,112,.25); color:#5dd470; }
     .admin-msg.err { background:rgba(255,80,128,.1); border:1px solid rgba(255,80,128,.25); color:#ff5080; }
@@ -939,7 +942,7 @@
     <div class="admin-panel" id="admin-panel" style="display:none;">
       <div class="admin-head">
         <div>
-          <div class="admin-title">Événements <span>à archiver</span></div>
+          <div class="admin-title">Administration <span>laSave</span></div>
           <div class="admin-count" id="admin-count"></div>
         </div>
         <div class="admin-bar">
@@ -950,6 +953,11 @@
           </button>
           <button class="admin-logout" id="admin-logout" type="button">Déconnexion</button>
         </div>
+      </div>
+      <!-- Onglets -->
+      <div style="display:flex;gap:0;margin-bottom:1.5rem;border-bottom:1px solid var(--border);">
+        <button class="legal-tab on" id="admin-tab-archive" onclick="switchAdminTab('archive')" type="button">À archiver</button>
+        <button class="legal-tab" id="admin-tab-archived" onclick="switchAdminTab('archived')" type="button">Archivés</button>
       </div>
       <div id="admin-table-wrap"></div>
     </div>
@@ -994,6 +1002,16 @@
   const fmtShort=iso=>{if(!iso)return'';const d=new Date(iso);return isNaN(d)?iso:d.toLocaleDateString('fr-FR',{day:'numeric',month:'short'})};
   const isSoon=iso=>{if(!iso)return false;const diff=(new Date(iso)-new Date())/(864e5);return diff>=0&&diff<=7};
   const isFut=iso=>{if(!iso)return true;return new Date(iso)>=new Date(new Date().toDateString())};
+  // Un événement est "actif" si sa date de fin n'est pas passée (ou s'il n'a pas de date de fin mais que sa date de début est future)
+  const isActive=ev=>{
+    const dateFin=ev['Date de fin'];
+    const date=ev['Date'];
+    const isRec=ev['Récurrence']&&ev['Récurrence']!=='Aucune';
+    if(isRec)return true;
+    if(dateFin)return isFut(dateFin); // multi-jours : garder si date de fin pas passée
+    if(date)return isFut(date);       // ponctuel : garder si date pas passée
+    return true;
+  };
   const getPhoto=ev=>{if(ev.Photo&&ev.Photo[0]){const a=ev.Photo[0];return(a.thumbnails&&a.thumbnails.large)?a.thumbnails.large.url:a.url}return null};
 
   /* ── FETCH AIRTABLE ── */
@@ -1150,7 +1168,7 @@
   function renderEvents(){
     const c=$('#events-container');c.innerHTML='';
     const filtered=allEvents.filter(ev=>{
-      if(ev.Date&&!isFut(ev.Date)&&(!ev['Récurrence']||ev['Récurrence']==='Aucune'))return false;
+      if(!isActive(ev))return false;
       if(currentCat!=='all'&&ev['Catégorie']!==currentCat)return false;
       if(currentSearch){const q=norm(currentSearch);const h=norm([ev.Titre,ev.Commune,ev.Lieu,ev['Catégorie'],ev.Description,ev.Organisation].filter(Boolean).join(' '));if(!h.includes(q))return false;}
       return true;
@@ -1555,53 +1573,100 @@
       $('#btn-archive-all').disabled=true;
       let ok=0,err=0;
       for(const btn of btns){
-        const success=await archiveOne(btn.dataset.id);
+        const success=await setStatut(btn.dataset.id,'Archivé');
         if(success){ok++;btn.closest('tr').style.opacity='.35';btn.disabled=true;}else err++;
       }
       showAdminMsg(err===0?`✓ ${ok} événement(s) archivé(s).`:`${ok} archivé(s), ${err} erreur(s).`,err===0?'ok':'err');
-      $('#admin-count').textContent='0 événement(s) à archiver';
+      $('#admin-count').textContent='0 événement(s)';
       $('#btn-archive-all').disabled=false;
     });
   }
+
+  let adminCurrentTab='archive';
+  window.switchAdminTab=function(tab){
+    adminCurrentTab=tab;
+    $$('#admin-tab-archive,#admin-tab-archived').forEach(t=>t.classList.remove('on'));
+    $(`#admin-tab-${tab}`).classList.add('on');
+    const archiveBtn=$('#btn-archive-all');
+    archiveBtn.style.display=tab==='archive'?'inline-flex':'none';
+    loadAdminEvents();
+  };
 
   async function loadAdminEvents(){
     const wrap=$('#admin-table-wrap'),countEl=$('#admin-count');
     wrap.innerHTML='<div class="loading">Chargement…</div>';
     const today=new Date();today.setHours(0,0,0,0);
-    const filter=encodeURIComponent("{Statut}='Publié'");
+
+    const isArchive=adminCurrentTab==='archive';
+    const filterStatut=isArchive?"{Statut}='Publié'":"{Statut}='Archivé'";
+    const filter=encodeURIComponent(filterStatut);
     const url=`${AT_URL}?filterByFormula=${filter}&pageSize=100`;
     let records=[],offset='';
     try{
       do{const u=offset?`${url}&offset=${offset}`:url;const r=await fetch(u,{headers:HEADS});const d=await r.json();records=records.concat(d.records||[]);offset=d.offset||'';}while(offset);
     }catch(e){wrap.innerHTML='<div class="admin-empty">Erreur de chargement.</div>';return;}
-    const passed=records.filter(r=>{
-      const date=r.fields['Date'],rec=r.fields['Récurrence'];
-      if(!date)return false;
-      if(rec&&rec!=='Aucune')return false;
-      return new Date(date)<today;
-    }).sort((a,b)=>new Date(b.fields['Date'])-new Date(a.fields['Date']));
-    countEl.textContent=`${passed.length} événement(s) à archiver`;
-    if(!passed.length){wrap.innerHTML='<div class="admin-empty">Aucun événement passé à archiver. Tout est à jour !</div>';$('#btn-archive-all').disabled=true;return;}
-    const rows=passed.map(r=>{
+
+    let list;
+    if(isArchive){
+      // Onglet "À archiver" : événements Publiés dont la date est passée
+      list=records.filter(r=>{
+        const date=r.fields['Date'],rec=r.fields['Récurrence'],dateFin=r.fields['Date de fin'];
+        if(!date)return false;
+        if(rec&&rec!=='Aucune')return false;
+        if(dateFin)return new Date(dateFin)<today; // multi-jours : archiver seulement si date de fin passée
+        return new Date(date)<today;
+      }).sort((a,b)=>new Date(b.fields['Date'])-new Date(a.fields['Date']));
+    } else {
+      // Onglet "Archivés" : tous les événements archivés
+      list=records.sort((a,b)=>new Date(b.fields['Date']||0)-new Date(a.fields['Date']||0));
+    }
+
+    countEl.textContent=`${list.length} événement(s)`;
+    $('#btn-archive-all').disabled=!list.length||!isArchive;
+
+    if(!list.length){
+      wrap.innerHTML=`<div class="admin-empty">${isArchive?'Aucun événement passé à archiver. Tout est à jour !':'Aucun événement archivé.'}</div>`;
+      return;
+    }
+
+    const rows=list.map(r=>{
       const f=r.fields,cat=f['Catégorie']||'Autre',meta=CAT_META[cat]||CAT_META['Autre'];
-      const date=new Date(f['Date']).toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'});
-      return`<tr><td><span class="admin-ev-title">${esc(f['Titre']||'—')}</span></td><td><span class="admin-ev-date">${date}</span></td><td><span class="admin-ev-cat" style="background:${meta.color}22;color:${meta.color}">${esc(cat)}</span></td><td>${esc(f['Commune']||'—')}</td><td><button class="btn-archive-one" data-id="${r.id}" type="button">Archiver</button></td></tr>`;
+      const date=f['Date']?new Date(f['Date']).toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'}):'—';
+      const btn=isArchive
+        ?`<button class="btn-archive-one" data-id="${r.id}" type="button">Archiver</button>`
+        :`<button class="btn-republish" data-id="${r.id}" type="button">Remettre en ligne</button>`;
+      return`<tr><td><span class="admin-ev-title">${esc(f['Titre']||'—')}</span></td><td><span class="admin-ev-date" style="${isArchive?'color:#ff5080':''}">${date}</span></td><td><span class="admin-ev-cat" style="background:${meta.color}22;color:${meta.color}">${esc(cat)}</span></td><td>${esc(f['Commune']||'—')}</td><td>${btn}</td></tr>`;
     }).join('');
+
     wrap.innerHTML=`<table class="admin-table"><thead><tr><th>Titre</th><th>Date</th><th>Catégorie</th><th>Commune</th><th></th></tr></thead><tbody>${rows}</tbody></table>`;
-    $$('.btn-archive-one').forEach(btn=>{
-      btn.addEventListener('click',async()=>{
-        btn.disabled=true;btn.textContent='…';
-        const ok=await archiveOne(btn.dataset.id);
-        if(ok){btn.closest('tr').style.opacity='.35';btn.textContent='Archivé ✓';const rem=$$('.btn-archive-one:not(:disabled)').length;$('#admin-count').textContent=`${rem} événement(s) à archiver`;if(!rem)$('#btn-archive-all').disabled=true;}
-        else{btn.disabled=false;btn.textContent='Erreur';showAdminMsg("Erreur lors de l'archivage.",'err');}
+
+    if(isArchive){
+      $$('.btn-archive-one').forEach(btn=>{
+        btn.addEventListener('click',async()=>{
+          btn.disabled=true;btn.textContent='…';
+          const ok=await setStatut(btn.dataset.id,'Archivé');
+          if(ok){btn.closest('tr').style.opacity='.35';btn.textContent='Archivé ✓';const rem=$$('.btn-archive-one:not(:disabled)').length;countEl.textContent=`${rem} événement(s)`;if(!rem)$('#btn-archive-all').disabled=true;}
+          else{btn.disabled=false;btn.textContent='Erreur';showAdminMsg("Erreur lors de l'archivage.",'err');}
+        });
       });
-    });
+    } else {
+      $$('.btn-republish').forEach(btn=>{
+        btn.addEventListener('click',async()=>{
+          btn.disabled=true;btn.textContent='…';
+          const ok=await setStatut(btn.dataset.id,'Publié');
+          if(ok){btn.closest('tr').style.opacity='.35';btn.textContent='En ligne ✓';const rem=$$('.btn-republish:not(:disabled)').length;countEl.textContent=`${rem} événement(s)`;}
+          else{btn.disabled=false;btn.textContent='Erreur';showAdminMsg('Erreur lors de la remise en ligne.','err');}
+        });
+      });
+    }
   }
 
-  async function archiveOne(id){
-    try{const res=await fetch(`${AT_URL}/${id}`,{method:'PATCH',headers:HEADS,body:JSON.stringify({fields:{Statut:'Archivé'}})});return res.ok;}
+  async function setStatut(id,statut){
+    try{const res=await fetch(`${AT_URL}/${id}`,{method:'PATCH',headers:HEADS,body:JSON.stringify({fields:{Statut:statut}})});return res.ok;}
     catch(e){return false;}
   }
+  // Garde la compatibilité avec l'ancien nom
+  const archiveOne=id=>setStatut(id,'Archivé');
 
   function showAdminMsg(text,type){
     const el=$('#admin-msg');el.textContent=text;el.className=`admin-msg ${type}`;el.style.display='block';
