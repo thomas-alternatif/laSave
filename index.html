@@ -1040,9 +1040,8 @@
     if(navigator.share){
       navigator.share({
         title: titre,
-        text: desc,
-        url: urlDirect
-      }).catch(()=>{}); // ignore si l'utilisateur annule
+        url: urlWorker
+      }).catch(()=>{});
       return;
     }
 
