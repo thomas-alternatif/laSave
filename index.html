@@ -468,15 +468,13 @@
       .nav-cta { padding: 7px 14px; font-size: 12px; }
 
       /* ── HERO ── */
-      .hero-body { padding: 0 var(--pad) 2rem; }
-      .hero-kicker { font-size: 10px; margin-bottom: 1.2rem; letter-spacing: .14em; }
-      .hero-h1 { font-size: clamp(28px, 7.5vw, 38px); margin-bottom: .9rem; line-height: 1.1; }
-      .hero-sub { font-size: 12px; line-height: 1.55; margin-bottom: 1rem; max-width: 100%; }
-      /* Boutons hero côte à côte compact */
+      .hero-body { padding: 0 var(--pad) 2rem; display: flex; flex-direction: column; justify-content: flex-end; }
+      .hero-kicker { font-size: 10px; margin-bottom: auto; padding-top: 1.5rem; letter-spacing: .14em; align-self: flex-start; }
+      .hero-h1 { font-size: clamp(36px, 9vw, 48px); margin-bottom: .8rem; line-height: 1.05; margin-top: 1rem; }
+      .hero-sub { font-size: 13px; line-height: 1.6; margin-bottom: 1rem; max-width: 100%; }
       .hero-actions { gap: 8px; flex-wrap: nowrap; }
       .btn-primary { font-size: 12px; padding: 10px 16px; flex-shrink: 0; }
       .btn-ghost { font-size: 11px; padding: 8px 12px; flex-shrink: 0; }
-      /* Stats plus compact */
       .hero-stats { gap: 1rem; margin-top: .75rem; padding-top: .75rem; }
       .hero-stat-num { font-size: 16px; }
       .hero-stat-label { font-size: 9px; }
