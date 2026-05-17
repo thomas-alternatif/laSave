@@ -83,7 +83,16 @@
       position: relative; overflow: hidden;
       min-height: 640px; display: flex; align-items: flex-end;
     }
-    @media(max-width:700px){#section-agenda .hero{min-height:500px}}
+    /* iOS/Android : utilise svh pour tenir compte de la barre d'adresse */
+    @supports (min-height: 100svh) {
+      #section-agenda .hero { min-height: min(640px, 100svh); }
+    }
+    @media(max-width:700px){
+      #section-agenda .hero { min-height: 100svh; }
+      @supports not (min-height: 100svh) {
+        #section-agenda .hero { min-height: calc(100vh - 60px); }
+      }
+    }
     .hero-bg {
       position: absolute; inset: 0;
       background-size: cover; background-position: center 45%;
@@ -448,13 +457,102 @@
 
     /* ── RESPONSIVE FORMULAIRE / LÉGAL ── */
     @media(max-width:700px) {
-      .form-row { grid-template-columns:1fr; }
-      .share-section,.legal-section { padding:2rem 1.5rem 4rem; }
-      .form-block-body { padding:14px 16px 18px; }
-      .form-block-header { padding:14px 16px; }
-      .toolbar { padding:1.5rem 1.5rem 0; }
-      .grid-wrap { padding:1.5rem 1.5rem 0; }
-      .share-grid { grid-template-columns:repeat(4,1fr); }
+      /* ── VARIABLES MOBILE ── */
+      :root { --pad: 1.25rem; }
+
+      /* ── HEADER ── */
+      .logo-tagline { display: none; }
+      .nav-cta { padding: 7px 14px; font-size: 12px; }
+
+      /* ── HERO ── */
+      .hero-body { padding: 0 var(--pad) 3rem; }
+      .hero-kicker { font-size: 10px; margin-bottom: .8rem; }
+      .hero-h1 { font-size: clamp(28px, 8vw, 42px); margin-bottom: 1rem; line-height: 1.1; }
+      .hero-sub { font-size: 13px; line-height: 1.65; margin-bottom: 1.5rem; max-width: 100%; }
+      .hero-actions { gap: 8px; }
+      .btn-primary { font-size: 13px; padding: 11px 22px; }
+      .btn-ghost { font-size: 12px; padding: 10px 18px; }
+      .hero-stats { gap: 1.5rem; margin-top: 1.5rem; padding-top: 1.25rem; }
+      .hero-stat-num { font-size: 22px; }
+
+      /* ── HERO ALT (partager / légal) ── */
+      .hero-alt { padding: 3.5rem var(--pad) 2.5rem; }
+      .hero-alt .hero-h1 { font-size: clamp(26px, 7vw, 38px); }
+
+      /* ── TOOLBAR ── */
+      .toolbar { padding: 1.25rem var(--pad) 0; gap: 8px; }
+      .search-wrap { min-width: 0; width: 100%; flex: none; }
+      .cat-dd { flex: 1; }
+      .cat-btn { width: 100%; justify-content: space-between; padding: 10px 14px; font-size: 13px; }
+      .cat-menu { left: 0; right: 0; min-width: 0; }
+
+      /* ── GRILLE ── */
+      .grid-wrap { padding: 1.25rem var(--pad) 0; }
+      .grid { grid-template-columns: 1fr; gap: 12px; }
+      .grid-head { margin-bottom: 1rem; }
+
+      /* ── CARDS ── */
+      .card-img { height: 180px; }
+      .card-body { padding: 14px 16px; }
+      .card-title { font-size: 16px; }
+      .card-foot { padding: 10px 16px 14px; }
+      .btn-card-more { font-size: 11px; padding: 5px 10px; }
+
+      /* ── SLIDER ── */
+      .slider-wrap { padding: 1.25rem var(--pad) 0; }
+      #featured-container { height: 70svh; border-radius: 8px; }
+      @supports not (height: 70svh) {
+        #featured-container { height: 320px; }
+      }
+      #ns-content { padding: 0 var(--pad); bottom: 1.25rem; max-width: 100%; gap: .4rem; }
+      .ns-t { font-size: clamp(22px, 6.5vw, 36px); letter-spacing: -.3px; }
+      .ns-desc { display: none; }
+      .ns-cta { font-size: 12px; padding: 9px 18px; margin-top: 4px; }
+
+      /* ── FORMULAIRE ── */
+      .share-section { padding: 1.5rem var(--pad) 4rem; }
+      .form-row { grid-template-columns: 1fr; }
+      .form-block-header { padding: 14px 16px; }
+      .form-block-body { padding: 14px 16px 18px; }
+      .submit-area { flex-direction: column; align-items: flex-start; }
+
+      /* ── PARTAGE MODAL ── */
+      .share-panel { padding: 20px 20px 28px; }
+      .share-grid { grid-template-columns: repeat(4, 1fr); gap: 8px; }
+      .share-opt-ico { width: 44px; height: 44px; border-radius: 12px; }
+      .share-opt { font-size: 10px; }
+
+      /* ── LÉGAL ── */
+      .legal-section { padding: 1.5rem var(--pad) 4rem; }
+      .legal-tabs { gap: 0; }
+      .legal-tab { font-size: 12px; padding: 10px 12px; }
+
+      /* ── ADMIN ── */
+      .admin-panel { padding: 1.5rem var(--pad) 4rem; }
+      .admin-head { flex-direction: column; align-items: flex-start; }
+      .admin-table th:nth-child(3), .admin-table td:nth-child(3),
+      .admin-table th:nth-child(4), .admin-table td:nth-child(4) { display: none; }
+      .admin-table td { padding: 12px 8px; font-size: 13px; }
+
+      /* ── FOOTER ── */
+      .footer { padding: 2rem var(--pad); flex-direction: column; gap: 1.5rem; }
+
+      /* ── SCROLL TOP ── */
+      .scroll-top { bottom: 1rem; right: 1rem; width: 34px; height: 34px; }
+    }
+
+    /* Petits téléphones */
+    @media(max-width:380px) {
+      .hero-h1 { font-size: 26px; }
+      .hero-actions { flex-direction: column; align-items: flex-start; }
+      .btn-primary, .btn-ghost { width: 100%; justify-content: center; }
+      .share-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    /* Tablette */
+    @media(min-width:701px) and (max-width:1024px) {
+      :root { --pad: 2rem; }
+      .grid { grid-template-columns: repeat(2, 1fr); }
     }
   </style>
 </head>
