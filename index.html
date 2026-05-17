@@ -1031,27 +1031,40 @@
   let shareEvt=null;
   function openShareModal(ev){
     shareEvt=ev;
-    // URL de partage → page OG dédiée (avec preview WhatsApp/Facebook)
-    const url=`https://lasave-og.thomas-nebout31.workers.dev/${ev.id}`;
+    const urlWorker=`https://lasave-og.thomas-nebout31.workers.dev/${ev.id}`;
+    const urlDirect=`https://la-save.fr/#event-${ev.id}`;
     const titre=ev.Titre||'Événement';
-    const desc=`${ev.Commune||''}${ev.Date?' — '+fmtShort(ev.Date):''}`;
-    $('#share-sub').textContent=titre+(desc?' · '+desc:'');
-    $('#share-copy-url').textContent=url;
+    const desc=(ev.Description||'').slice(0,100)||(ev.Commune||'');
+
+    // Web Share API — panneau natif iOS/Android
+    if(navigator.share){
+      navigator.share({
+        title: titre,
+        text: desc,
+        url: urlDirect
+      }).catch(()=>{}); // ignore si l'utilisateur annule
+      return;
+    }
+
+    // Fallback desktop — panneau custom
+    const descSub=`${ev.Commune||''}${ev.Date?' — '+fmtShort(ev.Date):''}`;
+    $('#share-sub').textContent=titre+(descSub?' · '+descSub:'');
+    $('#share-copy-url').textContent=urlDirect;
     const grid=$('#share-grid');
     grid.innerHTML=`
-      <button class="share-opt" onclick="doShare('whatsapp','${esc(titre)}','${esc(url)}')" type="button">
+      <button class="share-opt" onclick="doShare('whatsapp','${esc(titre)}','${esc(urlWorker)}')" type="button">
         <span class="share-opt-ico"><svg width="26" height="26" viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M11.998 0C5.372 0 0 5.373 0 12.001c0 2.117.556 4.103 1.528 5.83L0 24l6.335-1.661A11.947 11.947 0 0012 24c6.628 0 12-5.372 12-12 0-6.627-5.372-12.001-12-12.001zm0 21.985a9.96 9.96 0 01-5.073-1.387l-.362-.216-3.758.986 1.003-3.66-.237-.377A9.955 9.955 0 012.015 12C2.015 6.481 6.48 2.015 12 2.015S21.985 6.481 21.985 12c0 5.52-4.466 9.985-9.987 9.985z"/></svg></span>
         WhatsApp
       </button>
-      <button class="share-opt" onclick="doShare('facebook','${esc(titre)}','${esc(url)}')" type="button">
+      <button class="share-opt" onclick="doShare('facebook','${esc(titre)}','${esc(urlDirect)}')" type="button">
         <span class="share-opt-ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="#1877F2"><path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.41c0-3.025 1.792-4.697 4.533-4.697 1.312 0 2.686.236 2.686.236v2.97h-1.513c-1.491 0-1.956.93-1.956 1.886v2.267h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z"/></svg></span>
         Facebook
       </button>
-      <button class="share-opt" onclick="doShare('instagram','${esc(titre)}','${esc(url)}')" type="button">
+      <button class="share-opt" onclick="doShare('instagram','${esc(titre)}','${esc(urlDirect)}')" type="button">
         <span class="share-opt-ico" style="background:linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);border:none;"><svg width="22" height="22" viewBox="0 0 24 24" fill="white"><rect x="2" y="2" width="20" height="20" rx="5.5"/><circle cx="12" cy="12" r="4.5" fill="none" stroke="white" stroke-width="2"/><circle cx="17.5" cy="6.5" r="1.2" fill="white"/></svg></span>
         Instagram
       </button>
-      <button class="share-opt" onclick="doShare('sms','${esc(titre)}','${esc(url)}')" type="button">
+      <button class="share-opt" onclick="doShare('sms','${esc(titre)}','${esc(urlDirect)}')" type="button">
         <span class="share-opt-ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#5dd470" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
         Message
       </button>
@@ -1064,12 +1077,11 @@
     const maps={
       whatsapp:`https://wa.me/?text=${encodeURIComponent(titre+' — '+url)}`,
       facebook:`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
-      instagram:null, // Instagram n'a pas d'URL de partage web directe
+      instagram:null,
       sms:`sms:?body=${encodeURIComponent(titre+' — '+url)}`
     };
     if(platform==='instagram'){
-      // Copier le lien + message pour Instagram
-      navigator.clipboard.writeText(titre+' '+url).then(()=>alert('Lien copié ! Collez-le dans votre story ou message Instagram.')).catch(()=>{});
+      navigator.clipboard.writeText(titre+' '+url).then(()=>alert('Lien copié ! Collez-le dans votre message Instagram.')).catch(()=>{});
       return;
     }
     if(maps[platform])window.open(maps[platform],'_blank','noopener,width=600,height=500');
