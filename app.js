@@ -163,21 +163,24 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
     else imgHtml=`<div class="card-img-placeholder" style="background:linear-gradient(135deg,${m.color}28,${m.color}0e);" aria-hidden="true">${m.emoji}</div>`;
 
     const orga = findOrga(ev.Organisation);
-    const orgaInitiales = ev.Organisation ? ev.Organisation.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase() : '';
-    const orgaCouleur = ev.Organisation ? `hsl(${ev.Organisation.split('').reduce((a,c)=>a+c.charCodeAt(0),0)%360},45%,55%)` : '';
+    const hasOrg = !!ev.Organisation;
+    const orgaNom = orga ? orga.nom : (ev.Organisation || '');
+    const orgaPhoto = orga?.photo || null;
+    const orgaInitiales = orgaNom.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    const orgaCouleur = `hsl(${orgaNom.split('').reduce((a,c)=>a+c.charCodeAt(0),0)%360},45%,55%)`;
     const excerpt = ev.Description ? ev.Description.slice(0,80)+(ev.Description.length>80?'…':'') : '';
 
     card.innerHTML=`
-      ${orga ? `
+      ${hasOrg ? `
       <div class="card-header">
         <div class="card-header-avatar" data-orga="${esc(ev.Organisation||'')}">
-          ${orga.photo
-            ? `<img src="${esc(orga.photo)}" alt="${esc(ev.Organisation)}" loading="lazy"/>`
+          ${orgaPhoto
+            ? `<img src="${esc(orgaPhoto)}" alt="${esc(orgaNom)}" loading="lazy"/>`
             : `<span style="color:${orgaCouleur}">${orgaInitiales}</span>`
           }
         </div>
         <div class="card-header-info" data-orga="${esc(ev.Organisation||'')}">
-          <div class="card-header-name">${esc(orga.nom)}</div>
+          <div class="card-header-name">${esc(orgaNom)}</div>
           <div class="card-header-cat">${esc(cat)}</div>
         </div>
         <button class="btn-share" type="button" title="Partager" aria-label="Partager cet événement" style="margin-left:auto;">
@@ -186,7 +189,7 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
       </div>` : ''}
       <div class="card-img">
         ${imgHtml}
-        ${!orga?`<span class="card-cat-badge" style="background:${m.color}28;color:${m.color};">${esc(cat)}</span>`:''}
+        <span class="card-cat-badge" style="background:${m.color}28;color:${m.color};">${esc(cat)}</span>
         ${featured?'<span class="badge-featured">À la une</span>':''}
         ${soon?'<span class="badge-soon">Bientôt</span>':''}
         ${vues>0?`<span class="badge-vues"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> ${vues}</span>`:''}
@@ -208,17 +211,15 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
         <span class="card-price">${ev.Tarif?`<strong>${esc(ev.Tarif)}</strong>`:''}</span>
         <div class="card-actions">
           <button class="btn-card-more" type="button" aria-label="En savoir plus sur ${esc(ev.Titre||'')}">En savoir plus</button>
-          ${!orga?`<button class="btn-share" type="button" title="Partager" aria-label="Partager cet événement">
+          ${!hasOrg?`<button class="btn-share" type="button" title="Partager" aria-label="Partager cet événement">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
           </button>`:''}
         </div>
       </div>
     `;
 
-    // Clic sur la card entière (sauf boutons) → modale
     card.addEventListener('click',e=>{
       if(e.target.closest('.btn-share,.btn-card-more'))return;
-      // Clic sur header organisateur → ouvrir profil
       const orgaEl=e.target.closest('.card-header-avatar,.card-header-info');
       if(orgaEl&&orgaEl.dataset.orga&&findOrga(orgaEl.dataset.orga)){
         e.stopPropagation();
@@ -943,11 +944,12 @@ function buildOrganisateurs(orgas, allEvts) {
   $('#ateliers-count').textContent = `${orgas.length} organisateur${orgas.length > 1 ? 's' : ''}`;
 
   orgas.forEach(orga => {
-    // Tous les événements de cet organisateur
     const evts = allEvts.filter(e => norm(e.Organisation||'') === norm(orga.Nom));
+    // Utiliser findOrga normalisé pour récupérer la bonne fiche
+    const ficheOrga = findOrga(orga.Nom);
     const orgaData = {
-      ...orgasMap[orga.Nom],
-      ateliers: evts // on garde le nom "ateliers" pour la modale mais c'est tous les events
+      ...ficheOrga,
+      ateliers: evts
     };
 
     const item = document.createElement('div');
@@ -958,7 +960,7 @@ function buildOrganisateurs(orgas, allEvts) {
 
     const initiales = orga.Nom.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
     const couleur = `hsl(${orga.Nom.split('').reduce((a, c) => a + c.charCodeAt(0), 0) % 360},45%,55%)`;
-    const photo = orgaData.photo;
+    const photo = ficheOrga?.photo || null;
 
     item.innerHTML = `
       <div class="story-ring">
