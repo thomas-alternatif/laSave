@@ -568,6 +568,7 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
     const orgas=await fetchOrganisateurs();
     const atelierEvents=allEvents.filter(e=>CAT_ATELIERS.includes(e['Catégorie'])&&e.Organisation);
     buildCatMenu();setupSlider(allEvents);renderEvents();
+    buildMobileCats(allEvents);
     buildOrganisateurs(orgas,atelierEvents);
     updateStats();injectJsonLd(allEvents);
     setupAdmin();
@@ -592,6 +593,33 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
 
   /* ── ATELIERS & ORGANISATEURS ── */
   const CAT_ATELIERS=['Atelier / Cours','Conférence / Atelier'];
+
+  function buildMobileCats(events){
+    const wrap=$('#mobile-cats');
+    if(!wrap)return;
+    // Afficher uniquement sur mobile
+    if(window.innerWidth>700){wrap.style.display='none';return;}
+    wrap.style.display='flex';
+
+    const cats=['all',...Object.keys(CAT_META).filter(c=>
+      events.some(e=>e['Catégorie']===c&&isActive(e))
+    )];
+
+    wrap.innerHTML=cats.map(c=>{
+      const color=c==='all'?'var(--gold)':(CAT_META[c]||CAT_META['Autre']).color;
+      const label=c==='all'?'Tout':c;
+      return`<button class="mobile-cat-pill${c===currentCat?' on':''}" data-c="${esc(c)}" type="button">
+        ${c!=='all'?`<span class="mobile-cat-dot" style="background:${color}"></span>`:''}
+        ${esc(label)}
+      </button>`;
+    }).join('');
+
+    $$('.mobile-cat-pill',wrap).forEach(btn=>btn.addEventListener('click',()=>{
+      setCat(btn.dataset.c);
+      // Mettre à jour les pills actives
+      $$('.mobile-cat-pill',wrap).forEach(b=>b.classList.toggle('on',b===btn));
+    }));
+  }
 
   function buildAteliers(events){
     const ateliers=events.filter(e=>CAT_ATELIERS.includes(e['Catégorie'])&&e.Organisation);
