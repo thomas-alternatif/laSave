@@ -196,20 +196,13 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
       </div>
       <div class="card-body">
         <h3 class="card-title">${esc(ev.Titre||'Sans titre')}</h3>
-        <div class="card-commune" style="color:${m.color}">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-          ${esc(ev.Commune||'')}${ev.Lieu?`<span style="color:var(--text-muted);font-weight:400;"> · ${esc(ev.Lieu)}</span>`:''}
-        </div>
-        <div class="card-date">
-          <span class="card-dot" style="background:${m.color}" aria-hidden="true"></span>
-          ${esc(dateStr)}${ev.Heure?` · ${esc(ev.Heure)}`:''}
-        </div>
-        ${isRec?`<div class="rec-badge" style="color:${m.color};border-color:${m.color}35;background:${m.color}0d;">🔁 ${esc(ev['Récurrence'])}</div>`:''}
-        ${excerpt?`<div class="card-excerpt">${esc(excerpt)}</div>`:''}
+        ${ev.Commune?`<div class="card-commune" style="color:${m.color}">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          ${esc(ev.Commune)}
+        </div>`:''}
       </div>
       <div class="card-foot">
-        <span class="card-price">${ev.Tarif?`<strong>${esc(ev.Tarif)}</strong>`:''}</span>
-        <div class="card-actions">
+        <div class="card-actions" style="margin-left:auto;">
           <button class="btn-card-more" type="button" aria-label="En savoir plus sur ${esc(ev.Titre||'')}">En savoir plus</button>
           ${!hasOrg?`<button class="btn-share" type="button" title="Partager" aria-label="Partager cet événement">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
