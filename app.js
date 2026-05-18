@@ -738,27 +738,41 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
     // Liste des ateliers
     if(orga.ateliers.length){
       html+=`<div style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:.75rem;">Événements</div>`;
+      html+=`<div class="orga-events-grid">`;
       html+=orga.ateliers.map(ev=>{
-        const tags=[];
-        if(ev.Tarif)tags.push(ev.Tarif);
-        if(ev['Récurrence']&&ev['Récurrence']!=='Aucune')tags.push(ev['Récurrence']);
-        if(ev.Lieu)tags.push(ev.Lieu);
-        return`<div class="orga-atelier-item">
-          <div class="orga-atelier-title">${esc(ev.Titre||'')}</div>
-          <div class="orga-atelier-meta">
-            ${ev['Jour/Période']?`<span>📅 ${esc(ev['Jour/Période'])}</span>`:''}
-            ${ev.Heure?`<span>🕐 ${esc(ev.Heure)}</span>`:''}
-            ${ev.Commune?`<span>📍 ${esc(ev.Commune)}</span>`:''}
+        const cat=ev['Catégorie']||'Autre';
+        const m=CAT_META[cat]||CAT_META['Autre'];
+        const photo=getPhoto(ev);
+        const dateStr=ev.Date?fmtShort(ev.Date):(ev['Jour/Période']||'');
+        return`<div class="orga-event-card">
+          <div class="orga-event-img" style="${photo?`background-image:url(${esc(photo)})`:``}">
+            ${!photo?`<span style="font-size:28px">${m.emoji}</span>`:''}
+            <span class="orga-event-cat" style="background:${m.color}28;color:${m.color}">${esc(cat)}</span>
           </div>
-          ${ev.Description?`<div class="orga-atelier-desc">${esc(ev.Description)}</div>`:''}
-          ${tags.length?`<div class="orga-atelier-tags">${tags.map(t=>`<span class="orga-atelier-tag">${esc(t)}</span>`).join('')}</div>`:''}
+          <div class="orga-event-body">
+            <div class="orga-event-title">${esc(ev.Titre||'')}</div>
+            <div class="orga-event-meta">
+              ${ev.Commune?`<span>📍 ${esc(ev.Commune)}</span>`:''}
+              ${dateStr?`<span>📅 ${esc(dateStr)}</span>`:''}
+            </div>
+            <button class="orga-event-more btn-card-more" data-evid="${ev.id}" type="button">En savoir plus</button>
+          </div>
         </div>`;
       }).join('');
+      html+=`</div>`;
     } else if(!orga.desc){
       html+=`<p style="font-size:13px;color:var(--text-muted);text-align:center;padding:1rem 0;">Aucun atelier renseigné pour le moment.</p>`;
     }
 
     body.innerHTML=html;
+    // Listeners "En savoir plus" dans le profil
+    body.querySelectorAll('.orga-event-more').forEach(btn=>{
+      btn.addEventListener('click',e=>{
+        e.stopPropagation();
+        const ev=allEvents.find(e=>e.id===btn.dataset.evid);
+        if(ev){closeOrgaModal();setTimeout(()=>openModal(ev),150);}
+      });
+    });
     $('#orga-modal-overlay').classList.add('open');
     document.body.style.overflow='hidden';
   }
