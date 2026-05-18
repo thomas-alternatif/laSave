@@ -74,6 +74,83 @@
       @supports not (min-height: 100svh) {
         #section-agenda .hero { min-height: calc(100vh - 60px); display: none; }
       }
+
+      /* ── SLIDER MOBILE plein écran style streaming ── */
+      .slider-wrap { padding: 0 !important; }
+      #featured-container {
+        height: 78svh !important;
+        border-radius: 0 !important;
+        margin-bottom: 0;
+      }
+      @supports not (height: 78svh) { #featured-container { height: 75vmax !important; } }
+      #ns-content {
+        padding: 0 1.25rem !important;
+        bottom: 1.25rem !important;
+        max-width: 100% !important;
+        gap: .3rem !important;
+      }
+      .ns-t { font-size: clamp(24px, 7vw, 36px) !important; }
+      .ns-desc, .ns-org { display: none !important; }
+      .ns-cta { font-size: 13px !important; padding: 10px 20px !important; margin-top: 6px !important; }
+
+      /* ── FILTRES CATÉGORIES MOBILES — style pills scrollable ── */
+      .mobile-cats {
+        display: flex;
+        gap: 8px;
+        overflow-x: auto;
+        padding: 12px 1.25rem;
+        scrollbar-width: none;
+        background: var(--bg);
+        position: sticky;
+        top: var(--hh);
+        z-index: 50;
+        border-bottom: 1px solid var(--border);
+        -webkit-overflow-scrolling: touch;
+      }
+      .mobile-cats::-webkit-scrollbar { display: none; }
+      .mobile-cat-pill {
+        flex-shrink: 0;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-family: 'DM Sans', sans-serif;
+        font-size: 12px;
+        font-weight: 500;
+        padding: 6px 14px;
+        border-radius: 99px;
+        border: 1px solid var(--border);
+        background: var(--bg-card);
+        color: var(--text-sub);
+        cursor: pointer;
+        transition: all .15s;
+        white-space: nowrap;
+      }
+      .mobile-cat-pill.on {
+        background: var(--gold);
+        border-color: var(--gold);
+        color: #111;
+        font-weight: 600;
+      }
+      .mobile-cat-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+
+      /* Cacher la toolbar classique sur mobile */
+      .toolbar { display: none !important; }
+
+      /* Search bar flottante en haut du header mobile */
+      .mobile-search-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: var(--text-sub);
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        transition: color .15s;
+      }
+      .mobile-search-btn:hover { color: var(--text); }
     }
     .hero-bg {
       position: absolute; inset: 0;
