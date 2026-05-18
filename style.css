@@ -1,4 +1,4 @@
-    /* ── RESET ── */
+/* ── RESET ── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
       --gold: #c8a96e;
@@ -70,9 +70,9 @@
       #section-agenda .hero { min-height: min(640px, 100svh); }
     }
     @media(max-width:700px){
-      #section-agenda .hero { min-height: 100svh; }
+      #section-agenda .hero { min-height: 100svh; display: none; }
       @supports not (min-height: 100svh) {
-        #section-agenda .hero { min-height: calc(100vh - 60px); }
+        #section-agenda .hero { min-height: calc(100vh - 60px); display: none; }
       }
     }
     .hero-bg {
