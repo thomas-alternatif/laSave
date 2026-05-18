@@ -385,7 +385,7 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
 
   /* ── STATS HERO ── */
   function updateStats(){
-    const fut=allEvents.filter(e=>isFut(e.Date)||(e['Récurrence']&&e['Récurrence']!=='Aucune'));
+    const fut=allEvents.filter(e=>isActive(e));
     const soon=allEvents.filter(e=>isSoon(e.Date));
     if(fut.length){$('#stat-total').textContent=fut.length;$('#hero-stats').style.display='flex';}
     if(soon.length){$('#stat-soon').textContent=soon.length;$('#stat-soon-wrap').style.display='flex';}
