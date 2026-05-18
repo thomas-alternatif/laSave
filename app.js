@@ -162,24 +162,36 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
     else if(m.fallback)imgHtml=`<img src="${m.fallback}" alt="" loading="lazy" style="filter:brightness(.7) saturate(.75);" />`;
     else imgHtml=`<div class="card-img-placeholder" style="background:linear-gradient(135deg,${m.color}28,${m.color}0e);" aria-hidden="true">${m.emoji}</div>`;
 
+    const orga = findOrga(ev.Organisation);
+    const orgaInitiales = ev.Organisation ? ev.Organisation.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase() : '';
+    const orgaCouleur = ev.Organisation ? `hsl(${ev.Organisation.split('').reduce((a,c)=>a+c.charCodeAt(0),0)%360},45%,55%)` : '';
+    const excerpt = ev.Description ? ev.Description.slice(0,80)+(ev.Description.length>80?'…':'') : '';
+
     card.innerHTML=`
+      ${orga ? `
+      <div class="card-header">
+        <div class="card-header-avatar" data-orga="${esc(ev.Organisation||'')}">
+          ${orga.photo
+            ? `<img src="${esc(orga.photo)}" alt="${esc(ev.Organisation)}" loading="lazy"/>`
+            : `<span style="color:${orgaCouleur}">${orgaInitiales}</span>`
+          }
+        </div>
+        <div class="card-header-info" data-orga="${esc(ev.Organisation||'')}">
+          <div class="card-header-name">${esc(orga.nom)}</div>
+          <div class="card-header-cat">${esc(cat)}</div>
+        </div>
+        <button class="btn-share" type="button" title="Partager" aria-label="Partager cet événement" style="margin-left:auto;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+        </button>
+      </div>` : ''}
       <div class="card-img">
         ${imgHtml}
-        <span class="card-cat-badge" style="background:${m.color}28;color:${m.color};">${esc(cat)}</span>
+        ${!orga?`<span class="card-cat-badge" style="background:${m.color}28;color:${m.color};">${esc(cat)}</span>`:''}
         ${featured?'<span class="badge-featured">À la une</span>':''}
         ${soon?'<span class="badge-soon">Bientôt</span>':''}
         ${vues>0?`<span class="badge-vues"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> ${vues}</span>`:''}
       </div>
       <div class="card-body">
-        ${ev.Organisation && findOrga(ev.Organisation) ? `
-        <div class="card-orga" data-orga="${esc(ev.Organisation)}">
-          <div class="card-orga-avatar">${
-            findOrga(ev.Organisation).photo
-              ? `<img src="${esc(findOrga(ev.Organisation).photo)}" alt="${esc(ev.Organisation)}" loading="lazy"/>`
-              : `<span style="color:hsl(${ev.Organisation.split('').reduce((a,c)=>a+c.charCodeAt(0),0)%360},45%,55%)">${ev.Organisation.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase()}</span>`
-          }</div>
-          <span class="card-orga-name">${esc(ev.Organisation)}</span>
-        </div>` : ''}
         <h3 class="card-title">${esc(ev.Titre||'Sans titre')}</h3>
         <div class="card-commune" style="color:${m.color}">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
@@ -190,14 +202,15 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
           ${esc(dateStr)}${ev.Heure?` · ${esc(ev.Heure)}`:''}
         </div>
         ${isRec?`<div class="rec-badge" style="color:${m.color};border-color:${m.color}35;background:${m.color}0d;">🔁 ${esc(ev['Récurrence'])}</div>`:''}
+        ${excerpt?`<div class="card-excerpt">${esc(excerpt)}</div>`:''}
       </div>
       <div class="card-foot">
         <span class="card-price">${ev.Tarif?`<strong>${esc(ev.Tarif)}</strong>`:''}</span>
         <div class="card-actions">
           <button class="btn-card-more" type="button" aria-label="En savoir plus sur ${esc(ev.Titre||'')}">En savoir plus</button>
-          <button class="btn-share" type="button" title="Partager" aria-label="Partager cet événement">
+          ${!orga?`<button class="btn-share" type="button" title="Partager" aria-label="Partager cet événement">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-          </button>
+          </button>`:''}
         </div>
       </div>
     `;
@@ -205,9 +218,9 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
     // Clic sur la card entière (sauf boutons) → modale
     card.addEventListener('click',e=>{
       if(e.target.closest('.btn-share,.btn-card-more'))return;
-      // Clic sur le logo organisateur → ouvrir profil
-      const orgaEl=e.target.closest('.card-orga');
-      if(orgaEl&&findOrga(orgaEl.dataset.orga)){
+      // Clic sur header organisateur → ouvrir profil
+      const orgaEl=e.target.closest('.card-header-avatar,.card-header-info');
+      if(orgaEl&&orgaEl.dataset.orga&&findOrga(orgaEl.dataset.orga)){
         e.stopPropagation();
         const o=findOrga(orgaEl.dataset.orga);
         openOrgaModal({...o,ateliers:allEvents.filter(ev=>norm(ev.Organisation||'')===norm(o.nom))});
@@ -216,7 +229,7 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
       openModal(ev);
     });
     card.querySelector('.btn-card-more').addEventListener('click',()=>openModal(ev));
-    card.querySelector('.btn-share').addEventListener('click',e=>{e.stopPropagation();openShareModal(ev)});
+    card.querySelectorAll('.btn-share').forEach(btn=>btn.addEventListener('click',e=>{e.stopPropagation();openShareModal(ev)}));
     return card;
   }
 
