@@ -63,11 +63,11 @@
     /* ── HERO ── */
     #section-agenda .hero {
       position: relative; overflow: hidden;
-      min-height: 640px; display: flex; align-items: flex-end;
+      min-height: 820px; display: flex; align-items: flex-end;
     }
     /* iOS/Android : utilise svh pour tenir compte de la barre d'adresse */
     @supports (min-height: 100svh) {
-      #section-agenda .hero { min-height: min(640px, 100svh); }
+      #section-agenda .hero { min-height: min(820px, 96svh); }
     }
     @media(max-width:700px){
       #section-agenda .hero { min-height: 100svh; display: none; }
@@ -161,11 +161,14 @@
       position: absolute; inset: 0;
       background: linear-gradient(
         to bottom,
-        rgba(13,13,13,0.08) 0%,
-        rgba(13,13,13,0.15) 30%,
-        rgba(13,13,13,0.55) 60%,
-        rgba(13,13,13,0.88) 78%,
-        #0d0d0d 95%
+        rgba(13,13,13,0.04) 0%,
+        transparent 15%,
+        transparent 35%,
+        rgba(13,13,13,0.08) 50%,
+        rgba(13,13,13,0.42) 68%,
+        rgba(13,13,13,0.82) 82%,
+        rgba(13,13,13,0.96) 92%,
+        #0d0d0d 100%
       );
     }
     .hero-body {
