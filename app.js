@@ -29,6 +29,7 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
 
   /* ── ÉTAT ── */
   let allEvents=[],viewMode=localStorage.getItem('lsv')||'grid',currentCat='all',currentSearch='',sugIdx=-1;
+  let orgasMap={}; // map nom → fiche organisateur (chargée depuis Airtable)
 
   /* ── UTILS ── */
   const $=(s,c=document)=>c.querySelector(s);
@@ -170,6 +171,15 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
         ${vues>0?`<span class="badge-vues"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> ${vues}</span>`:''}
       </div>
       <div class="card-body">
+        ${ev.Organisation && orgasMap[ev.Organisation] ? `
+        <div class="card-orga" data-orga="${esc(ev.Organisation)}">
+          <div class="card-orga-avatar">${
+            orgasMap[ev.Organisation].photo
+              ? `<img src="${esc(orgasMap[ev.Organisation].photo)}" alt="${esc(ev.Organisation)}" loading="lazy"/>`
+              : `<span style="color:hsl(${ev.Organisation.split('').reduce((a,c)=>a+c.charCodeAt(0),0)%360},45%,55%)">${ev.Organisation.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase()}</span>`
+          }</div>
+          <span class="card-orga-name">${esc(ev.Organisation)}</span>
+        </div>` : ''}
         <h3 class="card-title">${esc(ev.Titre||'Sans titre')}</h3>
         <div class="card-commune" style="color:${m.color}">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
@@ -195,6 +205,14 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
     // Clic sur la card entière (sauf boutons) → modale
     card.addEventListener('click',e=>{
       if(e.target.closest('.btn-share,.btn-card-more'))return;
+      // Clic sur le logo organisateur → ouvrir profil
+      const orgaEl=e.target.closest('.card-orga');
+      if(orgaEl&&orgasMap[orgaEl.dataset.orga]){
+        e.stopPropagation();
+        const o=orgasMap[orgaEl.dataset.orga];
+        openOrgaModal({...o,ateliers:allEvents.filter(ev=>ev.Organisation===o.nom)});
+        return;
+      }
       openModal(ev);
     });
     card.querySelector('.btn-card-more').addEventListener('click',()=>openModal(ev));
@@ -566,10 +584,9 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
     // Fetch & render
     allEvents=await fetchEvents();
     const orgas=await fetchOrganisateurs();
-    const atelierEvents=allEvents.filter(e=>CAT_ATELIERS.includes(e['Catégorie'])&&e.Organisation);
     buildCatMenu();setupSlider(allEvents);renderEvents();
     buildMobileCats(allEvents);
-    buildOrganisateurs(orgas,atelierEvents);
+    buildOrganisateurs(orgas, allEvents);
     updateStats();injectJsonLd(allEvents);
     setupAdmin();
 
@@ -712,7 +729,7 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
 
     // Liste des ateliers
     if(orga.ateliers.length){
-      html+=`<div style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:.75rem;">Ateliers &amp; cours</div>`;
+      html+=`<div style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:.75rem;">Événements</div>`;
       html+=orga.ateliers.map(ev=>{
         const tags=[];
         if(ev.Tarif)tags.push(ev.Tarif);
@@ -885,19 +902,35 @@ async function fetchOrganisateurs() {
   } catch (e) { return []; }
 }
 
-function buildOrganisateurs(orgas, atelierEvents) {
+function buildOrganisateurs(orgas, allEvts) {
   const wrap = $('#ateliers-wrap');
   const stories = $('#ateliers-stories');
   stories.innerHTML = '';
 
-  // Uniquement les organisateurs validés depuis la table Airtable
+  // Peupler orgasMap pour l'utiliser dans buildCard
+  orgasMap = {};
+  orgas.forEach(o => {
+    orgasMap[o.Nom] = {
+      nom: o.Nom,
+      photo: o.Photo?.[0]?.thumbnails?.large?.url || o.Photo?.[0]?.url || null,
+      descCourte: o['Description courte'] || '',
+      desc: o['Description'] || '',
+      contact: o.Contact || '',
+      commune: o.Commune || ''
+    };
+  });
+
   if (!orgas.length) { wrap.style.display = 'none'; return; }
 
   $('#ateliers-count').textContent = `${orgas.length} organisateur${orgas.length > 1 ? 's' : ''}`;
 
   orgas.forEach(orga => {
-    // Récupérer les ateliers liés depuis les événements (par nom d'organisation)
-    const ateliers = atelierEvents.filter(e => e.Organisation === orga.Nom);
+    // Tous les événements de cet organisateur
+    const evts = allEvts.filter(e => e.Organisation === orga.Nom);
+    const orgaData = {
+      ...orgasMap[orga.Nom],
+      ateliers: evts // on garde le nom "ateliers" pour la modale mais c'est tous les events
+    };
 
     const item = document.createElement('div');
     item.className = 'story-item';
@@ -907,7 +940,7 @@ function buildOrganisateurs(orgas, atelierEvents) {
 
     const initiales = orga.Nom.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
     const couleur = `hsl(${orga.Nom.split('').reduce((a, c) => a + c.charCodeAt(0), 0) % 360},45%,55%)`;
-    const photo = orga.Photo?.[0]?.thumbnails?.large?.url || orga.Photo?.[0]?.url || null;
+    const photo = orgaData.photo;
 
     item.innerHTML = `
       <div class="story-ring">
@@ -919,14 +952,16 @@ function buildOrganisateurs(orgas, atelierEvents) {
         </div>
       </div>
       <span class="story-label">${esc(orga.Nom)}</span>
-      ${ateliers.length ? `<span class="story-nb">${ateliers.length} atelier${ateliers.length > 1 ? 's' : ''}</span>` : ''}
+      ${evts.length ? `<span class="story-nb">${evts.length} événement${evts.length > 1 ? 's' : ''}</span>` : ''}
     `;
 
-    const open = () => openOrgaModal({ ...orga, nom: orga.Nom, photo, ateliers, descCourte: orga['Description courte'] || '', desc: orga['Description'] || '', contact: orga.Contact || '', commune: orga.Commune || '' });
+    const open = () => openOrgaModal(orgaData);
     item.addEventListener('click', open);
     item.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') open(); });
     stories.appendChild(item);
   });
 
   wrap.style.display = '';
+  // Reconstruire les cards pour afficher les logos maintenant que orgasMap est peuplé
+  renderEvents();
 }
