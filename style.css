@@ -160,9 +160,9 @@
     .grid-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border); }
     .grid-title { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; color: var(--text); }
     .grid-count { font-size: 12px; color: var(--text-muted); }
-    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); gap: 20px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
 
-    /* ── CARDS ── */
+    /* ── CARDS POSTER ── */
     .card {
       background: rgba(12,12,18,0.55);
       border: 1px solid rgba(255,255,255,0.1);
@@ -180,60 +180,47 @@
       border-color: rgba(200,169,110,0.3);
       transform: translateY(-6px) scale(1.01);
       box-shadow: 0 28px 70px rgba(0,0,0,0.65), 0 0 0 1px rgba(200,169,110,0.1), inset 0 1px 0 rgba(255,255,255,0.12);
-      backdrop-filter: blur(22px) saturate(1.8) brightness(1.08);
-      -webkit-backdrop-filter: blur(22px) saturate(1.8) brightness(1.08);
     }
+    .card::before { content:''; position:absolute; top:0; left:0; right:0; height:1px; background:linear-gradient(to right, transparent, rgba(255,255,255,0.18), transparent); z-index:10; pointer-events:none; }
     @keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:none} }
     .card:nth-child(1){animation-delay:0s}.card:nth-child(2){animation-delay:.05s}.card:nth-child(3){animation-delay:.1s}
     .card:nth-child(4){animation-delay:.15s}.card:nth-child(5){animation-delay:.2s}.card:nth-child(6){animation-delay:.25s}
-    .card-img { position: relative; width: 100%; height: 210px; overflow: hidden; }
-    .card-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .6s cubic-bezier(.2,.8,.2,1), filter .3s; filter: brightness(.85) saturate(1.1); }
-    .card:hover .card-img img { transform: scale(1.06); filter: brightness(.95) saturate(1.2); }
-    .card-img::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to bottom, transparent 45%, rgba(13,13,13,0.45) 100%); pointer-events: none; }
-    /* Reflet glass en haut de la card */
-    .card::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 1px;
-      background: linear-gradient(to right, transparent, rgba(255,255,255,0.18), transparent);
-      z-index: 10;
-      pointer-events: none;
-    }
-    .card-img-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 52px; }
-    .card-cat-badge { position: absolute; bottom: 10px; left: 12px; z-index: 2; font-size: 9px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; padding: 4px 10px; border-radius: 4px; background: rgba(0,0,0,0.45); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
-    .badge-soon { position: absolute; top: 10px; right: 10px; z-index: 2; background: var(--grad); color: #fff; font-size: 9px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; padding: 3px 8px; border-radius: 4px; }
-    .badge-featured { position: absolute; top: 10px; left: 12px; z-index: 2; background: var(--gold); color: #111; font-size: 9px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; padding: 3px 8px; border-radius: 4px; }
-    .badge-vues { position: absolute; bottom: 10px; right: 10px; z-index: 2; background: rgba(0,0,0,0.55); backdrop-filter: blur(10px); color: rgba(255,255,255,0.82); font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; gap: 4px; }
-    .card-body { padding: 13px 16px 10px; }
-    .card-title { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700; color: var(--text); line-height: 1.25; margin-bottom: 6px; }
-    .card-commune { font-size: 11px; font-weight: 500; margin-bottom: 0; display: flex; align-items: center; gap: 5px; }
-    .card-header { display:flex; align-items:center; gap:10px; padding:10px 14px; border-bottom:1px solid rgba(255,255,255,0.07); background:rgba(255,255,255,0.04); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); }
-    .card-header-avatar { width:34px; height:34px; border-radius:50%; overflow:hidden; flex-shrink:0; background:rgba(255,255,255,0.06); border:1.5px solid rgba(255,255,255,0.1); display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; cursor:pointer; transition:transform .15s,border-color .15s; }
-    .card-header-avatar:hover { transform:scale(1.08); border-color:var(--gold); }
-    .card-header-avatar img { width:100%; height:100%; object-fit:cover; display:block; }
-    .card-header-info { flex:1; min-width:0; cursor:pointer; }
-    .card-header-name { font-size:12px; font-weight:600; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; transition:color .15s; }
-    .card-header-info:hover .card-header-name { color:var(--gold); }
-    .card-header-cat { display:none; }
-    .card-excerpt { font-size:12px; color:var(--text-muted); line-height:1.55; margin-top:6px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
-    .card-orga { display:none; }
-    .card-date { font-size: 11px; color: var(--text-sub); display: flex; align-items: center; gap: 6px; }
-    .card-dot { width: 4px; height: 4px; border-radius: 50%; flex-shrink: 0; }
-    .rec-badge { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; border: 1px solid; padding: 3px 8px; border-radius: 99px; margin-top: 8px; }
-    .card-foot { padding: 10px 14px 14px; display: flex; align-items: center; justify-content: flex-end; gap: 8px; border-top: 1px solid rgba(255,255,255,0.05); }
-    .card-price { font-size: 12px; color: var(--text-sub); font-weight: 400; }
-    .card-price strong { color: var(--text); font-weight: 500; }
-    .card-actions { display: flex; align-items: center; gap: 6px; }
-    .btn-card-more { display: inline-flex; align-items: center; gap: 5px; font-family: inherit; font-size: 11px; font-weight: 500; color: var(--text-sub); background: rgba(255,255,255,0.06); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.1); cursor: pointer; padding: 6px 14px; border-radius: 99px; transition: all .18s; white-space: nowrap; }
-    .btn-card-more:hover { border-color: var(--gold); color: var(--gold); background: rgba(200,169,110,0.06); }
-    .card-cal { display: flex; gap: 5px; opacity: 0; transform: translateX(6px); transition: opacity .2s, transform .2s; pointer-events: none; }
-    .card:hover .card-cal { opacity: 1; transform: none; pointer-events: auto; }
-    @media(hover:none){.card-cal{opacity:1;transform:none;pointer-events:auto}}
-    .card-cal-btn { background: rgba(255,255,255,0.05); border: 1px solid var(--border); cursor: pointer; border-radius: 6px; display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; transition: all .15s; }
-    .card-cal-btn:hover { background: rgba(255,255,255,0.1); border-color: var(--border-hover); transform: translateY(-2px); }
-    .btn-share { background: rgba(255,255,255,0.07); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.12); cursor: pointer; border-radius: 6px; display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; color: var(--text-sub); transition: all .15s; flex-shrink: 0; }
-    .btn-share:hover { background: rgba(255,255,255,0.1); border-color: var(--border-hover); color: var(--text); transform: translateY(-2px); }
+
+    /* Format affiche */
+    .card-poster { display:flex; flex-direction:column; }
+    .card-poster-img { position:relative; width:100%; aspect-ratio:2/3; overflow:hidden; }
+    .card-poster-img img, .card-img-placeholder { width:100%; height:100%; object-fit:cover; display:block; transition:transform .7s cubic-bezier(.2,.8,.2,1), filter .4s; filter:brightness(.88) saturate(1.1); }
+    .card:hover .card-poster-img img { transform:scale(1.07); filter:brightness(.96) saturate(1.25); }
+    .card-poster-overlay { position:absolute; inset:0; background:linear-gradient(to bottom, transparent 35%, rgba(0,0,0,0.15) 55%, rgba(0,0,0,0.68) 80%, rgba(0,0,0,0.9) 100%); pointer-events:none; }
+    .card-poster-top { position:absolute; top:12px; left:12px; right:12px; z-index:3; display:flex; align-items:center; gap:6px; }
+    .card-poster-top-right { margin-left:auto; display:flex; align-items:center; gap:6px; }
+    .card-poster-share { width:28px!important; height:28px!important; border-radius:50%!important; background:rgba(0,0,0,0.5)!important; backdrop-filter:blur(10px)!important; border:1px solid rgba(255,255,255,0.15)!important; opacity:0; transition:opacity .2s!important; }
+    .card:hover .card-poster-share { opacity:1; }
+    .card-poster-bottom { position:absolute; bottom:0; left:0; right:0; z-index:3; padding:0 14px 14px; display:flex; align-items:flex-end; gap:10px; }
+    .card-poster-orga { flex-shrink:0; cursor:pointer; }
+    .card-poster-avatar { width:32px; height:32px; border-radius:50%; overflow:hidden; border:2px solid rgba(255,255,255,0.7); background:rgba(0,0,0,0.4); backdrop-filter:blur(8px); display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:border-color .15s, transform .15s; }
+    .card-poster-orga:hover .card-poster-avatar { border-color:var(--gold); transform:scale(1.08); }
+    .card-poster-avatar img { width:100%; height:100%; object-fit:cover; display:block; }
+    .card-poster-info { flex:1; min-width:0; }
+    .card-poster-title { font-family:'Playfair Display',serif; font-size:clamp(14px,2vw,18px); font-weight:900; color:#fff; line-height:1.2; margin-bottom:5px; text-shadow:0 1px 6px rgba(0,0,0,0.8); display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+    .card-poster-meta { display:flex; align-items:center; gap:6px; }
+    .card-poster-cat { font-size:10px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; }
+    .card-poster-sep { font-size:10px; color:rgba(255,255,255,0.4); }
+    .card-poster-commune { font-size:11px; color:rgba(255,255,255,0.72); font-weight:500; }
+    .card-poster-foot { padding:9px 14px 11px; display:flex; justify-content:flex-end; border-top:1px solid rgba(255,255,255,0.05); }
+    /* Badges */
+    .badge-soon { font-size:9px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; padding:3px 8px; border-radius:4px; background:var(--grad); color:#fff; }
+    .badge-featured { font-size:9px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; padding:3px 8px; border-radius:4px; background:var(--gold); color:#111; }
+    .badge-vues { background:rgba(0,0,0,0.5); backdrop-filter:blur(10px); color:rgba(255,255,255,0.82); font-size:10px; font-weight:600; padding:3px 8px; border-radius:20px; border:1px solid rgba(255,255,255,0.08); display:flex; align-items:center; gap:4px; }
+    /* Ancien HTML caché */
+    .card-img { display:none; }
+    .card-header { display:none; }
+    .card-body { display:none; }
+    .card-foot { display:none; }
+    .btn-share { background:rgba(255,255,255,0.07); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border:1px solid rgba(255,255,255,0.12); cursor:pointer; border-radius:6px; display:flex; align-items:center; justify-content:center; width:30px; height:30px; color:var(--text-sub); transition:all .15s; flex-shrink:0; }
+    .btn-share:hover { background:rgba(255,255,255,0.1); color:var(--text); transform:translateY(-2px); }
+    .btn-card-more { display:inline-flex; align-items:center; gap:5px; font-family:inherit; font-size:11px; font-weight:500; color:var(--text-sub); background:rgba(255,255,255,0.06); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border:1px solid rgba(255,255,255,0.1); cursor:pointer; padding:6px 14px; border-radius:99px; transition:all .18s; white-space:nowrap; }
+    .btn-card-more:hover { border-color:var(--gold); color:var(--gold); background:rgba(200,169,110,0.06); }
 
     /* ── VUE LISTE ── */
     .grid.list { grid-template-columns: 1fr; gap: 12px; }
