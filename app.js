@@ -171,49 +171,53 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
     const excerpt = ev.Description ? ev.Description.slice(0,80)+(ev.Description.length>80?'…':'') : '';
 
     card.innerHTML=`
-      ${hasOrg ? `
-      <div class="card-header">
-        <div class="card-header-avatar" data-orga="${esc(ev.Organisation||'')}">
-          ${orgaPhoto
-            ? `<img src="${esc(orgaPhoto)}" alt="${esc(orgaNom)}" loading="lazy"/>`
-            : `<span style="color:${orgaCouleur}">${orgaInitiales}</span>`
-          }
+      <div class="card-poster">
+        <!-- Image plein format -->
+        <div class="card-poster-img">
+          ${imgHtml}
+          <!-- Dégradé bas pour lisibilité du texte -->
+          <div class="card-poster-overlay"></div>
+          <!-- Badges discrets en haut -->
+          <div class="card-poster-top">
+            ${featured?'<span class="badge-featured">À la une</span>':''}
+            ${soon?'<span class="badge-soon">Bientôt</span>':''}
+            <div class="card-poster-top-right">
+              ${vues>0?`<span class="badge-vues"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> ${vues}</span>`:''}
+              <button class="btn-share card-poster-share" type="button" aria-label="Partager">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+              </button>
+            </div>
+          </div>
+          <!-- Contenu bas : avatar + titre + commune -->
+          <div class="card-poster-bottom">
+            ${hasOrg?`
+            <div class="card-poster-orga" data-orga="${esc(ev.Organisation||'')}">
+              <div class="card-poster-avatar">
+                ${orgaPhoto
+                  ?`<img src="${esc(orgaPhoto)}" alt="${esc(orgaNom)}" loading="lazy"/>`
+                  :`<span style="color:${orgaCouleur};font-size:10px;font-weight:700;">${orgaInitiales}</span>`
+                }
+              </div>
+            </div>`:''}
+            <div class="card-poster-info">
+              <h3 class="card-poster-title">${esc(ev.Titre||'Sans titre')}</h3>
+              <div class="card-poster-meta">
+                <span class="card-poster-cat" style="color:${m.color}">${esc(cat)}</span>
+                ${ev.Commune?`<span class="card-poster-sep">·</span><span class="card-poster-commune">${esc(ev.Commune)}</span>`:''}
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="card-header-info" data-orga="${esc(ev.Organisation||'')}">
-          <div class="card-header-name">${esc(orgaNom)}</div>
-          <div class="card-header-cat">${esc(cat)}</div>
-        </div>
-        <button class="btn-share" type="button" title="Partager" aria-label="Partager cet événement" style="margin-left:auto;">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-        </button>
-      </div>` : ''}
-      <div class="card-img">
-        ${imgHtml}
-        <span class="card-cat-badge" style="background:${m.color}28;color:${m.color};">${esc(cat)}</span>
-        ${featured?'<span class="badge-featured">À la une</span>':''}
-        ${soon?'<span class="badge-soon">Bientôt</span>':''}
-        ${vues>0?`<span class="badge-vues"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> ${vues}</span>`:''}
-      </div>
-      <div class="card-body">
-        <h3 class="card-title">${esc(ev.Titre||'Sans titre')}</h3>
-        ${ev.Commune?`<div class="card-commune" style="color:${m.color}">
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-          ${esc(ev.Commune)}
-        </div>`:''}
-      </div>
-      <div class="card-foot">
-        <div class="card-actions" style="margin-left:auto;">
-          <button class="btn-card-more" type="button" aria-label="En savoir plus sur ${esc(ev.Titre||'')}">En savoir plus</button>
-          ${!hasOrg?`<button class="btn-share" type="button" title="Partager" aria-label="Partager cet événement">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-          </button>`:''}
+        <!-- Bouton en savoir plus -->
+        <div class="card-poster-foot">
+          <button class="btn-card-more" type="button">En savoir plus</button>
         </div>
       </div>
     `;
 
     card.addEventListener('click',e=>{
       if(e.target.closest('.btn-share,.btn-card-more'))return;
-      const orgaEl=e.target.closest('.card-header-avatar,.card-header-info');
+      const orgaEl=e.target.closest('.card-poster-orga');
       if(orgaEl&&orgaEl.dataset.orga&&findOrga(orgaEl.dataset.orga)){
         e.stopPropagation();
         const o=findOrga(orgaEl.dataset.orga);
