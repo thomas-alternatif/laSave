@@ -172,43 +172,46 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
 
     card.innerHTML=`
       <div class="card-poster">
-        <!-- Image plein format -->
         <div class="card-poster-img">
           ${imgHtml}
-          <!-- Dégradé bas pour lisibilité du texte -->
-          <div class="card-poster-overlay"></div>
-          <!-- Badges discrets en haut -->
+          <!-- HAUT : avatar orga à gauche, lieu à droite, partage tout à droite -->
           <div class="card-poster-top">
-            ${featured?'<span class="badge-featured">À la une</span>':''}
-            ${soon?'<span class="badge-soon">Bientôt</span>':''}
-            <div class="card-poster-top-right">
-              ${vues>0?`<span class="badge-vues"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> ${vues}</span>`:''}
+            ${hasOrg?`
+            <div class="card-poster-orga" data-orga="${esc(ev.Organisation||'')}" title="${esc(orgaNom)}">
+              <div class="card-poster-avatar">
+                ${orgaPhoto
+                  ?`<img src="${esc(orgaPhoto)}" alt="${esc(orgaNom)}" loading="lazy"/>`
+                  :`<span style="color:${orgaCouleur};font-size:11px;font-weight:700;">${orgaInitiales}</span>`
+                }
+              </div>
+            </div>`:''}
+            ${ev.Commune?`
+            <div class="card-poster-location">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+              </svg>
+              <span>${esc(ev.Commune)}</span>
+            </div>`:''}
+            <div class="card-poster-top-actions">
+              ${featured?'<span class="badge-featured">★</span>':''}
+              ${soon?'<span class="badge-soon">Bientôt</span>':''}
               <button class="btn-share card-poster-share" type="button" aria-label="Partager">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
               </button>
             </div>
           </div>
-          <!-- Contenu bas : avatar + titre + commune -->
+          <!-- BAS : titre + catégorie avec flou fondu -->
           <div class="card-poster-bottom">
-            ${hasOrg?`
-            <div class="card-poster-orga" data-orga="${esc(ev.Organisation||'')}">
-              <div class="card-poster-avatar">
-                ${orgaPhoto
-                  ?`<img src="${esc(orgaPhoto)}" alt="${esc(orgaNom)}" loading="lazy"/>`
-                  :`<span style="color:${orgaCouleur};font-size:10px;font-weight:700;">${orgaInitiales}</span>`
-                }
-              </div>
-            </div>`:''}
+            <div class="card-poster-bottom-blur"></div>
             <div class="card-poster-info">
               <h3 class="card-poster-title">${esc(ev.Titre||'Sans titre')}</h3>
               <div class="card-poster-meta">
                 <span class="card-poster-cat" style="color:${m.color}">${esc(cat)}</span>
-                ${ev.Commune?`<span class="card-poster-sep">·</span><span class="card-poster-commune">${esc(ev.Commune)}</span>`:''}
+                ${vues>0?`<span class="card-poster-sep">·</span><span class="card-poster-vues"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> ${vues}</span>`:''}
               </div>
             </div>
           </div>
         </div>
-        <!-- Bouton en savoir plus -->
         <div class="card-poster-foot">
           <button class="btn-card-more" type="button">En savoir plus</button>
         </div>
