@@ -42,36 +42,6 @@
 
   <!-- ══ AGENDA ══ -->
   <main id="section-agenda" class="section active">
-    <div class="hero">
-      <div class="hero-bg" id="hero-bg" aria-hidden="true"></div>
-      <div class="hero-overlay" aria-hidden="true"></div>
-      <div class="hero-body">
-        <p class="hero-kicker">Vallée de la Save — Haute-Garonne</p>
-        <h1 class="hero-h1">Ce qui se passe<br><em>près de chez vous</em></h1>
-        <p class="hero-sub">Concerts, fêtes de village, marchés et spectacles. L'agenda culturel de la vallée de la Save.</p>
-        <div class="hero-actions">
-          <button class="btn-primary" onclick="document.getElementById('s-input').focus()">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-            Trouver un événement
-          </button>
-          <button class="btn-ghost" onclick="showSection('partager',document.querySelector('.nav-cta'))">
-            <svg width="12" height="12" viewBox="0 0 13 13" fill="none" aria-hidden="true"><line x1="6.5" y1="1" x2="6.5" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="1" y1="6.5" x2="12" y2="6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-            Proposer un événement
-          </button>
-        </div>
-        <div class="hero-stats" id="hero-stats" style="display:none;" aria-live="polite">
-          <div class="hero-stat">
-            <div class="hero-stat-num" id="stat-total">—</div>
-            <div class="hero-stat-label">événements à venir</div>
-          </div>
-          <div class="hero-stat" id="stat-soon-wrap" style="display:none;">
-            <div class="hero-stat-num" id="stat-soon">—</div>
-            <div class="hero-stat-label">cette semaine</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <!-- Slider -->
     <div class="slider-wrap" id="slider-wrap" style="display:none;">
       <div id="featured-container"></div>
@@ -99,34 +69,23 @@
         </button>
         <div class="cat-menu" id="cat-menu" role="listbox"></div>
       </div>
-
-      <div class="view-tg" role="group" aria-label="Mode d'affichage">
-        <button class="view-btn on" data-view="grid" type="button" aria-label="Grille" title="Vue grille">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-        </button>
-        <button class="view-btn" data-view="list" type="button" aria-label="Liste" title="Vue liste">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-        </button>
-      </div>
     </div>
 
     <!-- Ateliers & Cours — style stories -->
     <div class="ateliers-wrap" id="ateliers-wrap" style="display:none;">
       <div class="ateliers-head">
         <h2 class="ateliers-title">Ceux qui font vivre la Save</h2>
-        <span id="ateliers-count" style="display:none;"></span>
       </div>
       <div class="ateliers-stories" id="ateliers-stories"></div>
     </div>
 
-    <!-- Filtres catégories mobile (style pills streaming) -->
+    <!-- Filtres catégories mobile -->
     <div class="mobile-cats" id="mobile-cats" style="display:none;"></div>
 
     <!-- Grille -->
     <div class="grid-wrap">
       <div class="grid-head">
-        <h2 class="grid-title">Événements</h2>
-        <span class="grid-count" id="event-count" aria-live="polite"></span>
+        <h2 class="grid-title">À l'agenda <span class="grid-count" id="event-count" aria-live="polite"></span></h2>
       </div>
       <div class="grid" id="events-container" role="region" aria-label="Liste des événements">
         <div class="loading">Chargement…</div>
@@ -326,18 +285,13 @@
     <div>
       <div class="footer-logo">la<span>Save</span></div>
       <div class="footer-copy">
-        Une initiative de la <a href="http://www.mairie-saintpaulsursave.fr" target="_blank" rel="noopener">Mairie de Saint-Paul-sur-Save</a> (31)<br>
-        <a href="mailto:contact@saintpaulsursave.fr">contact@saintpaulsursave.fr</a>
-        <span class="footer-a11y">Accessibilité : partielle</span>
+        Mairie de Saint-Paul-sur-Save (31) — <a href="mailto:contact@saintpaulsursave.fr">contact</a>
       </div>
     </div>
     <nav class="footer-links" aria-label="Liens secondaires">
-      <a onclick="showSection('agenda',null)">Agenda</a>
       <a onclick="showSection('partager',null)">Partager un événement</a>
       <a onclick="showSection('legal',null);openLegalTab('mentions')">Mentions légales</a>
-      <a onclick="showSection('legal',null);openLegalTab('rgpd')">RGPD</a>
-      <a onclick="showSection('legal',null);openLegalTab('a11y')">Accessibilité</a>
-      <a href="mailto:agenda.de.la.save@gmail.com">Contact agenda</a>
+      <a onclick="showSection('legal',null);openLegalTab('rgpd')">Confidentialité</a>
     </nav>
   </footer>
 
