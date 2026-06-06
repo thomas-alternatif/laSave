@@ -159,9 +159,55 @@
       .legal-tab.on { color: #6b5a2e; border-bottom-color: #6b5a2e; }
 
       /* SLIDER */
-      .ns-t { color: #fff !important; text-shadow: 0 2px 12px rgba(0,0,0,0.7) !important; }
-      .ns-desc, .ns-m, .ns-org { color: rgba(255,255,255,0.85) !important; }
-      /* Le slider garde un fond sombre (photos), donc texte reste blanc */
+      /* En mode clair : supprimer les fondus sombres, garder photo visible */
+      #ns-bg::after {
+        background: linear-gradient(108deg,
+          rgba(255,255,255,0.05) 0%,
+          rgba(255,255,255,0) 50%,
+          rgba(255,255,255,0) 100%) !important;
+      }
+      #featured-container::after { display: none !important; }
+      #featured-container::before { display: none !important; }
+      /* Flou transparent attaché au bloc texte uniquement */
+      #ns-content {
+        position: absolute !important;
+        background: rgba(255,255,255,0.55);
+        backdrop-filter: blur(28px) saturate(1.6);
+        -webkit-backdrop-filter: blur(28px) saturate(1.6);
+        padding: 24px 32px !important;
+        border-radius: 16px;
+        border: 1px solid rgba(255,255,255,0.6);
+        box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+        max-width: 540px !important;
+        left: 4rem !important;
+      }
+      @media(max-width:700px){
+        #ns-content {
+          background: rgba(0,0,0,0.25) !important;
+          backdrop-filter: blur(20px) !important;
+          -webkit-backdrop-filter: blur(20px) !important;
+          border-color: rgba(255,255,255,0.15) !important;
+          left: 1rem !important;
+          right: 1rem !important;
+          max-width: calc(100% - 2rem) !important;
+        }
+      }
+      .ns-t { color: #0a0a0a !important; text-shadow: none !important; }
+      .ns-pill { background: rgba(255,255,255,0.6) !important; color: #333 !important; border: 1px solid rgba(0,0,0,0.08); }
+      .ns-m, .ns-org, .ns-desc { color: #333 !important; }
+      .ns-org strong { color: #0a0a0a !important; }
+      .ns-s { background: rgba(0,0,0,0.25) !important; }
+      .ns-num { color: rgba(0,0,0,0.4) !important; }
+      .ns-thumbs { background: linear-gradient(to top, rgba(255,255,255,0.4) 0%, transparent 100%) !important; }
+      .ns-arr { background: rgba(255,255,255,0.7) !important; backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); color: #0a0a0a !important; border-color: rgba(0,0,0,0.1) !important; }
+      .ns-arr:hover { background: rgba(255,255,255,0.95) !important; color: #0a0a0a !important; }
+      /* Mobile : titres restent blancs sur fond sombre du sheet */
+      @media(max-width:700px){
+        .ns-t { color: #fff !important; text-shadow: 0 2px 12px rgba(0,0,0,0.5) !important; }
+        .ns-pill { background: rgba(255,255,255,0.15) !important; color: rgba(255,255,255,0.95) !important; border-color: rgba(255,255,255,0.2) !important; }
+        .ns-m, .ns-org { color: rgba(255,255,255,0.85) !important; }
+        .ns-s { background: rgba(255,255,255,0.3) !important; }
+      }
 
       /* CARD POSTER - reste sur photo donc textes blancs OK */
       .card-poster-title { text-shadow: 0 2px 10px rgba(0,0,0,0.7) !important; }
