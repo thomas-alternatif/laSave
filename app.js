@@ -396,7 +396,7 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
   /* ── JSON-LD ── */
   function injectJsonLd(events){
     const list=events.filter(e=>e.Date&&isFut(e.Date)&&e.Titre).slice(0,30).map(e=>{
-      const o={'@context':'https://schema.org','@type':'Event','name':e.Titre,'startDate':e.Heure?`${e.Date}T${e.Heure}:00`:e.Date,'eventStatus':'https://schema.org/EventScheduled','eventAttendanceMode':'https://schema.org/OfflineEventAttendanceMode','location':{'@type':'Place','name':e.Lieu||e.Commune||'Vallée de la Save','address':{'@type':'PostalAddress','addressLocality':e.Commune||'Saint-Paul-sur-Save','addressRegion':'Haute-Garonne','addressCountry':'FR'}}};
+      const o={'@type':'Event','name':e.Titre,'startDate':e.Heure?`${e.Date}T${e.Heure}:00`:e.Date,'eventStatus':'https://schema.org/EventScheduled','eventAttendanceMode':'https://schema.org/OfflineEventAttendanceMode','location':{'@type':'Place','name':e.Lieu||e.Commune||'Vallée de la Save','address':{'@type':'PostalAddress','addressLocality':e.Commune||'Saint-Paul-sur-Save','addressRegion':'Haute-Garonne','addressCountry':'FR'}}};
       if(e['Date de fin'])o.endDate=e['Date de fin'];
       if(e.Description)o.description=e.Description;
       const p=getPhoto(e);if(p)o.image=p;
@@ -404,7 +404,8 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
       if(e.Tarif){const f=/gratuit|libre/i.test(e.Tarif);o.offers={'@type':'Offer','price':f?'0':e.Tarif,'priceCurrency':'EUR','availability':'https://schema.org/InStock'};}
       return o;
     });
-    $('#jsonld-events').textContent=JSON.stringify(list,null,2);
+    const wrapper={'@context':'https://schema.org','@graph':list};
+    $('#jsonld-events').textContent=JSON.stringify(wrapper);
   }
 
   /* ── AUTOCOMPLÉTION ── */
