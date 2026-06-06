@@ -193,7 +193,6 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
               <span>${esc(ev.Commune)}</span>
             </div>`:''}
             <div class="card-poster-top-actions">
-              ${featured?'<span class="badge-featured">★</span>':''}
               ${soon?'<span class="badge-soon">Bientôt</span>':''}
               <button class="btn-share card-poster-share" type="button" aria-label="Partager">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
@@ -624,17 +623,24 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
   const CAT_ATELIERS=['Atelier / Cours','Conférence / Atelier'];
 
   function buildMobileCats(events){
-    const wrap=$('#mobile-cats');
-    if(!wrap)return;
-    if(window.innerWidth>700){wrap.style.display='none';return;}
-    wrap.style.display='flex';
+    // L'ancienne section .mobile-cats est supprimée
+    // Le bouton recherche dans le header ouvre maintenant une modale
+    // qui contient à la fois la barre de recherche et les catégories
+    if(window.innerWidth>700)return;
+    setupMobileSearchBtn(events);
+  }
 
-    // Récupérer les catégories actives
+  function setupMobileSearchBtn(events){
+    const btn=$('#nav-search-btn');
+    if(!btn||btn.dataset.bound)return;
+    btn.dataset.bound='1';
+    btn.addEventListener('click',()=>openMobileFilterModal(events));
+  }
+
+  function openMobileFilterModal(events){
     const cats=['all',...Object.keys(CAT_META).filter(c=>
       events.some(e=>e['Catégorie']===c&&isActive(e))
     )];
-
-    // Compter événements actifs par catégorie
     const counts={};
     cats.forEach(c=>{
       counts[c]=c==='all'
@@ -642,47 +648,24 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
         : events.filter(e=>e['Catégorie']===c&&isActive(e)).length;
     });
 
-    // Label actif
-    const activeLabel=currentCat==='all'?'Toutes les catégories':currentCat;
-
-    // Bouton filtre minimaliste + résultat
-    wrap.innerHTML=`
-      <button class="mobile-filter-btn" type="button" id="mobile-filter-open">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <line x1="4" y1="6" x2="20" y2="6"/><line x1="7" y1="12" x2="17" y2="12"/><line x1="10" y1="18" x2="14" y2="18"/>
-        </svg>
-        <span class="mobile-filter-label">${esc(activeLabel)}</span>
-        ${currentCat!=='all'?'<span class="mobile-filter-clear" id="mobile-filter-clear" aria-label="Effacer le filtre">✕</span>':''}
-      </button>
-      <span class="mobile-filter-count">${counts[currentCat]} événement${counts[currentCat]>1?'s':''}</span>
-    `;
-
-    // Ouvrir le panneau
-    $('#mobile-filter-open').addEventListener('click',e=>{
-      if(e.target.id==='mobile-filter-clear'){
-        e.stopPropagation();
-        setCat('all');
-        buildMobileCats(events);
-        return;
-      }
-      openMobileFilterModal(cats,counts,events);
-    });
-  }
-
-  function openMobileFilterModal(cats,counts,events){
-    // Créer/réutiliser la modale
     let modal=$('#mobile-filter-modal');
     if(!modal){
       modal=document.createElement('div');
       modal.id='mobile-filter-modal';
       modal.className='mobile-filter-modal';
       modal.innerHTML=`
-        <div class="mobile-filter-sheet" role="dialog" aria-modal="true" aria-label="Filtrer par catégorie">
+        <div class="mobile-filter-sheet" role="dialog" aria-modal="true" aria-label="Rechercher et filtrer">
           <div class="mobile-filter-handle"></div>
           <div class="mobile-filter-head">
-            <h3>Catégories</h3>
+            <h3>Rechercher</h3>
             <button class="mobile-filter-close" type="button" aria-label="Fermer">✕</button>
           </div>
+          <div class="mobile-filter-search">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            <input type="text" id="mobile-search-input" placeholder="Rechercher un événement, une commune…" autocomplete="off" />
+            <button class="mobile-search-clear" id="mobile-search-clear" type="button" aria-label="Effacer" style="display:none;">✕</button>
+          </div>
+          <div class="mobile-filter-cats-label">Catégories</div>
           <div class="mobile-filter-list" id="mobile-filter-list"></div>
         </div>
       `;
@@ -691,7 +674,25 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
       modal.querySelector('.mobile-filter-close').addEventListener('click',closeMobileFilter);
     }
 
-    // Peupler la liste
+    // Pré-remplir la recherche
+    const searchInput=$('#mobile-search-input');
+    const clearBtn=$('#mobile-search-clear');
+    searchInput.value=currentSearch||'';
+    clearBtn.style.display=currentSearch?'flex':'none';
+    searchInput.oninput=()=>{
+      currentSearch=searchInput.value.toLowerCase().trim();
+      clearBtn.style.display=currentSearch?'flex':'none';
+      renderEvents();
+    };
+    clearBtn.onclick=()=>{
+      searchInput.value='';
+      currentSearch='';
+      clearBtn.style.display='none';
+      renderEvents();
+      searchInput.focus();
+    };
+
+    // Peupler les catégories
     const list=$('#mobile-filter-list');
     list.innerHTML=cats.map(c=>{
       const color=c==='all'?'var(--gold)':(CAT_META[c]||CAT_META['Autre']).color;
@@ -706,12 +707,14 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
     list.querySelectorAll('.mobile-filter-opt').forEach(btn=>{
       btn.addEventListener('click',()=>{
         setCat(btn.dataset.c);
-        closeMobileFilter();
-        buildMobileCats(events);
+        list.querySelectorAll('.mobile-filter-opt').forEach(b=>b.classList.toggle('on',b===btn));
       });
     });
 
-    requestAnimationFrame(()=>modal.classList.add('open'));
+    requestAnimationFrame(()=>{
+      modal.classList.add('open');
+      setTimeout(()=>searchInput.focus(),200);
+    });
     document.body.style.overflow='hidden';
   }
 
