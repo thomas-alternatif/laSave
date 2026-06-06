@@ -19,60 +19,69 @@
     /* Mode clair automatique selon l'appareil */
     @media (prefers-color-scheme: light) {
       :root {
-        --bg: #faf8f5;
-        --bg-card: rgba(255,255,255,0.78);
-        --bg-card-hover: rgba(255,255,255,0.95);
+        --bg: #f5f1ea;
+        --bg-card: rgba(255,255,255,0.7);
+        --bg-card-hover: rgba(255,255,255,0.9);
         --border: rgba(0,0,0,0.08);
         --border-hover: rgba(0,0,0,0.14);
         --text: #1a1a1a;
         --text-sub: #555;
         --text-muted: #888;
       }
+      /* Fond animé clair plus coloré et visible */
       body::before {
         background:
-          radial-gradient(ellipse 60% 50% at 10% 20%, rgba(212,170,95,0.18) 0%, transparent 100%),
-          radial-gradient(ellipse 50% 45% at 90% 70%, rgba(77,184,240,0.14) 0%, transparent 100%),
-          radial-gradient(ellipse 55% 40% at 50% 100%, rgba(93,212,112,0.10) 0%, transparent 100%),
-          radial-gradient(ellipse 45% 35% at 80% 5%,  rgba(192,96,240,0.08) 0%, transparent 100%) !important;
+          radial-gradient(ellipse 65% 55% at 8% 18%, rgba(232,96,154,0.22) 0%, transparent 100%),
+          radial-gradient(ellipse 55% 50% at 92% 65%, rgba(77,184,240,0.25) 0%, transparent 100%),
+          radial-gradient(ellipse 60% 45% at 50% 100%, rgba(93,212,112,0.20) 0%, transparent 100%),
+          radial-gradient(ellipse 50% 40% at 82% 8%, rgba(212,170,95,0.28) 0%, transparent 100%),
+          radial-gradient(ellipse 45% 40% at 18% 80%, rgba(192,96,240,0.18) 0%, transparent 100%) !important;
       }
-      .header { background: rgba(250,248,245,0.78) !important; border-bottom-color: rgba(0,0,0,0.06) !important; }
+      /* Désactiver le fond image catégorie (trop sombre pour le mode clair) */
+      .cat-bg { display: none !important; }
+
+      .header { background: rgba(245,241,234,0.7) !important; border-bottom-color: rgba(0,0,0,0.06) !important; }
       .nav-btn { color: #555; }
       .nav-btn:hover, .nav-btn.active { color: #1a1a1a; }
+      .nav-search-btn { color: #555; }
+      .nav-search-btn:hover { color: #1a1a1a; background: rgba(0,0,0,0.05); }
       .logo-name { color: #1a1a1a; }
       .logo-tagline { color: rgba(0,0,0,0.55); }
-      .card { background: rgba(255,255,255,0.78) !important; border-color: rgba(0,0,0,0.08) !important; box-shadow: 0 4px 24px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.4) !important; }
-      .card:hover { border-color: rgba(200,169,110,0.4) !important; box-shadow: 0 24px 60px rgba(0,0,0,0.12), 0 0 0 1px rgba(200,169,110,0.15) !important; }
-      .card::before { background: linear-gradient(to right, transparent, rgba(255,255,255,0.6), transparent); }
+      .card { background: rgba(255,255,255,0.7) !important; border-color: rgba(0,0,0,0.08) !important; box-shadow: 0 4px 24px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.5) !important; }
+      .card:hover { border-color: rgba(200,169,110,0.45) !important; box-shadow: 0 24px 60px rgba(0,0,0,0.14), 0 0 0 1px rgba(200,169,110,0.18) !important; }
+      .card::before { background: linear-gradient(to right, transparent, rgba(255,255,255,0.7), transparent); }
       .card-poster-foot { border-top-color: rgba(0,0,0,0.06); }
       .btn-card-more { background: rgba(0,0,0,0.04); border-color: rgba(0,0,0,0.1); color: #555; backdrop-filter: blur(12px); }
-      .btn-card-more:hover { background: rgba(200,169,110,0.1); }
-      .footer { background: rgba(255,255,255,0.5) !important; border-top-color: rgba(0,0,0,0.06) !important; }
+      .btn-card-more:hover { background: rgba(200,169,110,0.12); color: #8a6f3a; }
+      .footer { background: rgba(255,255,255,0.4) !important; border-top-color: rgba(0,0,0,0.06) !important; }
       .footer-logo { color: #1a1a1a; }
       .footer-copy, .footer-links a { color: #555; }
       .footer-links a:hover { color: #1a1a1a; }
       .grid-title { color: #1a1a1a; }
       .ateliers-title { color: #1a1a1a; }
-      .story-inner { background: #faf8f5; border-color: #faf8f5; }
+      .story-inner { background: #f5f1ea; border-color: #f5f1ea; }
       .story-label { color: #555; }
       .story-nb { color: #888; }
-      .search-bar { background: rgba(255,255,255,0.7) !important; border-color: rgba(0,0,0,0.08); }
+      .search-bar { background: rgba(255,255,255,0.6) !important; border-color: rgba(0,0,0,0.08); }
       .s-input { color: #1a1a1a; }
-      .cat-btn { background: rgba(255,255,255,0.65) !important; border-color: rgba(0,0,0,0.1) !important; color: #1a1a1a; }
+      .cat-btn { background: rgba(255,255,255,0.55) !important; border-color: rgba(0,0,0,0.1) !important; color: #1a1a1a; }
       .cat-menu { background: rgba(255,255,255,0.92) !important; border-color: rgba(0,0,0,0.1); }
       .cat-opt { color: #555; }
-      .cat-opt:hover, .cat-opt.on { background: rgba(200,169,110,0.1); color: #1a1a1a; }
+      .cat-opt:hover, .cat-opt.on { background: rgba(200,169,110,0.12); color: #1a1a1a; }
       .suggest-box { background: rgba(255,255,255,0.92) !important; }
       .sug-item { color: #555; }
-      .sug-item:hover, .sug-item.on { background: rgba(200,169,110,0.1); color: #1a1a1a; }
-      .modal, .orga-modal, .share-panel, .mobile-filter-sheet { background: rgba(255,255,255,0.95) !important; border-color: rgba(0,0,0,0.08) !important; }
+      .sug-item:hover, .sug-item.on { background: rgba(200,169,110,0.12); color: #1a1a1a; }
+      .modal, .orga-modal, .share-panel, .mobile-filter-sheet { background: rgba(255,255,255,0.92) !important; border-color: rgba(0,0,0,0.08) !important; }
       .modal-title, .orga-modal-name, .share-panel-title, .mobile-filter-head h3 { color: #1a1a1a !important; }
       .modal-desc, .modal-meta-item, .orga-atelier-meta, .orga-atelier-desc, .mobile-filter-opt { color: #555; }
       .modal-meta-item strong, .orga-atelier-title { color: #1a1a1a; }
       .cal-btn { background: rgba(0,0,0,0.04); border-color: rgba(0,0,0,0.1); color: #555; }
       .mobile-filter-modal { background: rgba(0,0,0,0.4); }
       .mobile-filter-opt:hover { background: rgba(0,0,0,0.04); }
+      .mobile-filter-search { background: rgba(0,0,0,0.04); border-color: rgba(0,0,0,0.08); }
+      .mobile-filter-search input { color: #1a1a1a; }
       .form-input, .form-select, .form-textarea { background: rgba(255,255,255,0.6); border-color: rgba(0,0,0,0.1); color: #1a1a1a; }
-      .form-block { background: rgba(255,255,255,0.65); border-color: rgba(0,0,0,0.08); }
+      .form-block { background: rgba(255,255,255,0.55); border-color: rgba(0,0,0,0.08); }
       .legal-content p, .legal-content ul { color: #555; }
       .legal-content h2 { color: #1a1a1a; }
     }
