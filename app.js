@@ -730,7 +730,7 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
       orgas[nom].ateliers.push(e);
     });
     const list=Object.values(orgas).sort((a,b)=>a.nom.localeCompare(b.nom));
-    $('#ateliers-count').textContent=`${list.length} organisateur${list.length>1?'s':''}`;
+    const ac=$('#ateliers-count');if(ac)ac.textContent=`${list.length} organisateur${list.length>1?'s':''}`;
     const stories=$('#ateliers-stories');
     stories.innerHTML='';
     list.forEach(orga=>{
@@ -1020,7 +1020,7 @@ function buildOrganisateurs(orgas, allEvts) {
 
   if (!orgas.length) { wrap.style.display = 'none'; return; }
 
-  $('#ateliers-count').textContent = `${orgas.length} organisateur${orgas.length > 1 ? 's' : ''}`;
+  const ac=$('#ateliers-count');if(ac)ac.textContent=`${orgas.length} organisateur${orgas.length > 1 ? 's' : ''}`;
 
   orgas.forEach(orga => {
     const evts = allEvts.filter(e => norm(e.Organisation||'') === norm(orga.Nom));
