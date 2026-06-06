@@ -28,7 +28,7 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
   };
 
   /* ── ÉTAT ── */
-  let allEvents=[],viewMode=localStorage.getItem('lsv')||'grid',currentCat='all',currentSearch='',sugIdx=-1;
+  let allEvents=[],viewMode='grid',currentCat='all',currentSearch='',sugIdx=-1;
   let orgasMap={}; // map nom → fiche organisateur (chargée depuis Airtable)
 
   /* ── UTILS ── */
@@ -242,7 +242,7 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
     if(!filtered.length)c.innerHTML='<div class="empty-state">Aucun événement ne correspond.</div>';
     else filtered.forEach(ev=>c.appendChild(buildCard(ev)));
     c.classList.toggle('list',viewMode==='list');
-    $('#event-count').textContent=`${filtered.length} événement${filtered.length>1?'s':''}`;
+    $('#event-count').textContent=`· ${filtered.length}`;
     // Fond catégorie dynamique
     const bg=$('#cat-bg');
     if(currentCat!=='all'){const m=CAT_META[currentCat];if(m&&m.fallback){bg.style.backgroundImage=`url(${m.fallback})`;bg.classList.add('on');}else bg.classList.remove('on');}
@@ -389,10 +389,8 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
 
   /* ── STATS HERO ── */
   function updateStats(){
-    const fut=allEvents.filter(e=>isActive(e));
-    const soon=allEvents.filter(e=>isSoon(e.Date));
-    if(fut.length){$('#stat-total').textContent=fut.length;$('#hero-stats').style.display='flex';}
-    if(soon.length){$('#stat-soon').textContent=soon.length;$('#stat-soon-wrap').style.display='flex';}
+    // Hero supprimé — fonction conservée pour compatibilité
+    return;
   }
 
   /* ── JSON-LD ── */
@@ -554,9 +552,6 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
     $('#cat-btn').addEventListener('click',e=>{e.stopPropagation();$('#cat-dd').classList.contains('open')?closeDD():openDD();});
     document.addEventListener('click',e=>{if(!e.target.closest('#cat-dd'))closeDD();});
     document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDD();});
-    // View toggle
-    $$('.view-btn').forEach(btn=>btn.addEventListener('click',()=>{viewMode=btn.dataset.view;localStorage.setItem('lsv',viewMode);$$('.view-btn').forEach(b=>b.classList.toggle('on',b===btn));renderEvents();}));
-    $$('.view-btn').forEach(b=>b.classList.toggle('on',b.dataset.view===viewMode));
     // Legal tabs
     $$('.legal-tab').forEach(t=>t.addEventListener('click',()=>openLegalTab(t.dataset.tab)));
     // Modale
@@ -578,6 +573,7 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
         if($('#lightbox').classList.contains('open'))$('#lightbox').classList.remove('open');
         else if($('#share-modal').classList.contains('open'))closeShareModal();
         else if($('#orga-modal-overlay').classList.contains('open'))closeOrgaModal();
+        else if($('#mobile-filter-modal')?.classList.contains('open'))closeMobileFilter();
         else if($('#modal-overlay').classList.contains('open'))closeModal();
       }
     });
@@ -626,28 +622,99 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
   function buildMobileCats(events){
     const wrap=$('#mobile-cats');
     if(!wrap)return;
-    // Afficher uniquement sur mobile
     if(window.innerWidth>700){wrap.style.display='none';return;}
     wrap.style.display='flex';
 
+    // Récupérer les catégories actives
     const cats=['all',...Object.keys(CAT_META).filter(c=>
       events.some(e=>e['Catégorie']===c&&isActive(e))
     )];
 
-    wrap.innerHTML=cats.map(c=>{
+    // Compter événements actifs par catégorie
+    const counts={};
+    cats.forEach(c=>{
+      counts[c]=c==='all'
+        ? events.filter(isActive).length
+        : events.filter(e=>e['Catégorie']===c&&isActive(e)).length;
+    });
+
+    // Label actif
+    const activeLabel=currentCat==='all'?'Toutes les catégories':currentCat;
+
+    // Bouton filtre minimaliste + résultat
+    wrap.innerHTML=`
+      <button class="mobile-filter-btn" type="button" id="mobile-filter-open">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <line x1="4" y1="6" x2="20" y2="6"/><line x1="7" y1="12" x2="17" y2="12"/><line x1="10" y1="18" x2="14" y2="18"/>
+        </svg>
+        <span class="mobile-filter-label">${esc(activeLabel)}</span>
+        ${currentCat!=='all'?'<span class="mobile-filter-clear" id="mobile-filter-clear" aria-label="Effacer le filtre">✕</span>':''}
+      </button>
+      <span class="mobile-filter-count">${counts[currentCat]} événement${counts[currentCat]>1?'s':''}</span>
+    `;
+
+    // Ouvrir le panneau
+    $('#mobile-filter-open').addEventListener('click',e=>{
+      if(e.target.id==='mobile-filter-clear'){
+        e.stopPropagation();
+        setCat('all');
+        buildMobileCats(events);
+        return;
+      }
+      openMobileFilterModal(cats,counts,events);
+    });
+  }
+
+  function openMobileFilterModal(cats,counts,events){
+    // Créer/réutiliser la modale
+    let modal=$('#mobile-filter-modal');
+    if(!modal){
+      modal=document.createElement('div');
+      modal.id='mobile-filter-modal';
+      modal.className='mobile-filter-modal';
+      modal.innerHTML=`
+        <div class="mobile-filter-sheet" role="dialog" aria-modal="true" aria-label="Filtrer par catégorie">
+          <div class="mobile-filter-handle"></div>
+          <div class="mobile-filter-head">
+            <h3>Catégories</h3>
+            <button class="mobile-filter-close" type="button" aria-label="Fermer">✕</button>
+          </div>
+          <div class="mobile-filter-list" id="mobile-filter-list"></div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+      modal.addEventListener('click',e=>{if(e.target===modal)closeMobileFilter();});
+      modal.querySelector('.mobile-filter-close').addEventListener('click',closeMobileFilter);
+    }
+
+    // Peupler la liste
+    const list=$('#mobile-filter-list');
+    list.innerHTML=cats.map(c=>{
       const color=c==='all'?'var(--gold)':(CAT_META[c]||CAT_META['Autre']).color;
-      const label=c==='all'?'Tout':c;
-      return`<button class="mobile-cat-pill${c===currentCat?' on':''}" data-c="${esc(c)}" type="button">
-        ${c!=='all'?`<span class="mobile-cat-dot" style="background:${color}"></span>`:''}
-        ${esc(label)}
+      const label=c==='all'?'Toutes les catégories':c;
+      return`<button class="mobile-filter-opt${c===currentCat?' on':''}" data-c="${esc(c)}" type="button">
+        <span class="mobile-filter-opt-dot" style="background:${color}"></span>
+        <span class="mobile-filter-opt-label">${esc(label)}</span>
+        <span class="mobile-filter-opt-count">${counts[c]}</span>
       </button>`;
     }).join('');
 
-    $$('.mobile-cat-pill',wrap).forEach(btn=>btn.addEventListener('click',()=>{
-      setCat(btn.dataset.c);
-      // Mettre à jour les pills actives
-      $$('.mobile-cat-pill',wrap).forEach(b=>b.classList.toggle('on',b===btn));
-    }));
+    list.querySelectorAll('.mobile-filter-opt').forEach(btn=>{
+      btn.addEventListener('click',()=>{
+        setCat(btn.dataset.c);
+        closeMobileFilter();
+        buildMobileCats(events);
+      });
+    });
+
+    requestAnimationFrame(()=>modal.classList.add('open'));
+    document.body.style.overflow='hidden';
+  }
+
+  function closeMobileFilter(){
+    const modal=$('#mobile-filter-modal');
+    if(modal)modal.classList.remove('open');
+    document.body.style.overflow='';
   }
 
   function buildAteliers(events){
