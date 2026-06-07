@@ -113,10 +113,18 @@
           </div>
         </div>
         <div class="member-block-input-row">
-          <input class="form-input" type="text" id="f-code" placeholder="Ex : FOYER2026" autocomplete="off" style="text-transform:uppercase;" />
+          <input class="form-input" type="text" id="f-code" placeholder="Code organisateur" autocomplete="off" style="text-transform:uppercase;letter-spacing:0.1em;" />
           <button type="button" class="member-block-btn" id="member-code-btn">Valider</button>
         </div>
         <div class="member-block-msg" id="member-msg"></div>
+        <div class="member-welcome" id="member-welcome" style="display:none;">
+          <div class="member-welcome-avatar" id="member-welcome-avatar"></div>
+          <div class="member-welcome-text">
+            <div class="member-welcome-title" id="member-welcome-title"></div>
+            <div class="member-welcome-sub">Vos informations ont été pré-remplies</div>
+          </div>
+          <button type="button" class="member-welcome-reset" id="member-welcome-reset" aria-label="Changer de code">✕</button>
+        </div>
       </div>
 
       <form id="agenda-form" novalidate>
