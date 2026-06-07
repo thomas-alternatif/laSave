@@ -897,6 +897,8 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
         msg.textContent='Code non reconnu. Vérifiez votre code ou contactez la mairie.';
         return;
       }
+      console.log('=== ORGA TROUVÉ ===', orga);
+      console.log('Contact:', JSON.stringify(orga.Contact), '| Photo:', JSON.stringify(orga.Photo));
 
       // Pré-remplir Organisateur
       if($('#f-org'))$('#f-org').value=orga.Nom||'';
