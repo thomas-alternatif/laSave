@@ -868,29 +868,58 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
     const btn=$('#member-code-btn');
     const input=$('#f-code');
     const msg=$('#member-msg');
+    const welcome=$('#member-welcome');
     if(!btn||!input)return;
+
+    const resetWelcome=()=>{
+      if(welcome)welcome.style.display='none';
+      input.value='';
+      input.disabled=false;
+      btn.style.display='';
+      msg.style.display='none';
+    };
+
+    const reset=$('#member-welcome-reset');
+    if(reset)reset.addEventListener('click',resetWelcome);
 
     const validate=async()=>{
       const code=input.value.trim().toUpperCase();
-      if(!code){msg.className='member-block-msg err';msg.textContent='Saisissez votre code.';return;}
+      if(!code){msg.className='member-block-msg err';msg.textContent='Veuillez saisir votre code.';return;}
 
-      // Charger les orgas si pas encore fait
       if(!allOrgasList.length){
-        msg.className='member-block-msg';msg.style.display='block';msg.style.color='var(--text-muted)';msg.textContent='Vérification…';
+        msg.className='member-block-msg loading';msg.textContent='Vérification…';
         allOrgasList=await fetchAllOrganisateursForCodes();
       }
 
-      // Chercher l'organisateur par code (insensible casse)
       const orga=allOrgasList.find(o=>o.Code&&o.Code.trim().toUpperCase()===code);
       if(!orga){
         msg.className='member-block-msg err';
-        msg.textContent='Code non reconnu. Vérifiez ou contactez la mairie.';
+        msg.textContent='Code non reconnu. Vérifiez votre code ou contactez la mairie.';
         return;
       }
 
-      // Pré-remplir les champs
+      // Pré-remplir Organisateur
       if($('#f-org'))$('#f-org').value=orga.Nom||'';
-      if($('#f-contact')&&orga.Contact)$('#f-contact').value=orga.Contact;
+
+      // Parser le champ Contact (format : IG:xxx | FB:xxx | Site:xxx)
+      const contact=orga.Contact||'';
+      const parts=contact.split('|').map(s=>s.trim()).filter(Boolean);
+      parts.forEach(p=>{
+        if(/^IG:/i.test(p)&&$('#f-insta')){
+          $('#f-insta').value=p.replace(/^IG:/i,'').trim();
+        } else if(/^FB:/i.test(p)&&$('#f-fb')){
+          $('#f-fb').value=p.replace(/^FB:/i,'').trim();
+        } else if(/^Site:/i.test(p)&&$('#f-site')){
+          $('#f-site').value=p.replace(/^Site:/i,'').trim();
+        } else if(p.includes('instagram.com')&&$('#f-insta')){
+          $('#f-insta').value=p.replace(/^https?:\/\/(www\.)?instagram\.com\//,'').replace(/\/$/,'');
+        } else if(p.includes('facebook.com')&&$('#f-fb')){
+          $('#f-fb').value=p;
+        } else if((p.startsWith('http')||p.includes('.'))&&$('#f-site')){
+          $('#f-site').value=p;
+        }
+      });
+
       // Ouvrir le bloc contact pour montrer le pré-remplissage
       const contactBlock=$('#block-contact');
       if(contactBlock&&contactBlock.classList.contains('collapsed')){
@@ -898,8 +927,23 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
         if(toggle)toggle.click();
       }
 
-      msg.className='member-block-msg ok';
-      msg.textContent=`Bienvenue ${orga.Nom} ! Vos informations sont pré-remplies.`;
+      // Afficher la zone bienvenue avec le logo
+      const photo=orga.Photo?.[0]?.thumbnails?.large?.url||orga.Photo?.[0]?.url||null;
+      const initiales=(orga.Nom||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+      const couleur=`hsl(${(orga.Nom||'').split('').reduce((a,c)=>a+c.charCodeAt(0),0)%360},45%,55%)`;
+      const av=$('#member-welcome-avatar');
+      if(av){
+        av.innerHTML=photo
+          ?`<img src="${esc(photo)}" alt="${esc(orga.Nom)}"/>`
+          :`<span style="color:${couleur}">${initiales}</span>`;
+      }
+      const title=$('#member-welcome-title');
+      if(title)title.textContent=`Bienvenue, ${orga.Nom} !`;
+
+      msg.style.display='none';
+      input.disabled=true;
+      btn.style.display='none';
+      if(welcome)welcome.style.display='flex';
     };
 
     btn.addEventListener('click',validate);
