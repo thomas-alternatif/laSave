@@ -30,12 +30,15 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
   /* ── ÉTAT ── */
   let allEvents=[],viewMode='grid',currentCat='all',currentSearch='',sugIdx=-1;
   let orgasMap={}; // map nom → fiche organisateur (chargée depuis Airtable)
+  let allOrgasList=[]; // liste complète des organisateurs (pour les codes)
 
   /* ── UTILS ── */
   const $=(s,c=document)=>c.querySelector(s);
   const $$=(s,c=document)=>Array.from(c.querySelectorAll(s));
   const esc=s=>s==null?'':String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const norm=s=>(s||'').toString().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  const norm=s=>(s||'').toString().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim();
+  // Extrait le nom d'organisation, que ce soit un texte ou un tableau (champ lié Airtable)
+  const orgName=v=>Array.isArray(v)?(v[0]||''):(v||'');
   const fmtDate=iso=>{if(!iso)return'';const d=new Date(iso);return isNaN(d)?iso:d.toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'})};
   const fmtShort=iso=>{if(!iso)return'';const d=new Date(iso);return isNaN(d)?iso:d.toLocaleDateString('fr-FR',{day:'numeric',month:'short'})};
   const isSoon=iso=>{if(!iso)return false;const diff=(new Date(iso)-new Date())/(864e5);return diff>=0&&diff<=7};
@@ -162,9 +165,9 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
     else if(m.fallback)imgHtml=`<img src="${m.fallback}" alt="" loading="lazy" style="filter:brightness(.7) saturate(.75);" />`;
     else imgHtml=`<div class="card-img-placeholder" style="background:linear-gradient(135deg,${m.color}28,${m.color}0e);" aria-hidden="true">${m.emoji}</div>`;
 
-    const orga = findOrga(ev.Organisation);
-    const hasOrg = !!ev.Organisation;
-    const orgaNom = orga ? orga.nom : (ev.Organisation || '');
+    const orga = findOrga(orgName(ev.Organisation));
+    const hasOrg = !!orgName(ev.Organisation);
+    const orgaNom = orga ? orga.nom : orgName(ev.Organisation);
     const orgaPhoto = orga?.photo || null;
     const orgaInitiales = orgaNom.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
     const orgaCouleur = `hsl(${orgaNom.split('').reduce((a,c)=>a+c.charCodeAt(0),0)%360},45%,55%)`;
@@ -177,7 +180,7 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
           <!-- HAUT : avatar orga à gauche, lieu à droite, partage tout à droite -->
           <div class="card-poster-top">
             ${hasOrg?`
-            <div class="card-poster-orga" data-orga="${esc(ev.Organisation||'')}" title="${esc(orgaNom)}">
+            <div class="card-poster-orga" data-orga="${esc(orgName(ev.Organisation))}" title="${esc(orgaNom)}">
               <div class="card-poster-avatar">
                 ${orgaPhoto
                   ?`<img src="${esc(orgaPhoto)}" alt="${esc(orgaNom)}" loading="lazy"/>`
@@ -223,7 +226,7 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
       if(orgaEl&&orgaEl.dataset.orga&&findOrga(orgaEl.dataset.orga)){
         e.stopPropagation();
         const o=findOrga(orgaEl.dataset.orga);
-        openOrgaModal({...o,ateliers:allEvents.filter(ev=>norm(ev.Organisation||'')===norm(o.nom))});
+        openOrgaModal({...o,ateliers:allEvents.filter(ev=>norm(orgName(ev.Organisation))===norm(o.nom))});
         return;
       }
       openModal(ev);
@@ -600,6 +603,7 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
     buildMobileCats(allEvents);
     updateStats();injectJsonLd(allEvents);
     setupAdmin();
+    setupMemberCode();
 
     // Ouvrir un événement depuis un lien partagé (#event-ID)
     const sharedHash = window.location.hash;
@@ -623,18 +627,21 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
   const CAT_ATELIERS=['Atelier / Cours','Conférence / Atelier'];
 
   function buildMobileCats(events){
-    // L'ancienne section .mobile-cats est supprimée
-    // Le bouton recherche dans le header ouvre maintenant une modale
-    // qui contient à la fois la barre de recherche et les catégories
-    if(window.innerWidth>700)return;
+    // Le bouton recherche dans le header ouvre une modale qui contient
+    // à la fois la barre de recherche et les catégories
     setupMobileSearchBtn(events);
   }
 
   function setupMobileSearchBtn(events){
     const btn=$('#nav-search-btn');
-    if(!btn||btn.dataset.bound)return;
+    if(!btn)return;
+    if(btn.dataset.bound==='1')return;
     btn.dataset.bound='1';
-    btn.addEventListener('click',()=>openMobileFilterModal(events));
+    btn.addEventListener('click',(e)=>{
+      e.preventDefault();
+      e.stopPropagation();
+      openMobileFilterModal(events);
+    });
   }
 
   function openMobileFilterModal(events){
@@ -857,6 +864,48 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
 
   function closeOrgaModal(){$('#orga-modal-overlay').classList.remove('open');document.body.style.overflow='';}
 
+  function setupMemberCode(){
+    const btn=$('#member-code-btn');
+    const input=$('#f-code');
+    const msg=$('#member-msg');
+    if(!btn||!input)return;
+
+    const validate=async()=>{
+      const code=input.value.trim().toUpperCase();
+      if(!code){msg.className='member-block-msg err';msg.textContent='Saisissez votre code.';return;}
+
+      // Charger les orgas si pas encore fait
+      if(!allOrgasList.length){
+        msg.className='member-block-msg';msg.style.display='block';msg.style.color='var(--text-muted)';msg.textContent='Vérification…';
+        allOrgasList=await fetchAllOrganisateursForCodes();
+      }
+
+      // Chercher l'organisateur par code (insensible casse)
+      const orga=allOrgasList.find(o=>o.Code&&o.Code.trim().toUpperCase()===code);
+      if(!orga){
+        msg.className='member-block-msg err';
+        msg.textContent='Code non reconnu. Vérifiez ou contactez la mairie.';
+        return;
+      }
+
+      // Pré-remplir les champs
+      if($('#f-org'))$('#f-org').value=orga.Nom||'';
+      if($('#f-contact')&&orga.Contact)$('#f-contact').value=orga.Contact;
+      // Ouvrir le bloc contact pour montrer le pré-remplissage
+      const contactBlock=$('#block-contact');
+      if(contactBlock&&contactBlock.classList.contains('collapsed')){
+        const toggle=contactBlock.previousElementSibling?.querySelector('.form-block-toggle');
+        if(toggle)toggle.click();
+      }
+
+      msg.className='member-block-msg ok';
+      msg.textContent=`Bienvenue ${orga.Nom} ! Vos informations sont pré-remplies.`;
+    };
+
+    btn.addEventListener('click',validate);
+    input.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();validate();}});
+  }
+
   /* ── ADMIN ── */
   const ADMIN_PWD='lasave2026'; // ← change ce mot de passe avant de mettre en ligne
 
@@ -1002,6 +1051,18 @@ async function fetchOrganisateurs() {
   } catch (e) { return []; }
 }
 
+// Charge TOUS les organisateurs (même non publiés) pour la validation des codes
+async function fetchAllOrganisateursForCodes() {
+  if (AT_TABLE_ORGAS === 'METTRE_ID_TABLE_ICI') return [];
+  const url = `https://api.airtable.com/v0/${AT_BASE}/${AT_TABLE_ORGAS}`;
+  try {
+    const r = await fetch(url, { headers: HEADS });
+    if (!r.ok) return [];
+    const d = await r.json();
+    return (d.records || []).map(r => ({ id: r.id, ...r.fields }));
+  } catch (e) { return []; }
+}
+
 function buildOrganisateurs(orgas, allEvts) {
   const wrap = $('#ateliers-wrap');
   const stories = $('#ateliers-stories');
@@ -1022,14 +1083,25 @@ function buildOrganisateurs(orgas, allEvts) {
   });
 
   // Fonction pour trouver un orga par nom normalisé
-  window.findOrga = (nom) => nom ? orgasMap[norm(nom)] : null;
+  window.findOrga = (nom) => {
+    if(!nom) return null;
+    // Si Airtable renvoie un tableau (champ lié), prendre le premier élément
+    const nomStr = Array.isArray(nom) ? (nom[0] || '') : nom;
+    return orgasMap[norm(nomStr)] || null;
+  };
+  // Diagnostic : exposer les données pour debug console
+  window._debugOrgas = () => {
+    console.log('=== ORGANISATEURS dans orgasMap ===', Object.keys(orgasMap));
+    console.log('=== Champs Organisation des événements ===',
+      allEvents.map(e=>({titre:e.Titre, org:e.Organisation, type:Array.isArray(e.Organisation)?'array':typeof e.Organisation})));
+  };
 
   if (!orgas.length) { wrap.style.display = 'none'; return; }
 
   const ac=$('#ateliers-count');if(ac)ac.textContent=`${orgas.length} organisateur${orgas.length > 1 ? 's' : ''}`;
 
   orgas.forEach(orga => {
-    const evts = allEvts.filter(e => norm(e.Organisation||'') === norm(orga.Nom));
+    const evts = allEvts.filter(e => norm(orgName(e.Organisation)) === norm(orga.Nom));
     // Utiliser findOrga normalisé pour récupérer la bonne fiche
     const ficheOrga = findOrga(orga.Nom);
     const orgaData = {
