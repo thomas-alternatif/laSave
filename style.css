@@ -607,6 +607,7 @@
     /* ── UPLOAD PHOTO (grande zone) ── */
     .photo-dropzone { position: relative; width: 100%; border: 2px dashed var(--border); border-radius: 12px; overflow: hidden; cursor: pointer; transition: border-color .2s, background .2s; background: rgba(255,255,255,0.02); }
     .photo-dropzone:hover { border-color: var(--gold); background: rgba(200,169,110,0.04); }
+    .photo-dropzone.dragover { border-color: var(--gold); background: rgba(200,169,110,0.1); }
     .photo-dropzone-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 36px 20px; gap: 6px; }
     .photo-dropzone-icon { width: 56px; height: 56px; border-radius: 14px; background: rgba(200,169,110,0.1); display: flex; align-items: center; justify-content: center; color: var(--gold); margin-bottom: 6px; }
     .photo-dropzone-title { font-size: 14px; font-weight: 600; color: var(--text); }
