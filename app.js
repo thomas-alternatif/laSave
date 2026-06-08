@@ -882,28 +882,36 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
     const urlField=$('#f-photo-url');
     if(!dropzone||!fileInput)return;
 
-    // Clic sur la zone → ouvrir le sélecteur (sauf clic sur "Changer")
+    const openPicker=()=>{ fileInput.value=''; fileInput.click(); };
+
     dropzone.addEventListener('click',e=>{
       if(e.target.closest('.photo-dropzone-remove'))return;
-      fileInput.click();
+      openPicker();
+    });
+    removeBtn.addEventListener('click',e=>{ e.stopPropagation(); openPicker(); });
+
+    // Drag & drop
+    dropzone.addEventListener('dragover',e=>{ e.preventDefault(); dropzone.classList.add('dragover'); });
+    dropzone.addEventListener('dragleave',()=>dropzone.classList.remove('dragover'));
+    dropzone.addEventListener('drop',e=>{
+      e.preventDefault();
+      dropzone.classList.remove('dragover');
+      if(e.dataTransfer.files&&e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
     });
 
-    removeBtn.addEventListener('click',e=>{
-      e.stopPropagation();
-      fileInput.value='';
-      fileInput.click();
+    fileInput.addEventListener('change',()=>{
+      if(fileInput.files&&fileInput.files[0]) handleFile(fileInput.files[0]);
     });
 
-    fileInput.addEventListener('change',async()=>{
-      const file=fileInput.files[0];
-      if(!file)return;
-
+    async function handleFile(file){
+      if(!file.type.startsWith('image/')){
+        empty.style.display='none'; filled.style.display='block'; previewImg.src='';
+        status.className='photo-dropzone-status error'; status.textContent='Fichier non valide (image uniquement)';
+        return;
+      }
       if(file.size>5*1024*1024){
-        empty.style.display='none';
-        filled.style.display='block';
-        previewImg.src='';
-        status.className='photo-dropzone-status error';
-        status.textContent='Image trop lourde (max 5 Mo)';
+        empty.style.display='none'; filled.style.display='block'; previewImg.src='';
+        status.className='photo-dropzone-status error'; status.textContent='Image trop lourde (max 5 Mo)';
         return;
       }
 
@@ -911,16 +919,8 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
       reader.onload=e=>{previewImg.src=e.target.result;};
       reader.readAsDataURL(file);
 
-      empty.style.display='none';
-      filled.style.display='block';
-      status.className='photo-dropzone-status uploading';
-      status.textContent='Envoi en cours…';
-
-      if(IMGBB_KEY==='METTRE_CLE_IMGBB_ICI'){
-        status.className='photo-dropzone-status error';
-        status.textContent='Upload non configuré';
-        return;
-      }
+      empty.style.display='none'; filled.style.display='block';
+      status.className='photo-dropzone-status uploading'; status.textContent='Envoi en cours…';
 
       try{
         const fd=new FormData();
@@ -929,17 +929,13 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
         const d=await r.json();
         if(d.success&&d.data&&d.data.url){
           urlField.value=d.data.url;
-          status.className='photo-dropzone-status done';
-          status.textContent='✓ Affiche ajoutée';
-        }else{
-          throw new Error('Upload échoué');
-        }
+          status.className='photo-dropzone-status done'; status.textContent='✓ Affiche ajoutée';
+        }else{ throw new Error('Upload échoué'); }
       }catch(e){
-        status.className='photo-dropzone-status error';
-        status.textContent='Échec de l\'envoi, réessayez';
+        status.className='photo-dropzone-status error'; status.textContent='Échec de l\'envoi, réessayez';
         urlField.value='';
       }
-    });
+    }
   }
 
   function setupMemberCode(){
