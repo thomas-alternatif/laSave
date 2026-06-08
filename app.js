@@ -593,6 +593,8 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
     // Email
     const pEl=$('#mail-agenda-photo');if(pEl)pEl.textContent=AGENDA_EMAIL;
     setupForm();
+    setupPhotoUpload();
+    setupMemberCode();
     // Modale organisateur
     $('#orga-modal-close').addEventListener('click',closeOrgaModal);
     $('#orga-modal-overlay').addEventListener('click',e=>{if(e.target===$('#orga-modal-overlay'))closeOrgaModal();});
@@ -606,8 +608,6 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
     buildMobileCats(allEvents);
     updateStats();injectJsonLd(allEvents);
     setupAdmin();
-    setupMemberCode();
-    setupPhotoUpload();
 
     // Ouvrir un événement depuis un lien partagé (#event-ID)
     const sharedHash = window.location.hash;
@@ -872,52 +872,53 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
   const IMGBB_KEY='ca0f64f266be0ec12ed5b8b11ab0b773';
 
   function setupPhotoUpload(){
-    const btn=$('#photo-upload-btn');
+    const dropzone=$('#photo-dropzone');
     const fileInput=$('#f-photo-file');
-    const preview=$('#photo-upload-preview');
-    const previewImg=$('#photo-upload-img');
-    const status=$('#photo-upload-status');
-    const removeBtn=$('#photo-upload-remove');
+    const empty=$('#photo-dropzone-empty');
+    const filled=$('#photo-dropzone-filled');
+    const previewImg=$('#photo-dropzone-img');
+    const status=$('#photo-dropzone-status');
+    const removeBtn=$('#photo-dropzone-remove');
     const urlField=$('#f-photo-url');
-    if(!btn||!fileInput)return;
+    if(!dropzone||!fileInput)return;
 
-    btn.addEventListener('click',()=>fileInput.click());
+    // Clic sur la zone → ouvrir le sélecteur (sauf clic sur "Changer")
+    dropzone.addEventListener('click',e=>{
+      if(e.target.closest('.photo-dropzone-remove'))return;
+      fileInput.click();
+    });
 
-    removeBtn.addEventListener('click',()=>{
+    removeBtn.addEventListener('click',e=>{
+      e.stopPropagation();
       fileInput.value='';
-      urlField.value='';
-      preview.style.display='none';
-      btn.style.display='flex';
+      fileInput.click();
     });
 
     fileInput.addEventListener('change',async()=>{
       const file=fileInput.files[0];
       if(!file)return;
 
-      // Vérifier taille (5 Mo)
       if(file.size>5*1024*1024){
-        btn.style.display='none';
-        preview.style.display='flex';
+        empty.style.display='none';
+        filled.style.display='block';
         previewImg.src='';
-        status.className='photo-upload-status error';
-        status.textContent='Image trop lourde (max 5 Mo).';
+        status.className='photo-dropzone-status error';
+        status.textContent='Image trop lourde (max 5 Mo)';
         return;
       }
 
-      // Aperçu local immédiat
       const reader=new FileReader();
       reader.onload=e=>{previewImg.src=e.target.result;};
       reader.readAsDataURL(file);
 
-      btn.style.display='none';
-      preview.style.display='flex';
-      status.className='photo-upload-status uploading';
+      empty.style.display='none';
+      filled.style.display='block';
+      status.className='photo-dropzone-status uploading';
       status.textContent='Envoi en cours…';
 
-      // Upload vers ImgBB
       if(IMGBB_KEY==='METTRE_CLE_IMGBB_ICI'){
-        status.className='photo-upload-status error';
-        status.textContent='Upload non configuré (clé API manquante).';
+        status.className='photo-dropzone-status error';
+        status.textContent='Upload non configuré';
         return;
       }
 
@@ -928,14 +929,14 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
         const d=await r.json();
         if(d.success&&d.data&&d.data.url){
           urlField.value=d.data.url;
-          status.className='photo-upload-status done';
-          status.textContent='✓ Image ajoutée';
+          status.className='photo-dropzone-status done';
+          status.textContent='✓ Affiche ajoutée';
         }else{
           throw new Error('Upload échoué');
         }
       }catch(e){
-        status.className='photo-upload-status error';
-        status.textContent='Échec de l\'envoi. Réessayez.';
+        status.className='photo-dropzone-status error';
+        status.textContent='Échec de l\'envoi, réessayez';
         urlField.value='';
       }
     });
