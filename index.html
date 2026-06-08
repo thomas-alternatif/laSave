@@ -161,6 +161,27 @@
               <div class="form-group"><label class="form-label" for="f-heure">Heure</label><input class="form-input" type="time" id="f-heure" /></div>
             </div>
             <div class="form-group"><label class="form-label" for="f-lieu">Lieu / salle</label><input class="form-input" type="text" id="f-lieu" placeholder="Salle des fêtes, Place de la mairie…" /></div>
+            <div class="form-group">
+              <label class="form-label">Photo / affiche <span style="font-size:10px;color:var(--text-muted);font-weight:400;text-transform:none;letter-spacing:0;">— recommandée</span></label>
+              <input type="file" id="f-photo-file" accept="image/jpeg,image/png,image/webp" style="display:none;" />
+              <input type="hidden" id="f-photo-url" />
+              <div class="photo-dropzone" id="photo-dropzone">
+                <div class="photo-dropzone-empty" id="photo-dropzone-empty">
+                  <div class="photo-dropzone-icon">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                  </div>
+                  <div class="photo-dropzone-title">Ajoutez l'affiche de votre événement</div>
+                  <div class="photo-dropzone-sub">Cliquez pour choisir une image · JPG, PNG · max 5 Mo</div>
+                </div>
+                <div class="photo-dropzone-filled" id="photo-dropzone-filled" style="display:none;">
+                  <img id="photo-dropzone-img" alt="Aperçu de l'affiche" />
+                  <div class="photo-dropzone-overlay">
+                    <span class="photo-dropzone-status" id="photo-dropzone-status"></span>
+                    <button type="button" class="photo-dropzone-remove" id="photo-dropzone-remove">Changer d'image</button>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -210,25 +231,6 @@
               <div class="social-field"><span class="social-icon" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg></span><input class="form-input" type="text" id="f-insta" placeholder="Instagram — nom_du_compte" aria-label="Instagram" /></div>
               <div class="social-field"><span class="social-icon" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.41c0-3.025 1.792-4.697 4.533-4.697 1.312 0 2.686.236 2.686.236v2.97h-1.513c-1.491 0-1.956.93-1.956 1.886v2.267h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z"/></svg></span><input class="form-input" type="text" id="f-fb" placeholder="Facebook — nom_de_la_page" aria-label="Facebook" /></div>
               <div class="social-field"><span class="social-icon" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2c-2.5 3-4 6.5-4 10s1.5 7 4 10M12 2c2.5 3 4 6.5 4 10s-1.5 7-4 10" stroke-linecap="round"/></svg></span><input class="form-input" type="text" id="f-site" placeholder="Site web — www.votre-site.fr" aria-label="Site web" /></div>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Photo / affiche <span style="font-size:10px;color:var(--text-muted);font-weight:400;text-transform:none;letter-spacing:0;">optionnelle</span></label>
-              <p class="form-hint">Ajoutez l'affiche ou une photo de votre événement (JPG, PNG — max 5 Mo).</p>
-              <div class="photo-upload" id="photo-upload">
-                <input type="file" id="f-photo-file" accept="image/jpeg,image/png,image/webp" style="display:none;" />
-                <button type="button" class="photo-upload-btn" id="photo-upload-btn">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                  <span>Choisir une image</span>
-                </button>
-                <div class="photo-upload-preview" id="photo-upload-preview" style="display:none;">
-                  <img id="photo-upload-img" alt="Aperçu" />
-                  <div class="photo-upload-info">
-                    <span class="photo-upload-status" id="photo-upload-status"></span>
-                    <button type="button" class="photo-upload-remove" id="photo-upload-remove">Retirer</button>
-                  </div>
-                </div>
-              </div>
-              <input type="hidden" id="f-photo-url" />
             </div>
             <div style="border-top:1px solid var(--border);padding-top:16px;margin-top:4px;">
               <p class="form-hint" style="margin-bottom:12px;"><strong style="color:var(--text-sub);">Informations privées</strong> — non publiées, modérateurs uniquement</p>
