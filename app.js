@@ -519,6 +519,9 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
       if(soc)fields['Contact']=soc;
       if($('#f-contact-prive').value)fields['Contact privé']=$('#f-contact-prive').value;
       if($('#f-message-prive').value)fields['Message privé']=$('#f-message-prive').value;
+      // Photo uploadée via ImgBB
+      const photoUrl=$('#f-photo-url')?.value;
+      if(photoUrl)fields['Photo']=[{url:photoUrl}];
       try{
         const res=await fetch(AT_URL,{method:'POST',headers:HEADS,body:JSON.stringify({fields})});
         if(!res.ok)throw Error('Erreur '+res.status);
@@ -604,6 +607,7 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
     updateStats();injectJsonLd(allEvents);
     setupAdmin();
     setupMemberCode();
+    setupPhotoUpload();
 
     // Ouvrir un événement depuis un lien partagé (#event-ID)
     const sharedHash = window.location.hash;
@@ -864,6 +868,79 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
 
   function closeOrgaModal(){$('#orga-modal-overlay').classList.remove('open');document.body.style.overflow='';}
 
+  /* ── UPLOAD PHOTO (ImgBB) ── */
+  const IMGBB_KEY='ca0f64f266be0ec12ed5b8b11ab0b773';
+
+  function setupPhotoUpload(){
+    const btn=$('#photo-upload-btn');
+    const fileInput=$('#f-photo-file');
+    const preview=$('#photo-upload-preview');
+    const previewImg=$('#photo-upload-img');
+    const status=$('#photo-upload-status');
+    const removeBtn=$('#photo-upload-remove');
+    const urlField=$('#f-photo-url');
+    if(!btn||!fileInput)return;
+
+    btn.addEventListener('click',()=>fileInput.click());
+
+    removeBtn.addEventListener('click',()=>{
+      fileInput.value='';
+      urlField.value='';
+      preview.style.display='none';
+      btn.style.display='flex';
+    });
+
+    fileInput.addEventListener('change',async()=>{
+      const file=fileInput.files[0];
+      if(!file)return;
+
+      // Vérifier taille (5 Mo)
+      if(file.size>5*1024*1024){
+        btn.style.display='none';
+        preview.style.display='flex';
+        previewImg.src='';
+        status.className='photo-upload-status error';
+        status.textContent='Image trop lourde (max 5 Mo).';
+        return;
+      }
+
+      // Aperçu local immédiat
+      const reader=new FileReader();
+      reader.onload=e=>{previewImg.src=e.target.result;};
+      reader.readAsDataURL(file);
+
+      btn.style.display='none';
+      preview.style.display='flex';
+      status.className='photo-upload-status uploading';
+      status.textContent='Envoi en cours…';
+
+      // Upload vers ImgBB
+      if(IMGBB_KEY==='METTRE_CLE_IMGBB_ICI'){
+        status.className='photo-upload-status error';
+        status.textContent='Upload non configuré (clé API manquante).';
+        return;
+      }
+
+      try{
+        const fd=new FormData();
+        fd.append('image',file);
+        const r=await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_KEY}`,{method:'POST',body:fd});
+        const d=await r.json();
+        if(d.success&&d.data&&d.data.url){
+          urlField.value=d.data.url;
+          status.className='photo-upload-status done';
+          status.textContent='✓ Image ajoutée';
+        }else{
+          throw new Error('Upload échoué');
+        }
+      }catch(e){
+        status.className='photo-upload-status error';
+        status.textContent='Échec de l\'envoi. Réessayez.';
+        urlField.value='';
+      }
+    });
+  }
+
   function setupMemberCode(){
     const btn=$('#member-code-btn');
     const input=$('#f-code');
@@ -897,8 +974,6 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
         msg.textContent='Code non reconnu. Vérifiez votre code ou contactez la mairie.';
         return;
       }
-      console.log('=== ORGA TROUVÉ ===', orga);
-      console.log('Contact:', JSON.stringify(orga.Contact), '| Photo:', JSON.stringify(orga.Photo));
 
       // Pré-remplir Organisateur
       if($('#f-org'))$('#f-org').value=orga.Nom||'';
