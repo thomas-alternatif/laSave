@@ -863,8 +863,7 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
             ${orga.photo?`<img src="${esc(orga.photo)}" alt="${esc(orga.nom)}" loading="lazy"/>`:`<div class="story-inner-placeholder" style="background:${couleur}22;color:${couleur};font-family:'Playfair Display',serif;font-weight:700;font-size:18px;">${initiales}</div>`}
           </div>
         </div>
-        <span class="story-label">${esc(orga.nom)}</span>
-        <span class="story-nb">${orga.ateliers.length} atelier${orga.ateliers.length>1?'s':''}</span>`;
+        <span class="story-label">${esc(orga.nom)}</span>`;
       const open=()=>openOrgaModal(orga);
       item.addEventListener('click',open);
       item.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' ')open();});
@@ -1347,7 +1346,6 @@ function buildOrganisateurs(orgas, allEvts) {
         </div>
       </div>
       <span class="story-label">${esc(orga.Nom)}</span>
-      ${evts.length ? `<span class="story-nb">${evts.length} événement${evts.length > 1 ? 's' : ''}</span>` : ''}
     `;
 
     const open = () => openOrgaModal(orgaData);
