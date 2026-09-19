@@ -236,6 +236,44 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
     return card;
   }
 
+  // Détecte un atelier/cours saisonnier (Date de fin > 60j après Date)
+  const isOngoing=ev=>{
+    if(!ev.Date||!ev['Date de fin'])return false;
+    return (new Date(ev['Date de fin'])-new Date(ev.Date))>60*864e5;
+  };
+
+  // Sections de la grille
+  const GRID_SECTIONS=[
+    {id:'soon',  title:"Ça se passe bientôt",
+      filter:ev=>{
+        if(!ev.Date||isOngoing(ev)||(ev['Récurrence']&&ev['Récurrence']!=='Aucune'))return false;
+        const d=new Date(ev.Date).getTime(),now=Date.now();
+        return d>=now&&d<=now+30*864e5;
+      }
+    },
+    {id:'soiree', title:"Envie d'une belle soirée ?",
+      cats:['Concert','Spectacle','Festival']
+    },
+    {id:'ateliers', title:"Et si vous vous lanciez ?",
+      cats:['Conférence / Atelier']
+    },
+    {id:'sport', title:"Transformez vos envies en énergie",
+      cats:['Sport / Loisir']
+    },
+    {id:'decouvrir', title:"À découvrir dans la vallée",
+      cats:['Guinguette','Marché','Fête & Célébration','Exposition','Autre']
+    }
+  ];
+
+  function sortByDate(list){
+    return list.slice().sort((a,b)=>{
+      const now=Date.now();
+      const da=a.Date?Math.max(new Date(a.Date).getTime(),now):9e15;
+      const db=b.Date?Math.max(new Date(b.Date).getTime(),now):9e15;
+      return da-db;
+    });
+  }
+
   function renderEvents(){
     const c=$('#events-container');c.innerHTML='';
     const filtered=allEvents.filter(ev=>{
@@ -243,20 +281,67 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
       if(currentCat!=='all'&&ev['Catégorie']!==currentCat)return false;
       if(currentSearch){const q=norm(currentSearch);const h=norm([ev.Titre,ev.Commune,ev.Lieu,ev['Catégorie'],ev.Description,ev.Organisation].filter(Boolean).join(' '));if(!h.includes(q))return false;}
       return true;
-    }).sort((a,b)=>{
-      const today=Date.now();
-      const da=a.Date?Math.max(new Date(a.Date).getTime(),today):9e15;
-      const db=b.Date?Math.max(new Date(b.Date).getTime(),today):9e15;
-      return da-db;
     });
-    if(!filtered.length)c.innerHTML='<div class="empty-state">Aucun événement ne correspond.</div>';
-    else filtered.forEach(ev=>c.appendChild(buildCard(ev)));
-    c.classList.toggle('list',viewMode==='list');
+
     $('#event-count').textContent=`· ${filtered.length}`;
+
     // Fond catégorie dynamique
     const bg=$('#cat-bg');
     if(currentCat!=='all'){const m=CAT_META[currentCat];if(m&&m.fallback){bg.style.backgroundImage=`url(${m.fallback})`;bg.classList.add('on');}else bg.classList.remove('on');}
     else bg.classList.remove('on');
+
+    if(!filtered.length){c.innerHTML='<div class="empty-state">Aucun événement ne correspond.</div>';return;}
+
+    // Mode filtré → grille plate simple
+    if(currentCat!=='all'||currentSearch){
+      c.className='grid';
+      sortByDate(filtered).forEach(ev=>c.appendChild(buildCard(ev)));
+      return;
+    }
+
+    // Mode sections
+    c.className='';
+    const used=new Set();
+
+    GRID_SECTIONS.forEach(sec=>{
+      let evts;
+      if(sec.filter){
+        evts=filtered.filter(ev=>!used.has(ev.id)&&sec.filter(ev));
+      }else{
+        evts=filtered.filter(ev=>!used.has(ev.id)&&sec.cats.includes(ev['Catégorie']));
+      }
+      evts=sortByDate(evts);
+      if(!evts.length)return;
+      evts.forEach(ev=>used.add(ev.id));
+
+      const wrap=document.createElement('div');
+      wrap.className='grid-section';
+      const head=document.createElement('div');
+      head.className='grid-section-head';
+      head.innerHTML=`<h3 class="grid-section-title">${sec.title}</h3>`;
+      const grid=document.createElement('div');
+      grid.className='grid';
+      evts.forEach(ev=>grid.appendChild(buildCard(ev)));
+      wrap.appendChild(head);
+      wrap.appendChild(grid);
+      c.appendChild(wrap);
+    });
+
+    // Événements non catégorisés → en vrac à la fin
+    const rest=sortByDate(filtered.filter(ev=>!used.has(ev.id)));
+    if(rest.length){
+      const wrap=document.createElement('div');
+      wrap.className='grid-section';
+      const head=document.createElement('div');
+      head.className='grid-section-head';
+      head.innerHTML=`<h3 class="grid-section-title">Autres événements</h3>`;
+      const grid=document.createElement('div');
+      grid.className='grid';
+      rest.forEach(ev=>grid.appendChild(buildCard(ev)));
+      wrap.appendChild(head);
+      wrap.appendChild(grid);
+      c.appendChild(wrap);
+    }
   }
 
   /* ── MODALE ── */
