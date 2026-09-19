@@ -71,6 +71,8 @@
       .grid-title, .grid-title * { color: #0a0a0a !important; }
       .grid-section-title { color: #0a0a0a !important; }
       .grid-section-head { border-bottom-color: rgba(0,0,0,0.1) !important; }
+      .grid-section .grid { scrollbar-color: rgba(0,0,0,0.15) transparent; }
+      .grid-section .grid::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); }
       .grid-count { color: #666 !important; }
       .ateliers-title { color: #0a0a0a !important; }
       .hero-h1 { color: #0a0a0a !important; text-shadow: none !important; }
@@ -356,6 +358,16 @@
     .grid-section { margin-bottom: 3rem; }
     .grid-section-head { display: flex; align-items: center; margin-bottom: 1.2rem; padding-bottom: .8rem; border-bottom: 1px solid var(--border); }
     .grid-section-title { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; color: var(--text); }
+    .grid-section .grid {
+      display: flex; flex-wrap: nowrap; overflow-x: auto; gap: 14px;
+      padding-bottom: 16px; scroll-snap-type: x proximity;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.15) transparent;
+    }
+    .grid-section .grid::-webkit-scrollbar { height: 3px; }
+    .grid-section .grid::-webkit-scrollbar-track { background: transparent; }
+    .grid-section .grid::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 2px; }
+    .grid-section .grid .card { flex: 0 0 220px; scroll-snap-align: start; }
     /* ── GRILLE ── */
     .grid-wrap { padding: 2rem var(--pad) 0; max-width: var(--max); margin: 0 auto; }
     .grid-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border); }
@@ -975,6 +987,7 @@
       .story-label { font-size:9px;max-width:60px; }
       .grid-wrap { padding: 1rem var(--pad) 0; }
       .grid { grid-template-columns: 1fr; gap: 10px; }
+      .grid-section .grid .card { flex: 0 0 170px; }
       .grid-head { margin-bottom: .75rem; }
       .grid-title { font-size: 18px; }
       .card-img { height: 170px; }
