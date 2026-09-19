@@ -69,6 +69,8 @@
 
       /* TITRES */
       .grid-title, .grid-title * { color: #0a0a0a !important; }
+      .grid-section-title { color: #0a0a0a !important; }
+      .grid-section-head { border-bottom-color: rgba(0,0,0,0.1) !important; }
       .grid-count { color: #666 !important; }
       .ateliers-title { color: #0a0a0a !important; }
       .hero-h1 { color: #0a0a0a !important; text-shadow: none !important; }
@@ -350,6 +352,10 @@
     .cat-opt-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
     .cat-opt-cnt { margin-left: auto; font-size: 11px; color: var(--text-muted); }
 
+    /* ── SECTIONS GRILLE ── */
+    .grid-section { margin-bottom: 3rem; }
+    .grid-section-head { display: flex; align-items: center; margin-bottom: 1.2rem; padding-bottom: .8rem; border-bottom: 1px solid var(--border); }
+    .grid-section-title { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; color: var(--text); }
     /* ── GRILLE ── */
     .grid-wrap { padding: 2rem var(--pad) 0; max-width: var(--max); margin: 0 auto; }
     .grid-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border); }
