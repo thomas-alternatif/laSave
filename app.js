@@ -243,7 +243,12 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
       if(currentCat!=='all'&&ev['Catégorie']!==currentCat)return false;
       if(currentSearch){const q=norm(currentSearch);const h=norm([ev.Titre,ev.Commune,ev.Lieu,ev['Catégorie'],ev.Description,ev.Organisation].filter(Boolean).join(' '));if(!h.includes(q))return false;}
       return true;
-    }).sort((a,b)=>{const da=a.Date?new Date(a.Date):new Date('9999-12-31'),db=b.Date?new Date(b.Date):new Date('9999-12-31');return da-db});
+    }).sort((a,b)=>{
+      const today=Date.now();
+      const da=a.Date?Math.max(new Date(a.Date).getTime(),today):9e15;
+      const db=b.Date?Math.max(new Date(b.Date).getTime(),today):9e15;
+      return da-db;
+    });
     if(!filtered.length)c.innerHTML='<div class="empty-state">Aucun événement ne correspond.</div>';
     else filtered.forEach(ev=>c.appendChild(buildCard(ev)));
     c.classList.toggle('list',viewMode==='list');
@@ -259,8 +264,18 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
     const cat=ev['Catégorie']||'Autre',m=CAT_META[cat]||CAT_META['Autre'],photo=getPhoto(ev);
     const mc=$('.modal-cat-pill');mc.textContent=cat;mc.style.background=m.color+'28';mc.style.color=m.color;
     $('#modal-title').textContent=ev.Titre||'Sans titre';
-    let photoEl=$('.modal-photo');
-    if(photo){if(!photoEl){photoEl=document.createElement('img');photoEl.className='modal-photo';$('.modal').insertBefore(photoEl,$('.modal-head'));}photoEl.src=photo;photoEl.alt=`Affiche : ${ev.Titre||''}`;photoEl.onclick=()=>{$('#lightbox-img').src=photo;$('#lightbox-img').alt=ev.Titre||'';$('#lightbox').classList.add('open');};}
+    let photoEl=$('.modal-photo-wrap');
+    if(photo){
+      if(!photoEl){
+        photoEl=document.createElement('div');
+        photoEl.className='modal-photo-wrap';
+        photoEl.innerHTML=`<img class="modal-photo" alt=""/><div class="modal-zoom-hint"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg> Agrandir</div>`;
+        $('.modal').insertBefore(photoEl,$('.modal-head'));
+        photoEl.onclick=()=>{$('#lightbox-img').src=photo;$('#lightbox-img').alt=ev.Titre||'';$('#lightbox').classList.add('open');};
+      }
+      photoEl.querySelector('.modal-photo').src=photo;
+      photoEl.querySelector('.modal-photo').alt=`Affiche : ${ev.Titre||''}`;
+    }
     else if(photoEl)photoEl.remove();
     const mi=[];
     if(ev.Date)mi.push(`<span class="modal-meta-item">📅 <strong>${fmtDate(ev.Date)}</strong>${ev['Date de fin']?' → '+fmtDate(ev['Date de fin']):''}</span>`);
