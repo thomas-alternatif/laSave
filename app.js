@@ -283,7 +283,7 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
       return true;
     });
 
-    $('#event-count').textContent=`· ${filtered.length}`;
+    const evCount=$('#event-count'); if(evCount) evCount.textContent=`· ${filtered.length}`;
 
     // Fond catégorie dynamique
     const bg=$('#cat-bg');
