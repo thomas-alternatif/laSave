@@ -64,6 +64,7 @@
       /* FOOTER */
       .footer { background: rgba(255,255,255,0.5) !important; border-top-color: rgba(0,0,0,0.08) !important; }
       .footer-logo { color: #0a0a0a; }
+      .footer-mairie-logo { filter: none; opacity:.9; }
       .footer-copy, .footer-links a { color: #444; }
       .footer-links a:hover { color: #0a0a0a; }
 
@@ -793,6 +794,8 @@
     .footer { border-top:1px solid var(--border);padding:3rem var(--pad);display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:2rem;margin-top:5rem;background:rgba(10,10,10,.6); }
     .footer-logo { font-family:'Playfair Display',serif;font-size:18px;font-weight:900;color:var(--text); }
     .footer-logo span { color:var(--gold); }
+    .footer-mairie-logo { height:64px; width:auto; opacity:.85; filter:drop-shadow(0 2px 6px rgba(0,0,0,0.3)); transition:opacity .2s; }
+    .footer-mairie-logo:hover { opacity:1; }
     .footer-copy { font-size:11px;color:var(--text-muted);margin-top:6px;line-height:1.7;max-width:300px; }
     .footer-copy a { color:var(--text-sub);text-decoration:none; }
     .footer-copy a:hover { color:var(--text); }
@@ -883,38 +886,57 @@
       }
       #featured-container::after { display: none; }
       #featured-container::before { display: none; }
-      /* Contenu mobile : cacher tout le texte, garder juste le bouton */
+      /* Contenu mobile : titre + catégorie + date + bouton en bas */
       #ns-content {
         position: absolute !important;
-        bottom: 24px !important;
-        left: 50% !important;
-        right: auto !important;
-        transform: translateX(-50%);
-        padding: 0 !important;
-        max-width: none !important;
-        gap: 0 !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        transform: none !important;
+        padding: 80px 1.25rem 1.25rem !important;
+        max-width: 100% !important;
+        gap: 5px !important;
         display: flex !important;
         flex-direction: column !important;
-        align-items: center !important;
-        text-align: center !important;
-        background: none !important;
+        align-items: flex-start !important;
+        text-align: left !important;
+        background: linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.55) 55%, transparent 100%) !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
       }
       #ns-content::before { display: none !important; }
-      .ns-ey, .ns-t, .ns-bar, .ns-m, .ns-desc, .ns-org { display: none !important; }
-      .ns-cta { 
-        font-size: 12px !important;
-        padding: 8px 22px !important;
-        margin: 0 !important;
-        background: rgba(255,255,255,0.15) !important;
+      .ns-bar, .ns-desc, .ns-org { display: none !important; }
+      .ns-ey { display: block !important; }
+      .ns-t {
+        display: block !important;
+        font-size: 20px !important;
+        line-height: 1.2 !important;
         color: #fff !important;
-        font-weight: 500 !important;
-        border: 1px solid rgba(255,255,255,0.25) !important;
-        backdrop-filter: blur(14px) !important;
-        -webkit-backdrop-filter: blur(14px) !important;
-        box-shadow: 0 2px 12px rgba(0,0,0,0.3) !important;
-        align-self: center !important;
+        text-shadow: 0 2px 8px rgba(0,0,0,0.5) !important;
+        margin: 2px 0 4px !important;
+        max-width: 100% !important;
       }
-      .ns-cta:hover { background: rgba(255,255,255,0.22) !important; }
+      .ns-m {
+        display: flex !important;
+        font-size: 12px !important;
+        color: rgba(255,255,255,0.75) !important;
+        gap: 8px !important;
+        margin-bottom: 10px !important;
+      }
+      .ns-cta {
+        font-size: 12px !important;
+        padding: 8px 20px !important;
+        margin: 0 !important;
+        background: rgba(255,255,255,0.18) !important;
+        color: #fff !important;
+        font-weight: 600 !important;
+        border: 1px solid rgba(255,255,255,0.3) !important;
+        backdrop-filter: blur(12px) !important;
+        -webkit-backdrop-filter: blur(12px) !important;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.3) !important;
+        align-self: flex-start !important;
+      }
+      .ns-cta:hover { background: rgba(255,255,255,0.26) !important; }
       /* Slider intégration */
       .slider-wrap { padding: 12px 12px 0 !important; }
       #featured-container { 
@@ -947,11 +969,11 @@
         height: 32px !important;
         font-size: 24px !important;
       }
-      /* Indicateurs de slides en bas (points) au lieu des thumbs */
+      /* Indicateurs de slides (points) au-dessus du contenu */
       .ns-thumbs {
         display: flex !important;
         position: absolute !important;
-        bottom: 8px !important;
+        bottom: 155px !important;
         left: 0 !important;
         right: 0 !important;
         justify-content: center !important;
