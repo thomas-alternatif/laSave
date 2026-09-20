@@ -38,15 +38,16 @@
       }
       /* Désactiver le fond image catégorie (trop sombre pour le mode clair) */
       .cat-bg { display: none !important; }
-      /* Réactive l'animation en mode clair avec couleurs bleues douces */
-      .cat-bg.ambient {
-        display: block !important;
-        opacity: 1 !important;
-        background: linear-gradient(160deg,#c2dff0,#d4ecf9,#b8d8ec,#cce6f8,#b4d4ea,#c6e2f5,#c2dff0) !important;
-        background-size: 400% 400% !important;
-        animation: ambientFlow 22s ease infinite !important;
-        filter: blur(65px) saturate(1.15) !important;
+      /* Fond animé mode clair — même méca que cat-bg.ambient en dark */
+      #bg-light {
+        display: block;
+        position: fixed; inset: 0; z-index: 0; pointer-events: none;
+        background: linear-gradient(160deg,#f0f8fc,#c8e4f4,#88bfe0,#b2d8ef,#6ab2dc,#b2d8ef,#88bfe0,#c8e4f4,#f0f8fc);
+        background-size: 400% 400%;
+        animation: ambientFlow 22s ease infinite;
+        filter: blur(60px) saturate(1.2);
       }
+
 
       /* HEADER */
       .header { background: rgba(245,241,234,0.75) !important; border-bottom-color: rgba(0,0,0,0.08) !important; }
@@ -545,6 +546,7 @@
 
     /* ── FOND CATÉGORIE DYNAMIQUE ── */
     .cat-bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: 0; transition: opacity .6s ease; }
+    #bg-light { display: none; }
     .cat-bg.on { opacity: 1; background-size: cover; background-position: center; filter: brightness(.18) saturate(1.2) blur(2px); }
     .cat-bg.ambient { opacity: 1; background: linear-gradient(160deg,#040c18,#091d30,#0d3343,#164858,#0d3343,#091d30,#040c18); background-size: 400% 400%; animation: ambientFlow 22s ease infinite; filter: blur(60px) saturate(1.5); }
 
