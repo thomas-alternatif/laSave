@@ -38,14 +38,21 @@
       }
       /* Désactiver le fond image catégorie (trop sombre pour le mode clair) */
       .cat-bg { display: none !important; }
-      /* Fond animé mode clair — même méca que cat-bg.ambient en dark */
+      /* Fond animé mode clair — blobs radials + translate sur vrai div */
       #bg-light {
         display: block;
-        position: fixed; inset: 0; z-index: 0; pointer-events: none;
-        background: linear-gradient(160deg,#f0f8fc,#c8e4f4,#88bfe0,#b2d8ef,#6ab2dc,#b2d8ef,#88bfe0,#c8e4f4,#f0f8fc);
-        background-size: 400% 400%;
-        animation: ambientFlow 22s ease infinite;
-        filter: blur(60px) saturate(1.2);
+        position: fixed;
+        inset: -30%;
+        z-index: 0;
+        pointer-events: none;
+        background:
+          radial-gradient(ellipse 55% 45% at 30% 25%, rgba(60,145,210,0.55) 0%, transparent 65%),
+          radial-gradient(ellipse 50% 40% at 75% 20%, rgba(120,190,240,0.50) 0%, transparent 65%),
+          radial-gradient(ellipse 60% 50% at 15% 70%, rgba(90,165,225,0.45) 0%, transparent 65%),
+          radial-gradient(ellipse 55% 45% at 80% 72%, rgba(150,205,245,0.50) 0%, transparent 65%),
+          radial-gradient(ellipse 45% 40% at 52% 50%, rgba(200,230,250,0.40) 0%, transparent 60%);
+        filter: blur(55px);
+        animation: floatLight 18s ease-in-out infinite;
       }
 
 
@@ -745,6 +752,7 @@
     .legal-content.on { display:block;animation:fadeIn .3s ease; }
     @keyframes fadeIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
     @keyframes ringFlow{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+    @keyframes floatLight{0%{transform:translate(0%,0%)}25%{transform:translate(18%,-14%)}50%{transform:translate(-12%,18%)}75%{transform:translate(14%,12%)}100%{transform:translate(0%,0%)}}
     @keyframes ambientFlow{0%{background-position:0% 0%}33%{background-position:100% 50%}66%{background-position:50% 100%}100%{background-position:0% 0%}}
     @keyframes driftLight{0%{background-position:0% 0%}25%{background-position:42% 16%}50%{background-position:58% 48%}75%{background-position:6% 56%}100%{background-position:0% 0%}}
     @keyframes storiesScroll{to{transform:translateX(-50%)}}
