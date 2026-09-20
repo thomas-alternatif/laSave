@@ -850,11 +850,12 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
     const ac=$('#ateliers-count');if(ac)ac.textContent=`${list.length} organisateur${list.length>1?'s':''}`;
     const stories=$('#ateliers-stories');
     stories.innerHTML='';
-    list.forEach(orga=>{
+    list.forEach((orga,idx)=>{
       const item=document.createElement('div');
       item.className='story-item';
       item.setAttribute('role','button');item.setAttribute('tabindex','0');
       item.setAttribute('aria-label',`${orga.nom} — ${orga.ateliers.length} atelier${orga.ateliers.length>1?'s':''}`);
+      item.dataset.orgaIdx=idx;
       const initiales=orga.nom.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
       const couleur=`hsl(${orga.nom.split('').reduce((a,c)=>a+c.charCodeAt(0),0)%360},45%,55%)`;
       item.innerHTML=`
@@ -864,10 +865,21 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
           </div>
         </div>
         <span class="story-label">${esc(orga.nom)}</span>`;
-      const open=()=>openOrgaModal(orga);
-      item.addEventListener('click',open);
-      item.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' ')open();});
       stories.appendChild(item);
+    });
+    // Délégation d'événement : fonctionne aussi sur les clones créés par startStoriesAutoScroll
+    stories.addEventListener('click',e=>{
+      const it=e.target.closest('.story-item');
+      if(!it)return;
+      const idx=parseInt(it.dataset.orgaIdx,10);
+      if(!isNaN(idx))openOrgaModal(list[idx]);
+    });
+    stories.addEventListener('keydown',e=>{
+      if(e.key!=='Enter'&&e.key!==' ')return;
+      const it=e.target.closest('.story-item');
+      if(!it)return;
+      const idx=parseInt(it.dataset.orgaIdx,10);
+      if(!isNaN(idx))openOrgaModal(list[idx]);
     });
     wrap.style.display='';
     requestAnimationFrame(()=>startStoriesAutoScroll(stories));
@@ -1318,7 +1330,9 @@ function buildOrganisateurs(orgas, allEvts) {
 
   const ac=$('#ateliers-count');if(ac)ac.textContent=`${orgas.length} organisateur${orgas.length > 1 ? 's' : ''}`;
 
-  orgas.forEach(orga => {
+  const orgaDataList = []; // tableau indexé pour la délégation d'événement
+
+  orgas.forEach((orga, idx) => {
     const evts = allEvts.filter(e => norm(orgName(e.Organisation)) === norm(orga.Nom));
     // Utiliser findOrga normalisé pour récupérer la bonne fiche
     const ficheOrga = findOrga(orga.Nom);
@@ -1326,12 +1340,14 @@ function buildOrganisateurs(orgas, allEvts) {
       ...ficheOrga,
       ateliers: evts
     };
+    orgaDataList.push(orgaData);
 
     const item = document.createElement('div');
     item.className = 'story-item';
     item.setAttribute('role', 'button');
     item.setAttribute('tabindex', '0');
     item.setAttribute('aria-label', orga.Nom);
+    item.dataset.orgaIdx = idx; // index stable même après cloneNode
 
     const initiales = orga.Nom.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
     const couleur = `hsl(${orga.Nom.split('').reduce((a, c) => a + c.charCodeAt(0), 0) % 360},45%,55%)`;
@@ -1349,10 +1365,22 @@ function buildOrganisateurs(orgas, allEvts) {
       <span class="story-label">${esc(orga.Nom)}</span>
     `;
 
-    const open = () => openOrgaModal(orgaData);
-    item.addEventListener('click', open);
-    item.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') open(); });
     stories.appendChild(item);
+  });
+
+  // Délégation d'événement : fonctionne aussi sur les clones créés par startStoriesAutoScroll
+  stories.addEventListener('click', e => {
+    const it = e.target.closest('.story-item');
+    if (!it) return;
+    const idx = parseInt(it.dataset.orgaIdx, 10);
+    if (!isNaN(idx)) openOrgaModal(orgaDataList[idx]);
+  });
+  stories.addEventListener('keydown', e => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    const it = e.target.closest('.story-item');
+    if (!it) return;
+    const idx = parseInt(it.dataset.orgaIdx, 10);
+    if (!isNaN(idx)) openOrgaModal(orgaDataList[idx]);
   });
 
   wrap.style.display = '';
