@@ -28,13 +28,15 @@
         --text-sub: #333;
         --text-muted: #666;
       }
-      /* Fond clair — liquid mint/pervenche/corail */
+      /* Fond clair — liquid mint/pervenche/corail animé */
       body::before {
         background:
           radial-gradient(ellipse 80% 55% at 55% 0%,   rgba(175,228,222,0.82) 0%, transparent 60%),
           radial-gradient(ellipse 65% 55% at 8%  55%,  rgba(112,128,195,0.68) 0%, transparent 65%),
           radial-gradient(ellipse 70% 60% at 82% 82%,  rgba(200,78,62,0.62)   0%, transparent 65%),
           radial-gradient(ellipse 50% 40% at 88% 38%,  rgba(220,138,85,0.42)  0%, transparent 60%) !important;
+        background-size: 400% 400% !important;
+        animation: ambientFlow 22s ease infinite !important;
       }
       /* Désactiver le fond image catégorie (trop sombre pour le mode clair) */
       .cat-bg { display: none !important; }
