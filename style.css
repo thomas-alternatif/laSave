@@ -28,16 +28,12 @@
         --text-sub: #333;
         --text-muted: #666;
       }
-      /* Fond clair — mêmes blobs, opacités renforcées */
+      /* Fond clair — blobs statiques or/bleu/vert */
       body::before {
         background:
-          radial-gradient(ellipse 50% 42% at 28% 30%, rgba(212,170,95,0.48) 0%, transparent 65%),
-          radial-gradient(ellipse 44% 38% at 72% 65%, rgba(56,168,240,0.40) 0%, transparent 65%) !important;
-      }
-      body::after {
-        background:
-          radial-gradient(ellipse 48% 40% at 58% 20%, rgba(72,200,120,0.38) 0%, transparent 65%),
-          radial-gradient(ellipse 42% 36% at 32% 72%, rgba(30,110,200,0.32) 0%, transparent 65%) !important;
+          radial-gradient(ellipse 60% 50% at 10% 20%, rgba(212,170,95,0.40) 0%, transparent 100%),
+          radial-gradient(ellipse 50% 45% at 90% 70%, rgba(77,184,240,0.32) 0%, transparent 100%),
+          radial-gradient(ellipse 55% 40% at 50% 100%, rgba(72,200,120,0.28) 0%, transparent 100%) !important;
       }
       /* Désactiver le fond image catégorie (trop sombre pour le mode clair) */
       .cat-bg { display: none !important; }
@@ -276,28 +272,12 @@
     @media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
 
     /* ── FOND ── */
-    body::before, body::after {
-      content: ''; position: fixed; inset: -20%; z-index: 0; pointer-events: none;
-    }
     body::before {
+      content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none;
       background:
-        radial-gradient(ellipse 50% 42% at 28% 30%, rgba(212,170,95,0.32) 0%, transparent 65%),
-        radial-gradient(ellipse 44% 38% at 72% 65%, rgba(56,168,240,0.26) 0%, transparent 65%);
-      animation: blobA 13s ease-in-out infinite alternate;
-    }
-    body::after {
-      background:
-        radial-gradient(ellipse 48% 40% at 58% 20%, rgba(72,200,120,0.24) 0%, transparent 65%),
-        radial-gradient(ellipse 42% 36% at 32% 72%, rgba(30,110,200,0.22) 0%, transparent 65%);
-      animation: blobB 17s ease-in-out infinite alternate;
-    }
-    @keyframes blobA {
-      from { transform: translate(0%, 0%); }
-      to   { transform: translate(12%, 8%); }
-    }
-    @keyframes blobB {
-      from { transform: translate(0%, 0%); }
-      to   { transform: translate(-10%, 7%); }
+        radial-gradient(ellipse 60% 50% at 10% 20%, rgba(212,170,95,0.18) 0%, transparent 100%),
+        radial-gradient(ellipse 50% 45% at 90% 70%, rgba(77,184,240,0.14) 0%, transparent 100%),
+        radial-gradient(ellipse 55% 40% at 50% 100%, rgba(93,212,112,0.12) 0%, transparent 100%);
     }
     header,main,section,footer,.modal-overlay,.scroll-top { position: relative; z-index: 1; }
 
