@@ -287,8 +287,16 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
 
     // Fond catégorie dynamique
     const bg=$('#cat-bg');
-    if(currentCat!=='all'){const m=CAT_META[currentCat];if(m&&m.fallback){bg.style.backgroundImage=`url(${m.fallback})`;bg.classList.add('on');}else bg.classList.remove('on');}
-    else bg.classList.remove('on');
+    if(currentCat!=='all'){
+      bg.classList.remove('ambient');
+      const m=CAT_META[currentCat];
+      if(m&&m.fallback){bg.style.backgroundImage=`url(${m.fallback})`;bg.classList.add('on');}
+      else{bg.style.backgroundImage='';bg.classList.remove('on');}
+    }else{
+      bg.style.backgroundImage='';
+      bg.classList.remove('on');
+      bg.classList.add('ambient');
+    }
 
     if(!filtered.length){c.innerHTML='<div class="empty-state">Aucun événement ne correspond.</div>';return;}
 
@@ -1387,31 +1395,34 @@ function buildOrganisateurs(orgas, allEvts) {
   requestAnimationFrame(()=>startStoriesAutoScroll(stories));
 }
 
-let _storiesRAF = null;
+let _storiesRAF = null; // conservé pour compatibilité
 function startStoriesAutoScroll(container) {
-  if (_storiesRAF) { cancelAnimationFrame(_storiesRAF); _storiesRAF = null; }
   const items = Array.from(container.querySelectorAll('.story-item'));
   if (items.length < 2) return;
-  // Cloner 3× (total 4 copies) pour garantir le débordement même avec peu d'items
-  for (let i = 0; i < 3; i++) {
-    items.forEach(it => container.appendChild(it.cloneNode(true)));
-  }
-  // resetAt = position exacte du début de la 2e copie (force reflow via offsetLeft)
-  const firstClone = container.querySelectorAll('.story-item')[items.length];
-  const resetAt = firstClone ? firstClone.offsetLeft : 0;
-  if (resetAt <= 0) return;
-  const speed = 0.5; // px/frame ≈ 30 px/s
-  let paused = false;
-  container.addEventListener('mouseenter', () => { paused = true; });
-  container.addEventListener('mouseleave', () => { paused = false; });
-  container.addEventListener('touchstart', () => { paused = true; }, { passive: true });
-  container.addEventListener('touchend', () => { setTimeout(() => { paused = false; }, 1200); }, { passive: true });
-  function tick() {
-    if (!paused) {
-      container.scrollLeft += speed;
-      if (container.scrollLeft >= resetAt) container.scrollLeft -= resetAt;
-    }
-    _storiesRAF = requestAnimationFrame(tick);
-  }
-  _storiesRAF = requestAnimationFrame(tick);
+
+  // Encapsuler dans un .stories-track pour animation CSS transform
+  // (scrollLeft ne fonctionne pas de manière fiable sur iOS mobile)
+  const track = document.createElement('div');
+  track.className = 'stories-track';
+  items.forEach(it => track.appendChild(it));
+  container.appendChild(track);
+
+  // 1 seul clone → 2 copies totales → translateX(-50%) = boucle parfaite
+  items.forEach(it => track.appendChild(it.cloneNode(true)));
+
+  // Durée calculée selon la largeur réelle (30 px/s)
+  requestAnimationFrame(() => {
+    const setWidth = track.scrollWidth / 2;
+    const duration = Math.max(8, setWidth / 30);
+    track.style.setProperty('--scroll-dur', `${duration}s`);
+    track.classList.add('scrolling');
+  });
+
+  // Pause hover / touch
+  const pause  = () => { track.style.animationPlayState = 'paused'; };
+  const resume = () => { track.style.animationPlayState = ''; };
+  container.addEventListener('mouseenter', pause);
+  container.addEventListener('mouseleave', resume);
+  container.addEventListener('touchstart', pause, { passive: true });
+  container.addEventListener('touchend', () => setTimeout(resume, 1200), { passive: true });
 }
