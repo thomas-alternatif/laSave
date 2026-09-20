@@ -870,6 +870,7 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
       stories.appendChild(item);
     });
     wrap.style.display='';
+    startStoriesAutoScroll(stories);
   }
 
   function openOrgaModal(orga){
@@ -1355,4 +1356,28 @@ function buildOrganisateurs(orgas, allEvts) {
   });
 
   wrap.style.display = '';
+  startStoriesAutoScroll(stories);
+}
+
+let _storiesRAF = null;
+function startStoriesAutoScroll(container) {
+  if (_storiesRAF) { cancelAnimationFrame(_storiesRAF); _storiesRAF = null; }
+  const items = Array.from(container.querySelectorAll('.story-item'));
+  if (items.length < 3) return;
+  // Dupliquer les items pour le loop sans couture
+  items.forEach(it => container.appendChild(it.cloneNode(true)));
+  const speed = 0.35; // px/frame ≈ 21 px/s — très doux
+  let paused = false;
+  container.addEventListener('mouseenter', () => { paused = true; });
+  container.addEventListener('mouseleave', () => { paused = false; });
+  container.addEventListener('touchstart', () => { paused = true; }, { passive: true });
+  container.addEventListener('touchend', () => { setTimeout(() => { paused = false; }, 1200); }, { passive: true });
+  function tick() {
+    if (!paused) {
+      container.scrollLeft += speed;
+      if (container.scrollLeft >= container.scrollWidth / 2) container.scrollLeft = 0;
+    }
+    _storiesRAF = requestAnimationFrame(tick);
+  }
+  _storiesRAF = requestAnimationFrame(tick);
 }
