@@ -31,7 +31,7 @@
       body::before { display: none !important; }
       /* Désactiver le fond image catégorie (trop sombre pour le mode clair) */
       .cat-bg { display: none !important; }
-      /* canvas wave */ #bg-light { display:none; position:fixed; inset:0; z-index:0; pointer-events:none; }
+      /* canvas wave blobs */ #bg-light { display:none; position:fixed; inset:-8%; z-index:0; pointer-events:none; filter:blur(70px) saturate(1.25); }
 
 
       /* HEADER */

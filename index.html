@@ -15,7 +15,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Yeseva+One&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=19" />
+  <link rel="stylesheet" href="style.css?v=20" />
   <meta name="theme-color" content="#0d0d0d" media="(prefers-color-scheme: dark)" />
   <meta name="theme-color" content="#f5f1ea" media="(prefers-color-scheme: light)" />
   <noscript><style>body{display:grid;place-items:center;min-height:100vh;font-family:sans-serif;padding:2rem;text-align:center}</style><p>laSave nécessite JavaScript pour fonctionner.</p></noscript>
@@ -451,35 +451,35 @@
     var mq=window.matchMedia('(prefers-color-scheme:light)');
     var ctx=cv.getContext('2d');
     var W,H;
-    function resize(){W=cv.width=window.innerWidth;H=cv.height=window.innerHeight;}
-    resize();
-    window.addEventListener('resize',resize);
-    var waves=[
-      {amp:.09,freq:.0055,spd:.00030,y:.35,r:130,g:185,b:230,a:.55},
-      {amp:.12,freq:.0038,spd:.00022,y:.52,r:110,g:165,b:220,a:.48},
-      {amp:.08,freq:.0070,spd:.00042,y:.67,r:150,g:200,b:238,a:.40},
-      {amp:.11,freq:.0028,spd:.00018,y:.80,r:170,g:215,b:245,a:.32}
+    function resize(){W=cv.width=Math.round(window.innerWidth*1.16);H=cv.height=Math.round(window.innerHeight*1.16);}
+    resize(); window.addEventListener('resize',resize);
+
+    /* blobs : offset centre, amplitude mouvement, vitesse, phase, rayon, couleur */
+    var B=[
+      {ox:.35,oy:.40,ax:.32,ay:.26,sx:.00042,sy:.00031,px:0.00,py:1.57,r:.80,c:'95,165,225'},
+      {ox:.68,oy:.55,ax:.28,ay:.30,sx:.00031,sy:.00048,px:2.09,py:3.30,r:.72,c:'70,148,215'},
+      {ox:.50,oy:.72,ax:.25,ay:.22,sx:.00058,sy:.00036,px:4.19,py:0.70,r:.65,c:'130,195,240'},
+      {ox:.20,oy:.25,ax:.18,ay:.20,sx:.00035,sy:.00055,px:1.05,py:2.51,r:.55,c:'110,180,232'}
     ];
+
     function draw(t){
       var light=mq.matches;
       cv.style.display=light?'block':'none';
       if(!light)return;
+      ctx.clearRect(0,0,W,H);
       ctx.fillStyle='#edf4f8';
       ctx.fillRect(0,0,W,H);
-      for(var i=waves.length-1;i>=0;i--){
-        var w=waves[i];
-        var yb=H*w.y,a=H*w.amp;
-        ctx.beginPath();
-        ctx.moveTo(0,H);
-        for(var x=0;x<=W+2;x+=3){
-          var y=yb+Math.sin(x*w.freq+t*w.spd)*a
-                 +Math.sin(x*w.freq*1.65+t*w.spd*.72)*a*.38;
-          ctx.lineTo(x,y);
-        }
-        ctx.lineTo(W,H);
-        ctx.closePath();
-        ctx.fillStyle='rgba('+w.r+','+w.g+','+w.b+','+w.a+')';
-        ctx.fill();
+      for(var i=0;i<B.length;i++){
+        var b=B[i];
+        var cx=(b.ox+b.ax*Math.sin(t*b.sx+b.px))*W;
+        var cy=(b.oy+b.ay*Math.cos(t*b.sy+b.py))*H;
+        var r=b.r*Math.min(W,H);
+        var g=ctx.createRadialGradient(cx,cy,0,cx,cy,r);
+        g.addColorStop(0,'rgba('+b.c+',.72)');
+        g.addColorStop(.5,'rgba('+b.c+',.38)');
+        g.addColorStop(1,'rgba('+b.c+',0)');
+        ctx.fillStyle=g;
+        ctx.beginPath();ctx.arc(cx,cy,r,0,6.2832);ctx.fill();
       }
     }
     var t0=null;
