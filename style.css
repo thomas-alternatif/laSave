@@ -2,7 +2,7 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
       --gold: #c8a96e;
-      --bg: #0d0d0d;
+      --bg: #08111e;
       --bg-card: rgba(18,18,24,0.72);
       --bg-card-hover: rgba(24,24,32,0.88);
       --border: rgba(255,255,255,0.09);
@@ -275,9 +275,9 @@
     body::before {
       content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none;
       background:
-        radial-gradient(ellipse 60% 50% at 10% 20%, rgba(212,170,95,0.18) 0%, transparent 100%),
-        radial-gradient(ellipse 50% 45% at 90% 70%, rgba(77,184,240,0.14) 0%, transparent 100%),
-        radial-gradient(ellipse 55% 40% at 50% 100%, rgba(93,212,112,0.12) 0%, transparent 100%);
+        radial-gradient(ellipse 90% 65% at 45% 80%, rgba(18,70,82,0.65) 0%, transparent 70%),
+        radial-gradient(ellipse 65% 50% at 15% 55%, rgba(10,38,65,0.50) 0%, transparent 70%),
+        radial-gradient(ellipse 55% 42% at 80% 25%, rgba(6,20,46,0.40) 0%, transparent 70%);
     }
     header,main,section,footer,.modal-overlay,.scroll-top { position: relative; z-index: 1; }
 
@@ -536,7 +536,7 @@
     /* ── FOND CATÉGORIE DYNAMIQUE ── */
     .cat-bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: 0; transition: opacity .6s ease; }
     .cat-bg.on { opacity: 1; background-size: cover; background-position: center; filter: brightness(.18) saturate(1.2) blur(2px); }
-    .cat-bg.ambient { opacity: 1; background: linear-gradient(120deg,rgba(212,170,95,0.85),rgba(56,168,240,0.80),rgba(72,200,120,0.80),rgba(30,110,200,0.85),rgba(72,200,120,0.80),rgba(212,170,95,0.85)); background-size: 400% 400%; animation: ambientFlow 18s ease infinite; filter: blur(90px) saturate(1.2); }
+    .cat-bg.ambient { opacity: 1; background: linear-gradient(160deg,#040c18,#091d30,#0d3343,#164858,#0d3343,#091d30,#040c18); background-size: 400% 400%; animation: ambientFlow 22s ease infinite; filter: blur(60px) saturate(1.5); }
 
     /* ── SLIDER ── */
     .slider-wrap { padding: 2rem var(--pad) 0; max-width: var(--max); margin: 0 auto; }
