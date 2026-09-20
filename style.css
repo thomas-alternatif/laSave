@@ -31,11 +31,11 @@
       /* Fond animé clair plus coloré et visible */
       body::before {
         background:
-          radial-gradient(ellipse 65% 55% at 8% 18%, rgba(232,96,154,0.22) 0%, transparent 100%),
+          radial-gradient(ellipse 65% 55% at 8% 18%,  rgba(212,170,95,0.30) 0%, transparent 100%),
           radial-gradient(ellipse 55% 50% at 92% 65%, rgba(77,184,240,0.25) 0%, transparent 100%),
           radial-gradient(ellipse 60% 45% at 50% 100%, rgba(93,212,112,0.20) 0%, transparent 100%),
-          radial-gradient(ellipse 50% 40% at 82% 8%, rgba(212,170,95,0.28) 0%, transparent 100%),
-          radial-gradient(ellipse 45% 40% at 18% 80%, rgba(192,96,240,0.18) 0%, transparent 100%) !important;
+          radial-gradient(ellipse 50% 40% at 82% 8%,  rgba(100,130,240,0.22) 0%, transparent 100%),
+          radial-gradient(ellipse 45% 40% at 18% 80%, rgba(212,170,95,0.20) 0%, transparent 100%) !important;
       }
       /* Désactiver le fond image catégorie (trop sombre pour le mode clair) */
       .cat-bg { display: none !important; }
@@ -280,15 +280,15 @@
         radial-gradient(ellipse 60% 50% at 10% 20%, rgba(212,170,95,0.18) 0%, transparent 100%),
         radial-gradient(ellipse 50% 45% at 90% 70%, rgba(77,184,240,0.14) 0%, transparent 100%),
         radial-gradient(ellipse 55% 40% at 50% 100%, rgba(93,212,112,0.12) 0%, transparent 100%),
-        radial-gradient(ellipse 45% 35% at 80% 5%,  rgba(192,96,240,0.10) 0%, transparent 100%);
+        radial-gradient(ellipse 45% 35% at 80% 5%,  rgba(100,130,240,0.14) 0%, transparent 100%);
       animation: blobFloat 28s ease-in-out infinite;
     }
     @keyframes blobFloat {
-      0%   { transform: scale(1)    translate(0%,    0%);    filter: hue-rotate(0deg); }
-      25%  { transform: scale(1.06) translate(1.8%, -1.2%); filter: hue-rotate(10deg); }
-      50%  { transform: scale(1.04) translate(-1.2%, 2%);   filter: hue-rotate(-8deg); }
-      75%  { transform: scale(1.07) translate(2.2%,  1.2%); filter: hue-rotate(12deg); }
-      100% { transform: scale(1)    translate(0%,    0%);    filter: hue-rotate(0deg); }
+      0%   { transform: scale(1)    translate(0%,    0%); }
+      25%  { transform: scale(1.06) translate(1.8%, -1.2%); }
+      50%  { transform: scale(1.04) translate(-1.2%, 2%); }
+      75%  { transform: scale(1.07) translate(2.2%,  1.2%); }
+      100% { transform: scale(1)    translate(0%,    0%); }
     }
     header,main,section,footer,.modal-overlay,.scroll-top { position: relative; z-index: 1; }
 
