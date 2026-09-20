@@ -736,6 +736,7 @@
     .legal-content { display:none; }
     .legal-content.on { display:block;animation:fadeIn .3s ease; }
     @keyframes fadeIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+    @keyframes ringFlow{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
     .legal-content h2 { font-family:'Playfair Display',serif;font-size:19px;font-weight:700;color:var(--text);margin:2rem 0 .75rem; }
     .legal-content h2:first-child { margin-top:0; }
     .legal-content h3 { font-size:11px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:.1em;margin:1.5rem 0 .5rem; }
@@ -753,7 +754,7 @@
     .ateliers-stories { display:flex; gap:1.25rem; overflow-x:auto; padding-bottom:.75rem; scrollbar-width:none; -ms-overflow-style:none; }
     .ateliers-stories::-webkit-scrollbar { display:none; }
     .story-item { display:flex; flex-direction:column; align-items:center; gap:.5rem; cursor:pointer; flex-shrink:0; width:72px; }
-    .story-ring { width:64px; height:64px; border-radius:50%; padding:2.5px; background:linear-gradient(135deg,#E8609A,#7B5EA7); flex-shrink:0; transition:transform .2s; }
+    .story-ring { width:64px; height:64px; border-radius:50%; padding:2.5px; background:linear-gradient(135deg,#E8609A,#c84b9e,#7B5EA7,#5B8DE8,#7B5EA7,#c84b9e,#E8609A); background-size:300% 300%; animation:ringFlow 6s ease infinite; flex-shrink:0; transition:transform .2s; }
     .story-ring:hover { transform:scale(1.06); }
     .story-inner { width:100%; height:100%; border-radius:50%; background:var(--bg); border:2.5px solid var(--bg); overflow:hidden; display:flex; align-items:center; justify-content:center; }
     .story-inner img { width:100%; height:100%; object-fit:cover; display:block; }
