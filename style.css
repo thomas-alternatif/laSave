@@ -28,21 +28,25 @@
         --text-sub: #333;
         --text-muted: #666;
       }
-      /* Fond clair — vagues bleues (background-position, Safari-safe) */
+      /* Fond clair — base statique, l'animation est portée par .cat-bg.ambient */
       body::before {
         inset: 0 !important;
-        background-image:
-          radial-gradient(ellipse 30% 26% at 15% 14%, rgba(165,210,235,0.90) 0%, transparent 70%),
-          radial-gradient(ellipse 28% 24% at 60% 10%, rgba(195,228,248,0.80) 0%, transparent 70%),
-          radial-gradient(ellipse 32% 28% at 88% 42%, rgba(178,215,240,0.82) 0%, transparent 70%),
-          radial-gradient(ellipse 30% 26% at 20% 62%, rgba(190,222,244,0.82) 0%, transparent 70%),
-          radial-gradient(ellipse 28% 24% at 72% 75%, rgba(205,232,250,0.78) 0%, transparent 70%) !important;
-        background-size: 250% 250% !important;
-        background-position: 0% 0% !important;
-        animation: driftLight 24s ease-in-out infinite !important;
+        background:
+          radial-gradient(ellipse 90% 65% at 50% 20%, rgba(185,220,242,0.55) 0%, transparent 70%),
+          radial-gradient(ellipse 70% 55% at 15% 70%, rgba(170,210,235,0.40) 0%, transparent 70%) !important;
+        animation: none !important;
       }
       /* Désactiver le fond image catégorie (trop sombre pour le mode clair) */
       .cat-bg { display: none !important; }
+      /* Réactive l'animation en mode clair avec couleurs bleues douces */
+      .cat-bg.ambient {
+        display: block !important;
+        opacity: 1 !important;
+        background: linear-gradient(160deg,#c2dff0,#d4ecf9,#b8d8ec,#cce6f8,#b4d4ea,#c6e2f5,#c2dff0) !important;
+        background-size: 400% 400% !important;
+        animation: ambientFlow 22s ease infinite !important;
+        filter: blur(65px) saturate(1.15) !important;
+      }
 
       /* HEADER */
       .header { background: rgba(245,241,234,0.75) !important; border-bottom-color: rgba(0,0,0,0.08) !important; }
