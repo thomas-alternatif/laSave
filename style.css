@@ -281,7 +281,7 @@
         radial-gradient(ellipse 50% 45% at 90% 70%, rgba(77,184,240,0.14) 0%, transparent 100%),
         radial-gradient(ellipse 55% 40% at 50% 100%, rgba(93,212,112,0.12) 0%, transparent 100%),
         radial-gradient(ellipse 45% 35% at 80% 5%,  rgba(192,96,240,0.10) 0%, transparent 100%);
-      animation: drift 30s ease-in-out infinite alternate;
+      animation: drift 30s ease-in-out infinite alternate, hueShift 25s ease infinite;
     }
     @keyframes drift { 0%{transform:scale(1)} 100%{transform:scale(1.05) translate(1%,1%)} }
     header,main,section,footer,.modal-overlay,.scroll-top { position: relative; z-index: 1; }
@@ -539,8 +539,9 @@
     .btn-card-more:hover { border-color:var(--gold); color:var(--gold); background:rgba(200,169,110,0.06); }
 
     /* ── FOND CATÉGORIE DYNAMIQUE ── */
-    .cat-bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; background-size: cover; background-position: center; opacity: 0; transition: opacity .6s ease; filter: brightness(.18) saturate(1.2) blur(2px); }
-    .cat-bg.on { opacity: 1; }
+    .cat-bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: 0; transition: opacity .6s ease; }
+    .cat-bg.on { opacity: 1; background-size: cover; background-position: center; filter: brightness(.18) saturate(1.2) blur(2px); }
+    .cat-bg.ambient { opacity: 1; background: linear-gradient(120deg,#E8609A,#c84b9e,#7B5EA7,#5B8DE8,#c84b9e,#E8609A); background-size: 400% 400%; animation: ambientFlow 18s ease infinite; filter: blur(80px) saturate(1.3); }
 
     /* ── SLIDER ── */
     .slider-wrap { padding: 2rem var(--pad) 0; max-width: var(--max); margin: 0 auto; }
@@ -737,6 +738,9 @@
     .legal-content.on { display:block;animation:fadeIn .3s ease; }
     @keyframes fadeIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
     @keyframes ringFlow{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+    @keyframes ambientFlow{0%{background-position:0% 0%}33%{background-position:100% 50%}66%{background-position:50% 100%}100%{background-position:0% 0%}}
+    @keyframes storiesScroll{to{transform:translateX(-50%)}}
+    @keyframes hueShift{0%,100%{filter:hue-rotate(0deg)}50%{filter:hue-rotate(35deg)}}
     .legal-content h2 { font-family:'Playfair Display',serif;font-size:19px;font-weight:700;color:var(--text);margin:2rem 0 .75rem; }
     .legal-content h2:first-child { margin-top:0; }
     .legal-content h3 { font-size:11px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:.1em;margin:1.5rem 0 .5rem; }
@@ -751,8 +755,9 @@
     .ateliers-head { display:flex; align-items:baseline; justify-content:space-between; margin-bottom:1.25rem; padding-bottom:1rem; border-bottom:1px solid var(--border); }
     .ateliers-title { font-family:'Playfair Display',serif; font-size:20px; font-weight:700; color:var(--text); }
     .ateliers-count { font-size:12px; color:var(--text-muted); }
-    .ateliers-stories { display:flex; gap:1.25rem; overflow-x:auto; padding-bottom:.75rem; scrollbar-width:none; -ms-overflow-style:none; }
-    .ateliers-stories::-webkit-scrollbar { display:none; }
+    .ateliers-stories { overflow:hidden; }
+    .stories-track { display:flex; gap:1.25rem; padding-bottom:.75rem; will-change:transform; }
+    .stories-track.scrolling { animation:storiesScroll var(--scroll-dur,20s) linear infinite; }
     .story-item { display:flex; flex-direction:column; align-items:center; gap:.5rem; cursor:pointer; flex-shrink:0; width:72px; }
     .story-ring { width:64px; height:64px; border-radius:50%; padding:2.5px; background:linear-gradient(135deg,#E8609A,#c84b9e,#7B5EA7,#5B8DE8,#7B5EA7,#c84b9e,#E8609A); background-size:300% 300%; animation:ringFlow 6s ease infinite; flex-shrink:0; transition:transform .2s; }
     .story-ring:hover { transform:scale(1.06); }
