@@ -15,7 +15,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Yeseva+One&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=18" />
+  <link rel="stylesheet" href="style.css?v=19" />
   <meta name="theme-color" content="#0d0d0d" media="(prefers-color-scheme: dark)" />
   <meta name="theme-color" content="#f5f1ea" media="(prefers-color-scheme: light)" />
   <noscript><style>body{display:grid;place-items:center;min-height:100vh;font-family:sans-serif;padding:2rem;text-align:center}</style><p>laSave nécessite JavaScript pour fonctionner.</p></noscript>
@@ -23,7 +23,7 @@
 <body>
   <!-- Fond catégorie dynamique -->
   <div class="cat-bg" id="cat-bg" aria-hidden="true"></div>
-  <div id="bg-light" aria-hidden="true"></div>
+  <canvas id="bg-light" aria-hidden="true"></canvas>
 
   <header class="header" id="main-header">
     <a class="logo" href="#" onclick="showSection('agenda',null);return false;">
@@ -443,5 +443,49 @@
   </section>
   <script type="application/ld+json" id="jsonld-events">[]</script>
   <script src="app.js?v=10" defer></script>
+
+  <script>
+  (function(){
+    var cv=document.getElementById('bg-light');
+    if(!cv||!cv.getContext)return;
+    var mq=window.matchMedia('(prefers-color-scheme:light)');
+    var ctx=cv.getContext('2d');
+    var W,H;
+    function resize(){W=cv.width=window.innerWidth;H=cv.height=window.innerHeight;}
+    resize();
+    window.addEventListener('resize',resize);
+    var waves=[
+      {amp:.09,freq:.0055,spd:.00030,y:.35,r:130,g:185,b:230,a:.55},
+      {amp:.12,freq:.0038,spd:.00022,y:.52,r:110,g:165,b:220,a:.48},
+      {amp:.08,freq:.0070,spd:.00042,y:.67,r:150,g:200,b:238,a:.40},
+      {amp:.11,freq:.0028,spd:.00018,y:.80,r:170,g:215,b:245,a:.32}
+    ];
+    function draw(t){
+      var light=mq.matches;
+      cv.style.display=light?'block':'none';
+      if(!light)return;
+      ctx.fillStyle='#edf4f8';
+      ctx.fillRect(0,0,W,H);
+      for(var i=waves.length-1;i>=0;i--){
+        var w=waves[i];
+        var yb=H*w.y,a=H*w.amp;
+        ctx.beginPath();
+        ctx.moveTo(0,H);
+        for(var x=0;x<=W+2;x+=3){
+          var y=yb+Math.sin(x*w.freq+t*w.spd)*a
+                 +Math.sin(x*w.freq*1.65+t*w.spd*.72)*a*.38;
+          ctx.lineTo(x,y);
+        }
+        ctx.lineTo(W,H);
+        ctx.closePath();
+        ctx.fillStyle='rgba('+w.r+','+w.g+','+w.b+','+w.a+')';
+        ctx.fill();
+      }
+    }
+    var t0=null;
+    function loop(ts){if(!t0)t0=ts;draw(ts-t0);requestAnimationFrame(loop);}
+    requestAnimationFrame(loop);
+  })();
+  </script>
 </body>
 </html>

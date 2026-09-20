@@ -28,32 +28,10 @@
         --text-sub: #333;
         --text-muted: #666;
       }
-      /* Fond clair — base statique, l'animation est portée par .cat-bg.ambient */
-      body::before {
-        inset: 0 !important;
-        background:
-          radial-gradient(ellipse 90% 65% at 50% 20%, rgba(185,220,242,0.55) 0%, transparent 70%),
-          radial-gradient(ellipse 70% 55% at 15% 70%, rgba(170,210,235,0.40) 0%, transparent 70%) !important;
-        animation: none !important;
-      }
+      body::before { display: none !important; }
       /* Désactiver le fond image catégorie (trop sombre pour le mode clair) */
       .cat-bg { display: none !important; }
-      /* Fond animé mode clair — blobs radials + translate sur vrai div */
-      #bg-light {
-        display: block;
-        position: fixed;
-        inset: -30%;
-        z-index: 0;
-        pointer-events: none;
-        background:
-          radial-gradient(ellipse 55% 45% at 30% 25%, rgba(60,145,210,0.55) 0%, transparent 65%),
-          radial-gradient(ellipse 50% 40% at 75% 20%, rgba(120,190,240,0.50) 0%, transparent 65%),
-          radial-gradient(ellipse 60% 50% at 15% 70%, rgba(90,165,225,0.45) 0%, transparent 65%),
-          radial-gradient(ellipse 55% 45% at 80% 72%, rgba(150,205,245,0.50) 0%, transparent 65%),
-          radial-gradient(ellipse 45% 40% at 52% 50%, rgba(200,230,250,0.40) 0%, transparent 60%);
-        filter: blur(55px);
-        animation: floatLight 18s ease-in-out infinite;
-      }
+      /* canvas wave */ #bg-light { display:none; position:fixed; inset:0; z-index:0; pointer-events:none; }
 
 
       /* HEADER */
