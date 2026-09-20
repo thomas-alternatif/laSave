@@ -870,7 +870,7 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
       stories.appendChild(item);
     });
     wrap.style.display='';
-    startStoriesAutoScroll(stories);
+    requestAnimationFrame(()=>startStoriesAutoScroll(stories));
   }
 
   function openOrgaModal(orga){
@@ -1356,17 +1356,23 @@ function buildOrganisateurs(orgas, allEvts) {
   });
 
   wrap.style.display = '';
-  startStoriesAutoScroll(stories);
+  requestAnimationFrame(()=>startStoriesAutoScroll(stories));
 }
 
 let _storiesRAF = null;
 function startStoriesAutoScroll(container) {
   if (_storiesRAF) { cancelAnimationFrame(_storiesRAF); _storiesRAF = null; }
   const items = Array.from(container.querySelectorAll('.story-item'));
-  if (items.length < 3) return;
-  // Dupliquer les items pour le loop sans couture
-  items.forEach(it => container.appendChild(it.cloneNode(true)));
-  const speed = 0.35; // px/frame ≈ 21 px/s — très doux
+  if (items.length < 2) return;
+  // Cloner 3× (total 4 copies) pour garantir le débordement même avec peu d'items
+  for (let i = 0; i < 3; i++) {
+    items.forEach(it => container.appendChild(it.cloneNode(true)));
+  }
+  // resetAt = position exacte du début de la 2e copie (force reflow via offsetLeft)
+  const firstClone = container.querySelectorAll('.story-item')[items.length];
+  const resetAt = firstClone ? firstClone.offsetLeft : 0;
+  if (resetAt <= 0) return;
+  const speed = 0.5; // px/frame ≈ 30 px/s
   let paused = false;
   container.addEventListener('mouseenter', () => { paused = true; });
   container.addEventListener('mouseleave', () => { paused = false; });
@@ -1375,7 +1381,7 @@ function startStoriesAutoScroll(container) {
   function tick() {
     if (!paused) {
       container.scrollLeft += speed;
-      if (container.scrollLeft >= container.scrollWidth / 2) container.scrollLeft = 0;
+      if (container.scrollLeft >= resetAt) container.scrollLeft -= resetAt;
     }
     _storiesRAF = requestAnimationFrame(tick);
   }
