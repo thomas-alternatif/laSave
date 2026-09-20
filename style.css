@@ -28,29 +28,14 @@
         --text-sub: #333;
         --text-muted: #666;
       }
-      /* Fond animé clair — blobs en mouvement */
+      /* Fond clair — mêmes positions JS, opacités renforcées */
       body::before {
-        animation: blobFloatLight 18s ease-in-out infinite !important;
-      }
-      @keyframes blobFloatLight {
-        0%, 100% { background:
-          radial-gradient(ellipse 65% 55% at 8% 18%,  rgba(212,170,95,0.30) 0%, transparent 100%),
-          radial-gradient(ellipse 55% 50% at 92% 65%, rgba(77,184,240,0.28) 0%, transparent 100%),
-          radial-gradient(ellipse 60% 45% at 50% 100%,rgba(93,212,112,0.24) 0%, transparent 100%),
-          radial-gradient(ellipse 50% 40% at 82% 8%,  rgba(100,130,240,0.22) 0%, transparent 100%),
-          radial-gradient(ellipse 45% 40% at 18% 80%, rgba(212,170,95,0.20) 0%, transparent 100%); }
-        40% { background:
-          radial-gradient(ellipse 65% 55% at 22% 32%, rgba(212,170,95,0.30) 0%, transparent 100%),
-          radial-gradient(ellipse 55% 50% at 78% 52%, rgba(77,184,240,0.28) 0%, transparent 100%),
-          radial-gradient(ellipse 60% 45% at 35% 88%, rgba(93,212,112,0.24) 0%, transparent 100%),
-          radial-gradient(ellipse 50% 40% at 90% 22%, rgba(100,130,240,0.22) 0%, transparent 100%),
-          radial-gradient(ellipse 45% 40% at 8% 65%,  rgba(212,170,95,0.20) 0%, transparent 100%); }
-        70% { background:
-          radial-gradient(ellipse 65% 55% at 5% 52%,  rgba(212,170,95,0.30) 0%, transparent 100%),
-          radial-gradient(ellipse 55% 50% at 88% 78%, rgba(77,184,240,0.28) 0%, transparent 100%),
-          radial-gradient(ellipse 60% 45% at 62% 95%, rgba(93,212,112,0.24) 0%, transparent 100%),
-          radial-gradient(ellipse 50% 40% at 72% 8%,  rgba(100,130,240,0.22) 0%, transparent 100%),
-          radial-gradient(ellipse 45% 40% at 25% 70%, rgba(212,170,95,0.20) 0%, transparent 100%); }
+        background:
+          radial-gradient(ellipse 65% 55% at var(--b1x,8%)  var(--b1y,18%), rgba(212,170,95,0.32) 0%, transparent 100%),
+          radial-gradient(ellipse 55% 50% at var(--b2x,92%) var(--b2y,65%), rgba(56,168,240,0.28) 0%, transparent 100%),
+          radial-gradient(ellipse 60% 45% at var(--b3x,50%) var(--b3y,100%),rgba(72,200,120,0.24) 0%, transparent 100%),
+          radial-gradient(ellipse 50% 40% at var(--b4x,82%) var(--b4y,8%),  rgba(30,110,200,0.22) 0%, transparent 100%),
+          radial-gradient(ellipse 45% 40% at var(--b5x,18%) var(--b5y,80%), rgba(212,170,95,0.18) 0%, transparent 100%) !important;
       }
       /* Désactiver le fond image catégorie (trop sombre pour le mode clair) */
       .cat-bg { display: none !important; }
@@ -288,27 +273,14 @@
     .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; }
     @media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
 
-    /* ── FOND ── */
+    /* ── FOND — positions animées via JS ── */
     body::before {
       content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none;
-      animation: blobFloat 18s ease-in-out infinite;
-    }
-    @keyframes blobFloat {
-      0%, 100% { background:
-        radial-gradient(ellipse 60% 50% at 10% 20%, rgba(212,170,95,0.22) 0%, transparent 100%),
-        radial-gradient(ellipse 50% 45% at 90% 70%, rgba(77,184,240,0.18) 0%, transparent 100%),
-        radial-gradient(ellipse 55% 40% at 50% 100%,rgba(93,212,112,0.16) 0%, transparent 100%),
-        radial-gradient(ellipse 45% 35% at 80% 5%,  rgba(100,130,240,0.14) 0%, transparent 100%); }
-      40% { background:
-        radial-gradient(ellipse 60% 50% at 25% 40%, rgba(212,170,95,0.22) 0%, transparent 100%),
-        radial-gradient(ellipse 50% 45% at 72% 55%, rgba(77,184,240,0.18) 0%, transparent 100%),
-        radial-gradient(ellipse 55% 40% at 38% 85%, rgba(93,212,112,0.16) 0%, transparent 100%),
-        radial-gradient(ellipse 45% 35% at 92% 22%, rgba(100,130,240,0.14) 0%, transparent 100%); }
-      70% { background:
-        radial-gradient(ellipse 60% 50% at 8% 55%,  rgba(212,170,95,0.22) 0%, transparent 100%),
-        radial-gradient(ellipse 50% 45% at 88% 82%, rgba(77,184,240,0.18) 0%, transparent 100%),
-        radial-gradient(ellipse 55% 40% at 62% 92%, rgba(93,212,112,0.16) 0%, transparent 100%),
-        radial-gradient(ellipse 45% 35% at 70% 10%, rgba(100,130,240,0.14) 0%, transparent 100%); }
+      background:
+        radial-gradient(ellipse 60% 50% at var(--b1x,10%) var(--b1y,20%), rgba(212,170,95,0.22) 0%, transparent 100%),
+        radial-gradient(ellipse 50% 45% at var(--b2x,88%) var(--b2y,68%), rgba(56,168,240,0.18) 0%, transparent 100%),
+        radial-gradient(ellipse 55% 40% at var(--b3x,50%) var(--b3y,95%), rgba(72,200,120,0.16) 0%, transparent 100%),
+        radial-gradient(ellipse 45% 35% at var(--b4x,80%) var(--b4y,8%),  rgba(30,110,200,0.15) 0%, transparent 100%);
     }
     header,main,section,footer,.modal-overlay,.scroll-top { position: relative; z-index: 1; }
 
