@@ -1422,27 +1422,3 @@ function startStoriesAutoScroll(container) {
   container.addEventListener('touchstart', pause, { passive: true });
   container.addEventListener('touchend', () => setTimeout(resume, 1200), { passive: true });
 }
-
-
-// ── Fond animé : dérive organique des blobs ────────────────────────────────
-(function () {
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  const r = document.documentElement;
-  let t = 0;
-  function tick() {
-    t += 0.00035;
-    const s = Math.sin, c = Math.cos;
-    r.style.setProperty('--b1x', (10 + s(t)         * 14).toFixed(1) + '%');
-    r.style.setProperty('--b1y', (20 + c(t * 0.7)   * 14).toFixed(1) + '%');
-    r.style.setProperty('--b2x', (88 + c(t * 1.1)   * 10).toFixed(1) + '%');
-    r.style.setProperty('--b2y', (68 + s(t * 0.9)   * 12).toFixed(1) + '%');
-    r.style.setProperty('--b3x', (50 + s(t * 0.6)   * 16).toFixed(1) + '%');
-    r.style.setProperty('--b3y', (95 + c(t * 0.8)   *  6).toFixed(1) + '%');
-    r.style.setProperty('--b4x', (80 + c(t * 0.85)  * 12).toFixed(1) + '%');
-    r.style.setProperty('--b4y', ( 8 + s(t * 1.15)  * 10).toFixed(1) + '%');
-    r.style.setProperty('--b5x', (18 + s(t * 0.75)  * 12).toFixed(1) + '%');
-    r.style.setProperty('--b5y', (78 + c(t * 0.65)  * 10).toFixed(1) + '%');
-    requestAnimationFrame(tick);
-  }
-  tick();
-})();
