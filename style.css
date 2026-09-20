@@ -19,7 +19,7 @@
     /* Mode clair automatique selon l'appareil */
     @media (prefers-color-scheme: light) {
       :root {
-        --bg: #c8dce8;
+        --bg: #edf4f8;
         --bg-card: rgba(255,255,255,0.7);
         --bg-card-hover: rgba(255,255,255,0.9);
         --border: rgba(0,0,0,0.1);
@@ -28,15 +28,15 @@
         --text-sub: #333;
         --text-muted: #666;
       }
-      /* Fond clair — bleu glacier animé (ref: Degradado en movimiento) */
+      /* Fond clair — vagues bleues douces (ref: Smooth Blue Waves) */
       body::before {
-        inset: -25% !important;
+        inset: -35% !important;
         background:
-          radial-gradient(ellipse 100% 75% at 50% 30%,  rgba(195,228,242,0.88) 0%, transparent 65%),
-          radial-gradient(ellipse  60% 50% at 28% 72%,  rgba(182,218,142,0.72) 0%, transparent 62%),
-          radial-gradient(ellipse  55% 60% at  6% 82%,  rgba( 42, 88,108,0.55) 0%, transparent 65%),
-          radial-gradient(ellipse  65% 55% at 82% 18%,  rgba(205,235,248,0.60) 0%, transparent 65%) !important;
-        animation: driftLight 18s ease-in-out infinite alternate !important;
+          radial-gradient(ellipse 130% 55% at 50% 25%,  rgba(188,220,240,0.80) 0%, transparent 65%),
+          radial-gradient(ellipse 110% 50% at 20% 65%,  rgba(208,232,248,0.70) 0%, transparent 65%),
+          radial-gradient(ellipse 120% 45% at 80% 70%,  rgba(178,214,238,0.75) 0%, transparent 65%),
+          radial-gradient(ellipse  80% 40% at 55% 50%,  rgba(230,243,252,0.55) 0%, transparent 60%) !important;
+        animation: driftLight 22s ease-in-out infinite !important;
       }
       /* Désactiver le fond image catégorie (trop sombre pour le mode clair) */
       .cat-bg { display: none !important; }
@@ -737,7 +737,7 @@
     @keyframes fadeIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
     @keyframes ringFlow{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
     @keyframes ambientFlow{0%{background-position:0% 0%}33%{background-position:100% 50%}66%{background-position:50% 100%}100%{background-position:0% 0%}}
-    @keyframes driftLight{from{transform:translate(0%,0%)}to{transform:translate(9%,7%)}}
+    @keyframes driftLight{0%{transform:translate(0%,0%)}33%{transform:translate(22%,-14%)}66%{transform:translate(-10%,20%)}100%{transform:translate(0%,0%)}}
     @keyframes storiesScroll{to{transform:translateX(-50%)}}
     .legal-content h2 { font-family:'Playfair Display',serif;font-size:19px;font-weight:700;color:var(--text);margin:2rem 0 .75rem; }
     .legal-content h2:first-child { margin-top:0; }
