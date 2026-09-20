@@ -281,7 +281,7 @@
         radial-gradient(ellipse 50% 45% at 90% 70%, rgba(77,184,240,0.14) 0%, transparent 100%),
         radial-gradient(ellipse 55% 40% at 50% 100%, rgba(93,212,112,0.12) 0%, transparent 100%),
         radial-gradient(ellipse 45% 35% at 80% 5%,  rgba(192,96,240,0.10) 0%, transparent 100%);
-      animation: drift 30s ease-in-out infinite alternate, hueShift 25s ease infinite;
+      animation: drift 30s ease-in-out infinite alternate;
     }
     @keyframes drift { 0%{transform:scale(1)} 100%{transform:scale(1.05) translate(1%,1%)} }
     header,main,section,footer,.modal-overlay,.scroll-top { position: relative; z-index: 1; }
@@ -740,7 +740,6 @@
     @keyframes ringFlow{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
     @keyframes ambientFlow{0%{background-position:0% 0%}33%{background-position:100% 50%}66%{background-position:50% 100%}100%{background-position:0% 0%}}
     @keyframes storiesScroll{to{transform:translateX(-50%)}}
-    @keyframes hueShift{0%,100%{filter:hue-rotate(0deg)}50%{filter:hue-rotate(35deg)}}
     .legal-content h2 { font-family:'Playfair Display',serif;font-size:19px;font-weight:700;color:var(--text);margin:2rem 0 .75rem; }
     .legal-content h2:first-child { margin-top:0; }
     .legal-content h3 { font-size:11px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:.1em;margin:1.5rem 0 .5rem; }
