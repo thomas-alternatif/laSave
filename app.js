@@ -333,10 +333,10 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
       wrap.className='grid-section';
       const head=document.createElement('div');
       head.className='grid-section-head';
-      head.innerHTML=`<h3 class="grid-section-title">${sec.title}</h3>`;
       const grid=document.createElement('div');
       grid.className='grid';
       evts.forEach(ev=>grid.appendChild(buildCard(ev)));
+      addGridNav(head, grid, sec.title);
       wrap.appendChild(head);
       wrap.appendChild(grid);
       c.appendChild(wrap);
@@ -349,10 +349,10 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
       wrap.className='grid-section';
       const head=document.createElement('div');
       head.className='grid-section-head';
-      head.innerHTML=`<h3 class="grid-section-title">Autres événements</h3>`;
       const grid=document.createElement('div');
       grid.className='grid';
       rest.forEach(ev=>grid.appendChild(buildCard(ev)));
+      addGridNav(head, grid, 'Autres événements');
       wrap.appendChild(head);
       wrap.appendChild(grid);
       c.appendChild(wrap);
@@ -1386,39 +1386,157 @@ function buildOrganisateurs(orgas, allEvts) {
   requestAnimationFrame(()=>startStoriesAutoScroll(stories));
 }
 
-let _storiesRAF = null; // conservé pour compatibilité
+/* ── addGridNav : ajoute les boutons prev/next à une rangée de cards ── */
+function addGridNav(head, grid, title) {
+  const h3 = document.createElement('h3');
+  h3.className = 'grid-section-title';
+  h3.textContent = title;
+  head.appendChild(h3);
+
+  const nav = document.createElement('div');
+  nav.className = 'section-nav';
+  nav.setAttribute('aria-label', `Navigation – ${title}`);
+
+  const mkBtn = (label, ariaLabel) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'section-nav-btn';
+    btn.setAttribute('aria-label', ariaLabel);
+    btn.setAttribute('aria-controls', grid.id || undefined);
+    // Chevron SVG
+    const d = label === 'prev'
+      ? 'M9 2 4 7l5 5'
+      : 'M5 2l5 5-5 5';
+    btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true" focusable="false"><path d="${d}" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+    return btn;
+  };
+
+  const prevBtn = mkBtn('prev', `Précédent – ${title}`);
+  const nextBtn = mkBtn('next', `Suivant – ${title}`);
+  prevBtn.disabled = true;
+
+  nav.appendChild(prevBtn);
+  nav.appendChild(nextBtn);
+  head.appendChild(nav);
+
+  const STEP = 234; // largeur carte (220) + gap (14)
+
+  function updateBtns() {
+    prevBtn.disabled = grid.scrollLeft < 1;
+    nextBtn.disabled = grid.scrollLeft + grid.clientWidth >= grid.scrollWidth - 1;
+  }
+
+  prevBtn.addEventListener('click', () => { grid.scrollBy({ left: -STEP, behavior: 'smooth' }); setTimeout(updateBtns, 350); });
+  nextBtn.addEventListener('click', () => { grid.scrollBy({ left: STEP, behavior: 'smooth' }); setTimeout(updateBtns, 350); });
+  grid.addEventListener('scroll', updateBtns, { passive: true });
+
+  // Init après insertion dans le DOM
+  requestAnimationFrame(updateBtns);
+}
+
+/* ── Stories/profils : défilement automatique + scroll manuel + boutons nav ── */
 function startStoriesAutoScroll(container) {
   const items = Array.from(container.querySelectorAll('.story-item'));
   if (items.length < 2) return;
 
-  // Encapsuler dans un .stories-track pour animation CSS transform
-  // (scrollLeft ne fonctionne pas de manière fiable sur iOS mobile)
+  // Piste flex double pour la boucle infinie
   const track = document.createElement('div');
   track.className = 'stories-track';
   items.forEach(it => track.appendChild(it));
-  container.appendChild(track);
-
-  // 1 seul clone → 2 copies totales → translateX(-50%) = boucle parfaite
+  // Clones pour la boucle
   items.forEach(it => {
     const clone = it.cloneNode(true);
     clone.setAttribute('aria-hidden', 'true');
     clone.setAttribute('tabindex', '-1');
     track.appendChild(clone);
   });
+  container.appendChild(track);
 
-  // Durée calculée selon la largeur réelle (30 px/s)
+  // Enveloppe outer avec boutons prev/next
+  const outer = document.createElement('div');
+  outer.className = 'stories-outer';
+  outer.setAttribute('role', 'region');
+  outer.setAttribute('aria-label', 'Organisateurs de la Vallée de la Save');
+  outer.setAttribute('aria-roledescription', 'carrousel');
+  container.parentNode.insertBefore(outer, container);
+  outer.appendChild(container);
+
+  const mkNavBtn = (dir) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = `stories-nav-btn stories-${dir}`;
+    btn.setAttribute('aria-label', dir === 'prev' ? 'Organisateurs précédents' : 'Organisateurs suivants');
+    btn.setAttribute('aria-controls', container.id || 'ateliers-stories');
+    const d = dir === 'prev' ? 'M10 3 5 8l5 5' : 'M6 3l5 5-5 5';
+    btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="${d}" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+    return btn;
+  };
+  const prevBtn = mkNavBtn('prev');
+  const nextBtn = mkNavBtn('next');
+  outer.insertBefore(prevBtn, container);
+  outer.appendChild(nextBtn);
+
+  // ── Auto-scroll JS via RAF ──────────────────────────────────────────────
+  let setWidth = 0;
+  let paused = false;
+  let userInteracting = false;
+  let resumeTimer = null;
+  let lastTs = null;
+  const SPEED = 30; // px/s
+
+  function tick(ts) {
+    if (lastTs === null) lastTs = ts;
+    const dt = Math.min((ts - lastTs) / 1000, 0.1);
+    lastTs = ts;
+    if (!paused && !userInteracting && setWidth > 0) {
+      container.scrollLeft += SPEED * dt;
+      if (container.scrollLeft >= setWidth) {
+        container.scrollLeft -= setWidth;
+      }
+    }
+    requestAnimationFrame(tick);
+  }
+
   requestAnimationFrame(() => {
-    const setWidth = track.scrollWidth / 2;
-    const duration = Math.max(8, setWidth / 30);
-    track.style.setProperty('--scroll-dur', `${duration}s`);
-    track.classList.add('scrolling');
+    setWidth = track.scrollWidth / 2;
+    lastTs = null;
+    requestAnimationFrame(tick);
   });
 
-  // Pause hover / touch
-  const pause  = () => { track.style.animationPlayState = 'paused'; };
-  const resume = () => { track.style.animationPlayState = ''; };
-  container.addEventListener('mouseenter', pause);
-  container.addEventListener('mouseleave', resume);
-  container.addEventListener('touchstart', pause, { passive: true });
-  container.addEventListener('touchend', () => setTimeout(resume, 1200), { passive: true });
+  // Pause au survol (desktop)
+  outer.addEventListener('mouseenter', () => { paused = true; });
+  outer.addEventListener('mouseleave', () => { paused = false; lastTs = null; });
+
+  // Pause sur interaction utilisateur, reprise après 2s
+  const onStart = () => {
+    userInteracting = true;
+    if (resumeTimer) clearTimeout(resumeTimer);
+  };
+  const onEnd = () => {
+    if (resumeTimer) clearTimeout(resumeTimer);
+    resumeTimer = setTimeout(() => {
+      // Normaliser scrollLeft dans la première copie
+      if (setWidth > 0 && container.scrollLeft >= setWidth) {
+        container.scrollLeft -= Math.floor(container.scrollLeft / setWidth) * setWidth;
+      }
+      userInteracting = false;
+      lastTs = null;
+    }, 2000);
+  };
+
+  container.addEventListener('touchstart', onStart, { passive: true });
+  container.addEventListener('touchend',   onEnd,   { passive: true });
+  container.addEventListener('pointerdown', onStart);
+  document.addEventListener('pointerup', onEnd);
+
+  // Boutons prev/next : scroll de ~3 items
+  const STEP = 3 * 88; // 3 × (72px + 16px gap)
+  prevBtn.addEventListener('click', () => {
+    container.scrollBy({ left: -STEP, behavior: 'smooth' });
+    onStart(); onEnd();
+  });
+  nextBtn.addEventListener('click', () => {
+    container.scrollBy({ left: STEP, behavior: 'smooth' });
+    onStart(); onEnd();
+  });
 }

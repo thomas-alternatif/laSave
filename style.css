@@ -354,8 +354,13 @@
 
     /* ── SECTIONS GRILLE ── */
     .grid-section { margin-bottom: 3rem; }
-    .grid-section-head { display: flex; align-items: center; margin-bottom: 1.2rem; padding-bottom: .8rem; border-bottom: 1px solid var(--border); }
+    .grid-section-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.2rem; padding-bottom: .8rem; border-bottom: 1px solid var(--border); }
     .grid-section-title { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; color: var(--text); }
+    /* Boutons nav rangées de cards */
+    .section-nav { display: flex; gap: 6px; flex-shrink: 0; }
+    .section-nav-btn { width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--border); background: var(--bg-card); color: var(--text); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background .15s, opacity .15s; padding: 0; }
+    .section-nav-btn:disabled { opacity: 0.3; cursor: default; pointer-events: none; }
+    .section-nav-btn:hover:not(:disabled) { background: var(--bg-card-hover); }
     .grid-section .grid {
       display: flex; flex-wrap: nowrap; overflow-x: auto; gap: 14px;
       padding-bottom: 16px; scroll-snap-type: x proximity;
@@ -734,7 +739,6 @@
     @keyframes floatLight{0%{transform:translate(0%,0%)}25%{transform:translate(18%,-14%)}50%{transform:translate(-12%,18%)}75%{transform:translate(14%,12%)}100%{transform:translate(0%,0%)}}
     @keyframes ambientFlow{0%{background-position:0% 0%}33%{background-position:100% 50%}66%{background-position:50% 100%}100%{background-position:0% 0%}}
     @keyframes driftLight{0%{background-position:0% 0%}25%{background-position:42% 16%}50%{background-position:58% 48%}75%{background-position:6% 56%}100%{background-position:0% 0%}}
-    @keyframes storiesScroll{to{transform:translateX(-50%)}}
     .legal-content h2 { font-family:'Playfair Display',serif;font-size:19px;font-weight:700;color:var(--text);margin:2rem 0 .75rem; }
     .legal-content h2:first-child { margin-top:0; }
     .legal-content h3 { font-size:11px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:.1em;margin:1.5rem 0 .5rem; }
@@ -749,9 +753,14 @@
     .ateliers-head { display:flex; align-items:baseline; justify-content:space-between; margin-bottom:1.25rem; padding-bottom:1rem; border-bottom:1px solid var(--border); }
     .ateliers-title { font-family:'Playfair Display',serif; font-size:20px; font-weight:700; color:var(--text); }
     .ateliers-count { font-size:12px; color:var(--text-muted); }
-    .ateliers-stories { overflow:hidden; }
-    .stories-track { display:flex; gap:1.25rem; padding-bottom:.75rem; will-change:transform; }
-    .stories-track.scrolling { animation:storiesScroll var(--scroll-dur,20s) linear infinite; }
+    /* Stories – scroll natif + auto-avance JS */
+    .stories-outer { display: flex; align-items: center; gap: 8px; }
+    .ateliers-stories { overflow-x: scroll; overflow-y: visible; scrollbar-width: none; -webkit-overflow-scrolling: touch; flex: 1; min-width: 0; }
+    .ateliers-stories::-webkit-scrollbar { display: none; }
+    .stories-track { display:flex; gap:1.25rem; padding-bottom:.75rem; }
+    /* Boutons nav profils */
+    .stories-nav-btn { flex-shrink: 0; width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--border); background: var(--bg-card); color: var(--text); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background .15s, opacity .15s; padding: 0; }
+    .stories-nav-btn:hover { background: var(--bg-card-hover); }
     .story-item { display:flex; flex-direction:column; align-items:center; gap:.5rem; cursor:pointer; flex-shrink:0; width:72px; }
     .story-ring { width:64px; height:64px; border-radius:50%; padding:2.5px; background:linear-gradient(135deg,#E8609A,#c84b9e,#7B5EA7,#5B8DE8,#7B5EA7,#c84b9e,#E8609A); background-size:300% 300%; animation:ringFlow 6s ease infinite; animation-play-state:paused; flex-shrink:0; transition:transform .2s; }
     .story-item:hover .story-ring,
