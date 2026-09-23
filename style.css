@@ -754,7 +754,7 @@
     .ateliers-title { font-family:'Playfair Display',serif; font-size:20px; font-weight:700; color:var(--text); }
     .ateliers-count { font-size:12px; color:var(--text-muted); }
     /* Stories – scroll natif + auto-avance JS */
-    .stories-outer { display: flex; align-items: center; gap: 8px; }
+    .stories-outer { display: flex; align-items: center; gap: 4px; margin-inline: calc(-1 * var(--pad)); padding-inline: 4px; }
     .ateliers-stories { overflow-x: scroll; overflow-y: visible; scrollbar-width: none; -webkit-overflow-scrolling: touch; flex: 1; min-width: 0; }
     .ateliers-stories::-webkit-scrollbar { display: none; }
     .stories-track { display:flex; gap:1.25rem; padding-bottom:.75rem; }

@@ -1428,13 +1428,6 @@ function addGridNav(head, grid, title) {
     prevBtn.disabled = atStart;
     nextBtn.disabled = atEnd;
     prevBtn.style.opacity = atStart ? '0' : '1';
-    let mask;
-    if (atStart && atEnd) { mask = 'none'; }
-    else if (atStart)     { mask = 'linear-gradient(to right, black 0, black calc(100% - 50px), transparent 100%)'; }
-    else if (atEnd)       { mask = 'linear-gradient(to right, transparent 0, black 50px)'; }
-    else                  { mask = 'linear-gradient(to right, transparent 0, black 50px, black calc(100% - 50px), transparent 100%)'; }
-    grid.style.maskImage = mask;
-    grid.style.webkitMaskImage = mask;
   }
 
   prevBtn.addEventListener('click', () => { grid.scrollBy({ left: -STEP, behavior: 'smooth' }); setTimeout(updateBtns, 350); });
@@ -1492,9 +1485,10 @@ function startStoriesAutoScroll(container) {
   const updateStoriesEdges = () => {
     const scrolled = container.scrollLeft > 20;
     prevBtn.style.opacity = scrolled ? '1' : '0';
+    // var(--pad) = marges du site → dégradé aligné avec la colonne de contenu
     const mask = scrolled
-      ? 'linear-gradient(to right, transparent 0, black 50px, black calc(100% - 50px), transparent 100%)'
-      : 'linear-gradient(to right, black calc(100% - 50px), transparent 100%)';
+      ? 'linear-gradient(to right, transparent 0, black var(--pad), black calc(100% - var(--pad)), transparent 100%)'
+      : 'linear-gradient(to right, black calc(100% - var(--pad)), transparent 100%)';
     container.style.maskImage = mask;
     container.style.webkitMaskImage = mask;
   };
