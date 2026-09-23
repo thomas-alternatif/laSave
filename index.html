@@ -15,7 +15,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Yeseva+One&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=23" />
+  <link rel="stylesheet" href="style.css?v=24" />
   <meta name="theme-color" content="#0d0d0d" media="(prefers-color-scheme: dark)" />
   <meta name="theme-color" content="#f5f1ea" media="(prefers-color-scheme: light)" />
   <noscript><style>body{display:grid;place-items:center;min-height:100vh;font-family:sans-serif;padding:2rem;text-align:center}</style><p>laSave nécessite JavaScript pour fonctionner.</p></noscript>
@@ -443,5 +443,68 @@
   </section>
   <script type="application/ld+json" id="jsonld-events">[]</script>
   <script src="app.js?v=10" defer></script>
+  <script>
+(function(){
+  var cv = document.getElementById('bg-light');
+  if (!cv || !cv.getContext) return;
+  var mq = window.matchMedia('(prefers-color-scheme:light)');
+  var ctx = cv.getContext('2d');
+  var W, H;
+  function resize(){ W = cv.width = window.innerWidth; H = cv.height = window.innerHeight; }
+  resize();
+  window.addEventListener('resize', resize);
+  var COLS = 28, ROWS = 18;
+  function draw(t){
+    if (!mq.matches){ cv.style.display='none'; return; }
+    cv.style.display='block';
+    // Fond dégradé diagonal: lavande bas-gauche → blanc → pêche haut-droit
+    var bg = ctx.createLinearGradient(0, H * 0.85, W * 0.9, H * 0.05);
+    bg.addColorStop(0,   'hsl(222,32%,81%)');
+    bg.addColorStop(0.35,'hsl(228,20%,91%)');
+    bg.addColorStop(0.65,'hsl(220,12%,96%)');
+    bg.addColorStop(1,   'hsl(32,38%,87%)');
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, W, H);
+    // Calcul des points du maillage déformés par une vague diagonale
+    var pts = [], r, c;
+    for (r = 0; r <= ROWS; r++){
+      pts[r] = [];
+      for (c = 0; c <= COLS; c++){
+        var px = (c / COLS) * W;
+        var py = (r / ROWS) * H;
+        var u = c / COLS - r / ROWS;           // axe diagonal
+        var phase = u * Math.PI * 3 - t * 0.0006;
+        var amp = Math.sin(phase) * H * 0.13;
+        pts[r][c] = {
+          x: px - amp * 0.42,
+          y: py + amp,
+          bright: (Math.sin(phase + 0.4) + 1) * 0.5
+        };
+      }
+    }
+    // Tracé du maillage
+    ctx.lineWidth = 0.65;
+    for (r = 0; r <= ROWS; r++){
+      for (c = 0; c <= COLS; c++){
+        var p = pts[r][c];
+        var a = (0.08 + p.bright * 0.65).toFixed(2);
+        ctx.strokeStyle = 'rgba(255,255,255,' + a + ')';
+        if (c < COLS){
+          ctx.beginPath(); ctx.moveTo(p.x, p.y);
+          ctx.lineTo(pts[r][c+1].x, pts[r][c+1].y); ctx.stroke();
+        }
+        if (r < ROWS){
+          ctx.beginPath(); ctx.moveTo(p.x, p.y);
+          ctx.lineTo(pts[r+1][c].x, pts[r+1][c].y); ctx.stroke();
+        }
+      }
+    }
+  }
+  var t0 = null;
+  function loop(ts){ if (!t0) t0 = ts; draw(ts - t0); requestAnimationFrame(loop); }
+  mq.addEventListener('change', function(e){ if (!e.matches) cv.style.display='none'; });
+  requestAnimationFrame(loop);
+})();
+  </script>
 </body>
 </html>
