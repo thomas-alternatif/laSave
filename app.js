@@ -178,6 +178,7 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
     const orgaPhoto = orga?.photo || null;
     const orgaInitiales = orgaNom.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
     const orgaCouleur = `hsl(${orgaNom.split('').reduce((a,c)=>a+c.charCodeAt(0),0)%360},45%,55%)`;
+    const liked = isLiked(ev.id), nLikes = ev.Likes||0;
     const excerpt = ev.Description ? ev.Description.slice(0,80)+(ev.Description.length>80?'…':'') : '';
 
     card.innerHTML=`
@@ -216,7 +217,7 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
               <h3 class="card-poster-title">${esc(ev.Titre||'Sans titre')}</h3>
               <div class="card-poster-meta">
                 <span class="card-poster-cat" style="color:${m.color}">${esc(cat)}</span>
-                ${`<button class="btn-jyvais" type="button" data-id="${ev.id||''}" data-likes="${ev.Likes||0}" onclick="toggleJyVais(event,this)"><span class="btn-jyvais-ico">♡</span><span class="btn-jyvais-lbl">J'y vais</span><span class="btn-jyvais-count"${(ev.Likes||0)>0?'':' hidden'}>${ev.Likes||0}</span></button>`}
+                ${`<button class="btn-heart ${liked?'on':''}" type="button" data-like-id="${ev.id||''}" data-likes="${nLikes}" onclick="toggleLike(event,this)" aria-label="J'aime"><span class="btn-jyvais-ico">${liked?'♥':'♡'}</span><span class="btn-jyvais-count keep">${nLikes}</span></button>`}
               </div>
             </div>
           </div>
@@ -232,6 +233,7 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
         </div>
         <div class="card-poster-foot">
           <button class="btn-card-more" type="button">En savoir plus</button>
+          <button class="btn-card-go ${liked?'on':''}" type="button" data-like-id="${ev.id||''}" data-likes="${nLikes}" onclick="toggleLike(event,this)"><span class="btn-jyvais-ico">${liked?'♥':'♡'}</span><span>J'y vais</span></button>
         </div>
       </div>
     `;
@@ -465,22 +467,27 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
       }
       org.innerHTML=h; org.style.display='block';
     } else org.style.display='none';
-    const jyVaisActive=ev.id&&(()=>{try{const s=localStorage.getItem('jyvais');const arr=s?JSON.parse(s):[];return arr.includes(ev.id);}catch(e){return false;}})();
+    const jyVaisActive=isLiked(ev.id);
     $('#modal-foot').innerHTML=`
-      <button class="btn-jyvais-modal ${jyVaisActive?'on':''}" type="button" data-id="${ev.id||''}" data-likes="${ev.Likes||0}" onclick="toggleJyVaisModal(event,this,'${ev.id||''}')"><span class="btn-jyvais-ico">${jyVaisActive?'♥':'♡'}</span><span>J'y vais</span><span class="btn-jyvais-count"${(ev.Likes||0)>0?'':' hidden'}>${ev.Likes||0}</span></button>
-      <span class="modal-foot-label" style="margin-top:8px">Agenda</span>
-      <button class="cal-btn" id="modal-apple-btn" type="button">${APPLE_SVG} Apple / Outlook</button>
-      <a class="cal-btn" href="${gcalUrl(ev)}" target="_blank" rel="noopener">${GCAL_SVG} Google Calendar</a>
-      <button class="cal-btn" onclick="openShareModal(window.__modalEv)" type="button" style="margin-left:auto;">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-        Partager
-      </button>
+      <div class="mf-top">
+        <button class="btn-jyvais-modal ${jyVaisActive?'on':''}" type="button" data-like-id="${ev.id||''}" data-likes="${ev.Likes||0}" onclick="toggleLike(event,this)"><span class="btn-jyvais-ico">${jyVaisActive?'♥':'♡'}</span><span>J'y vais</span><span class="btn-jyvais-count"${(ev.Likes||0)>0?'':' hidden'}>${ev.Likes||0}</span></button>
+        <button class="mf-btn mf-share" onclick="openShareModal(window.__modalEv)" type="button">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+          Partager
+        </button>
+      </div>
+      <div class="mf-cal">
+        <span class="modal-foot-label">Ajouter à mon agenda</span>
+        <div class="mf-cal-btns">
+          <button class="mf-btn" id="modal-apple-btn" type="button">${APPLE_SVG} Apple / Outlook</button>
+          <a class="mf-btn" href="${gcalUrl(ev)}" target="_blank" rel="noopener">${GCAL_SVG} Google Agenda</a>
+        </div>
+      </div>
     `;
     window.__modalEv=ev;
     $('#modal-apple-btn').onclick=()=>genICS(ev);
     $('#modal-overlay').classList.add('open');document.body.style.overflow='hidden';
     if(ev.id)trackView(ev.id);
-    initJyVais();
   }
   function closeModal(){$('#modal-overlay').classList.remove('open');document.body.style.overflow='';}
 
@@ -1573,83 +1580,34 @@ function startStoriesAutoScroll(container) {
   });
 
   /* ── J'Y VAIS ── */
-  window.toggleJyVais = function(e, btn){
-    e.stopPropagation();
-    const id = btn.dataset.id; if(!id) return;
-    try{
-      const s = localStorage.getItem('jyvais');
-      let arr = s ? JSON.parse(s) : [];
-      const on = arr.includes(id);
-      const liking = !on;
-      if(on){ arr = arr.filter(x=>x!==id); }
-      else { arr.push(id); }
-      localStorage.setItem('jyvais', JSON.stringify(arr));
-      btn.querySelector('.btn-jyvais-ico').textContent = liking ? '♥' : '♡';
-      btn.classList.toggle('on', liking);
-      let likes = parseInt(btn.dataset.likes||'0',10) || 0;
-      likes = liking ? likes+1 : Math.max(0,likes-1);
-      btn.dataset.likes = likes;
-      const cEl = btn.querySelector('.btn-jyvais-count');
-      if(cEl){ cEl.textContent = likes; cEl.hidden = likes<=0; }
-      // Sync modal si ouverte
-      const mb = document.querySelector('.btn-jyvais-modal');
-      if(mb && mb.dataset.id===id){
-        mb.querySelector('.btn-jyvais-ico').textContent = liking?'♥':'♡';
-        mb.classList.toggle('on',liking);
-        mb.dataset.likes = likes;
-        const mc = mb.querySelector('.btn-jyvais-count');
-        if(mc){ mc.textContent = likes; mc.hidden = likes<=0; }
-      }
-      if(liking) spawnHearts(btn);
-      patchLikes(id, likes);
-    }catch(ex){}
-  };
-
-  window.toggleJyVaisModal = function(e, btn, id){
-    e.stopPropagation();
-    if(!id) return;
-    try{
-      const s = localStorage.getItem('jyvais');
-      let arr = s ? JSON.parse(s) : [];
-      const on = arr.includes(id);
-      const liking = !on;
-      if(on){ arr = arr.filter(x=>x!==id); }
-      else { arr.push(id); }
-      localStorage.setItem('jyvais', JSON.stringify(arr));
-      btn.querySelector('.btn-jyvais-ico').textContent = liking ? '♥' : '♡';
-      btn.classList.toggle('on', liking);
-      let likes = parseInt(btn.dataset.likes||'0',10) || 0;
-      likes = liking ? likes+1 : Math.max(0,likes-1);
-      btn.dataset.likes = likes;
-      const cEl = btn.querySelector('.btn-jyvais-count');
-      if(cEl){ cEl.textContent = likes; cEl.hidden = likes<=0; }
-      // Sync carte
-      const cb = document.querySelector(`.btn-jyvais[data-id="${id}"]`);
-      if(cb){
-        cb.querySelector('.btn-jyvais-ico').textContent = liking?'♥':'♡';
-        cb.classList.toggle('on',liking);
-        cb.dataset.likes = likes;
-        const cc = cb.querySelector('.btn-jyvais-count');
-        if(cc){ cc.textContent = likes; cc.hidden = likes<=0; }
-      }
-      if(liking) spawnHearts(btn);
-      patchLikes(id, likes);
-    }catch(ex){}
-  };
-
-  /* Initialise l'état J'y vais au chargement */
-  function initJyVais(){
-    try{
-      const s = localStorage.getItem('jyvais');
-      const arr = s ? JSON.parse(s) : [];
-      arr.forEach(id=>{
-        document.querySelectorAll(`.btn-jyvais[data-id="${id}"]`).forEach(btn=>{
-          btn.querySelector('.btn-jyvais-ico').textContent='♥';
-          btn.classList.add('on');
-        });
-      });
-    }catch(ex){}
+  function isLiked(id){
+    if(!id) return false;
+    try{ const s=localStorage.getItem('jyvais'); return (s?JSON.parse(s):[]).includes(id); }catch(e){ return false; }
   }
+
+  /* Un seul état par événement : cœur de la carte, J'y vais du survol et de la modale restent synchronisés */
+  window.toggleLike = function(e, btn){
+    e.stopPropagation();
+    const id = btn.dataset.likeId; if(!id) return;
+    let arr=[]; try{ const s=localStorage.getItem('jyvais'); arr=s?JSON.parse(s):[]; }catch(ex){}
+    const liking = !arr.includes(id);
+    arr = liking ? [...arr,id] : arr.filter(x=>x!==id);
+    try{ localStorage.setItem('jyvais', JSON.stringify(arr)); }catch(ex){}
+    let likes = parseInt(btn.dataset.likes||'0',10)||0;
+    likes = liking ? likes+1 : Math.max(0,likes-1);
+    document.querySelectorAll(`[data-like-id="${id}"]`).forEach(b=>{
+      b.classList.toggle('on', liking);
+      b.dataset.likes = likes;
+      const ico=b.querySelector('.btn-jyvais-ico'); if(ico) ico.textContent = liking?'♥':'♡';
+      const c=b.querySelector('.btn-jyvais-count');
+      if(c){ c.textContent = likes; if(!c.classList.contains('keep')) c.hidden = likes<=0; }
+    });
+    const ev = (typeof allEvents!=='undefined') && allEvents.find(x=>x.id===id);
+    if(ev) ev.Likes = likes;
+    if(window.__modalEv && window.__modalEv.id===id) window.__modalEv.Likes = likes;
+    if(liking) spawnHearts(btn);
+    patchLikes(id, likes);
+  };
 
   /* Envoie le nouveau total de likes à Airtable (best-effort) */
   async function patchLikes(id, likes){

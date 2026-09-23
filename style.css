@@ -1166,3 +1166,39 @@
 @media (prefers-reduced-motion: reduce) {
   .heart-float { animation-duration: .01ms !important; }
 }
+
+/* ── Cœur + compteur sur la carte ── */
+.btn-heart { display:inline-flex; align-items:center; gap:4px; margin-left:auto; font-family:inherit; font-size:11px; font-weight:600; color:rgba(255,255,255,0.85); background:rgba(0,0,0,0.28); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); border:1px solid rgba(255,255,255,0.14); border-radius:99px; padding:3px 9px 3px 8px; cursor:pointer; transition:background .18s, border-color .18s, color .18s; }
+.btn-heart:hover, .btn-heart.on { background:rgba(220,60,80,0.22); border-color:rgba(220,60,80,0.55); color:#ff6b7a; }
+.btn-heart .btn-jyvais-ico { font-size:13px; }
+.btn-heart.on .btn-jyvais-ico { animation: pop .3s cubic-bezier(.34,1.56,.64,1); }
+.btn-heart .btn-jyvais-count { background:none; padding:0; font-size:11px; color:inherit; }
+
+/* ── Pied de carte : En savoir plus, puis J'y vais révélé au survol ── */
+.card-poster-foot { flex-direction:column; align-items:flex-end; gap:0; }
+.btn-card-go { display:inline-flex; align-items:center; justify-content:center; gap:5px; font-family:inherit; font-size:11px; font-weight:500; color:var(--text-sub); background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); border-radius:99px; padding:0 14px; cursor:pointer; white-space:nowrap; max-height:0; opacity:0; overflow:hidden; border-width:0; transition:max-height .35s ease, opacity .25s ease, margin .3s ease, padding .3s ease, background .18s, color .18s; }
+.card:hover .btn-card-go, .card:focus-within .btn-card-go { max-height:40px; opacity:1; margin-top:7px; padding:6px 14px; border-width:1px; }
+.card-poster-foot .btn-card-more, .card-poster-foot .btn-card-go { min-width:118px; justify-content:center; }
+.btn-card-go:hover, .btn-card-go.on { background:rgba(220,60,80,0.18); border-color:rgba(220,60,80,0.5); color:#ff6b7a; }
+.btn-card-go .btn-jyvais-ico { font-size:12px; }
+@media (hover:none) {
+  .btn-card-go { max-height:40px; opacity:1; margin-top:7px; padding:6px 14px; border-width:1px; }
+}
+
+/* ── Pied de la fiche événement ── */
+.modal-foot { flex-direction:column; align-items:stretch; gap:16px; }
+.mf-top { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.mf-cal { display:flex; flex-direction:column; gap:8px; }
+.mf-cal .modal-foot-label { margin:0; }
+.mf-cal-btns { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.mf-btn, .btn-jyvais-modal { height:40px; box-sizing:border-box; }
+.mf-btn { display:inline-flex; align-items:center; justify-content:center; gap:8px; font-family:inherit; font-size:12.5px; font-weight:500; color:var(--text-sub); background:rgba(255,255,255,0.06); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border:1px solid rgba(255,255,255,0.12); border-radius:99px; padding:0 16px; cursor:pointer; text-decoration:none; white-space:nowrap; transition:all .15s; }
+.mf-btn:hover { border-color:rgba(200,169,110,0.45); color:var(--text); background:rgba(200,169,110,0.08); }
+.btn-jyvais-modal { padding:0 20px; }
+@media (max-width:380px) { .mf-cal-btns { grid-template-columns:1fr; } }
+
+@media (prefers-color-scheme: light) {
+  .mf-btn, .btn-card-go { background:rgba(0,0,0,0.05); border-color:rgba(0,0,0,0.12); color:#333; }
+  .mf-btn:hover { background:rgba(200,169,110,0.15); color:#0a0a0a; }
+  .btn-card-go:hover, .btn-card-go.on { background:rgba(220,60,80,0.12); border-color:rgba(220,60,80,0.45); color:#d23a4d; }
+}
