@@ -754,12 +754,14 @@
     .ateliers-title { font-family:'Playfair Display',serif; font-size:20px; font-weight:700; color:var(--text); }
     .ateliers-count { font-size:12px; color:var(--text-muted); }
     /* Stories – scroll natif + auto-avance JS */
-    .stories-outer { display: flex; align-items: center; gap: 4px; margin-inline: calc(-1 * var(--pad)); padding-inline: 4px; }
-    .ateliers-stories { overflow-x: scroll; overflow-y: visible; scrollbar-width: none; -webkit-overflow-scrolling: touch; flex: 1; min-width: 0; }
+    .stories-outer { position: relative; }
+    .ateliers-stories { overflow-x: scroll; overflow-y: visible; scrollbar-width: none; -webkit-overflow-scrolling: touch; width: 100%; }
     .ateliers-stories::-webkit-scrollbar { display: none; }
     .stories-track { display:flex; gap:1.25rem; padding-bottom:.75rem; }
-    /* Boutons nav profils */
-    .stories-nav-btn { flex-shrink: 0; width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--border); background: var(--bg-card); color: var(--text); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background .15s, opacity .15s; padding: 0; }
+    /* Boutons nav profils – positionnés sur les dégradés, dans la colonne */
+    .stories-nav-btn { position: absolute; z-index: 2; top: calc(50% - .375rem); transform: translateY(-50%); width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--border); background: var(--bg-card); color: var(--text); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background .15s, opacity .15s; padding: 0; }
+    .stories-prev { left: 0; }
+    .stories-next { right: 0; }
     .stories-nav-btn:hover { background: var(--bg-card-hover); }
     .story-item { display:flex; flex-direction:column; align-items:center; gap:.5rem; cursor:pointer; flex-shrink:0; width:72px; }
     .story-ring { width:64px; height:64px; border-radius:50%; padding:2.5px; background:linear-gradient(135deg,#E8609A,#c84b9e,#7B5EA7,#5B8DE8,#7B5EA7,#c84b9e,#E8609A); background-size:300% 300%; animation:ringFlow 6s ease infinite; animation-play-state:paused; flex-shrink:0; transition:transform .2s; }

@@ -1487,8 +1487,8 @@ function startStoriesAutoScroll(container) {
     prevBtn.style.opacity = scrolled ? '1' : '0';
     // var(--pad) = marges du site → dégradé aligné avec la colonne de contenu
     const mask = scrolled
-      ? 'linear-gradient(to right, transparent 0, black var(--pad), black calc(100% - var(--pad)), transparent 100%)'
-      : 'linear-gradient(to right, black calc(100% - var(--pad)), transparent 100%)';
+      ? 'linear-gradient(to right, transparent 0, black 50px, black calc(100% - 50px), transparent 100%)'
+      : 'linear-gradient(to right, black calc(100% - 50px), transparent 100%)';
     container.style.maskImage = mask;
     container.style.webkitMaskImage = mask;
   };
