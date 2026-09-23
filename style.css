@@ -759,7 +759,7 @@
     .ateliers-stories::-webkit-scrollbar { display: none; }
     .stories-track { display:flex; gap:1.25rem; padding-bottom:.75rem; }
     /* Boutons nav profils – positionnés sur les dégradés, dans la colonne */
-    .stories-nav-btn { position: absolute; z-index: 2; top: calc(50% - .375rem); transform: translateY(-50%); width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--border); background: var(--bg-card); color: var(--text); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background .15s, opacity .15s; padding: 0; }
+    .stories-nav-btn { position: absolute; z-index: 2; top: calc(50% - .375rem); transform: translateY(-50%); width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--border); background: var(--bg-card); color: var(--text); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background .15s, opacity .15s; padding: 0; }
     .stories-prev { left: 0; }
     .stories-next { right: 0; }
     .stories-nav-btn:hover { background: var(--bg-card-hover); }
