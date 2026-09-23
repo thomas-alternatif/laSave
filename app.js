@@ -1414,6 +1414,7 @@ function addGridNav(head, grid, title) {
   const prevBtn = mkBtn('prev', `Précédent – ${title}`);
   const nextBtn = mkBtn('next', `Suivant – ${title}`);
   prevBtn.disabled = true;
+  prevBtn.style.opacity = '0';
 
   nav.appendChild(prevBtn);
   nav.appendChild(nextBtn);
@@ -1422,8 +1423,18 @@ function addGridNav(head, grid, title) {
   const STEP = 234; // largeur carte (220) + gap (14)
 
   function updateBtns() {
-    prevBtn.disabled = grid.scrollLeft < 1;
-    nextBtn.disabled = grid.scrollLeft + grid.clientWidth >= grid.scrollWidth - 1;
+    const atStart = grid.scrollLeft < 1;
+    const atEnd   = grid.scrollLeft + grid.clientWidth >= grid.scrollWidth - 1;
+    prevBtn.disabled = atStart;
+    nextBtn.disabled = atEnd;
+    prevBtn.style.opacity = atStart ? '0' : '1';
+    let mask;
+    if (atStart && atEnd) { mask = 'none'; }
+    else if (atStart)     { mask = 'linear-gradient(to right, black 0, black calc(100% - 50px), transparent 100%)'; }
+    else if (atEnd)       { mask = 'linear-gradient(to right, transparent 0, black 50px)'; }
+    else                  { mask = 'linear-gradient(to right, transparent 0, black 50px, black calc(100% - 50px), transparent 100%)'; }
+    grid.style.maskImage = mask;
+    grid.style.webkitMaskImage = mask;
   }
 
   prevBtn.addEventListener('click', () => { grid.scrollBy({ left: -STEP, behavior: 'smooth' }); setTimeout(updateBtns, 350); });
@@ -1475,6 +1486,20 @@ function startStoriesAutoScroll(container) {
   const nextBtn = mkNavBtn('next');
   outer.insertBefore(prevBtn, container);
   outer.appendChild(nextBtn);
+
+  // Bouton gauche masqué au départ ; dégradé sur les bords
+  prevBtn.style.opacity = '0';
+  const updateStoriesEdges = () => {
+    const scrolled = container.scrollLeft > 20;
+    prevBtn.style.opacity = scrolled ? '1' : '0';
+    const mask = scrolled
+      ? 'linear-gradient(to right, transparent 0, black 50px, black calc(100% - 50px), transparent 100%)'
+      : 'linear-gradient(to right, black calc(100% - 50px), transparent 100%)';
+    container.style.maskImage = mask;
+    container.style.webkitMaskImage = mask;
+  };
+  updateStoriesEdges();
+  container.addEventListener('scroll', updateStoriesEdges, { passive: true });
 
   // ── Auto-scroll JS via RAF ──────────────────────────────────────────────
   let setWidth = 0;
