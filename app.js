@@ -216,7 +216,7 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
               <h3 class="card-poster-title">${esc(ev.Titre||'Sans titre')}</h3>
               <div class="card-poster-meta">
                 <span class="card-poster-cat" style="color:${m.color}">${esc(cat)}</span>
-                ${`<button class="btn-jyvais" type="button" data-id="${ev.id||''}" onclick="toggleJyVais(event,this)"><span class="btn-jyvais-ico">♡</span><span class="btn-jyvais-lbl">J'y vais</span></button>`}
+                ${`<button class="btn-jyvais" type="button" data-id="${ev.id||''}" data-likes="${ev.Likes||0}" onclick="toggleJyVais(event,this)"><span class="btn-jyvais-ico">♡</span><span class="btn-jyvais-lbl">J'y vais</span><span class="btn-jyvais-count"${(ev.Likes||0)>0?'':' hidden'}>${ev.Likes||0}</span></button>`}
               </div>
             </div>
           </div>
@@ -467,7 +467,7 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
     } else org.style.display='none';
     const jyVaisActive=ev.id&&(()=>{try{const s=localStorage.getItem('jyvais');const arr=s?JSON.parse(s):[];return arr.includes(ev.id);}catch(e){return false;}})();
     $('#modal-foot').innerHTML=`
-      <button class="btn-jyvais-modal ${jyVaisActive?'on':''}" type="button" onclick="toggleJyVaisModal(event,this,'${ev.id||''}')"><span class="btn-jyvais-ico">${jyVaisActive?'♥':'♡'}</span><span>J'y vais</span></button>
+      <button class="btn-jyvais-modal ${jyVaisActive?'on':''}" type="button" data-id="${ev.id||''}" data-likes="${ev.Likes||0}" onclick="toggleJyVaisModal(event,this,'${ev.id||''}')"><span class="btn-jyvais-ico">${jyVaisActive?'♥':'♡'}</span><span>J'y vais</span><span class="btn-jyvais-count"${(ev.Likes||0)>0?'':' hidden'}>${ev.Likes||0}</span></button>
       <span class="modal-foot-label" style="margin-top:8px">Agenda</span>
       <button class="cal-btn" id="modal-apple-btn" type="button">${APPLE_SVG} Apple / Outlook</button>
       <a class="cal-btn" href="${gcalUrl(ev)}" target="_blank" rel="noopener">${GCAL_SVG} Google Calendar</a>
@@ -1580,14 +1580,28 @@ function startStoriesAutoScroll(container) {
       const s = localStorage.getItem('jyvais');
       let arr = s ? JSON.parse(s) : [];
       const on = arr.includes(id);
+      const liking = !on;
       if(on){ arr = arr.filter(x=>x!==id); }
       else { arr.push(id); }
       localStorage.setItem('jyvais', JSON.stringify(arr));
-      btn.querySelector('.btn-jyvais-ico').textContent = on ? '♡' : '♥';
-      btn.classList.toggle('on', !on);
+      btn.querySelector('.btn-jyvais-ico').textContent = liking ? '♥' : '♡';
+      btn.classList.toggle('on', liking);
+      let likes = parseInt(btn.dataset.likes||'0',10) || 0;
+      likes = liking ? likes+1 : Math.max(0,likes-1);
+      btn.dataset.likes = likes;
+      const cEl = btn.querySelector('.btn-jyvais-count');
+      if(cEl){ cEl.textContent = likes; cEl.hidden = likes<=0; }
       // Sync modal si ouverte
       const mb = document.querySelector('.btn-jyvais-modal');
-      if(mb && mb.dataset.id===id){ mb.querySelector('.btn-jyvais-ico').textContent = on?'♡':'♥'; mb.classList.toggle('on',!on); }
+      if(mb && mb.dataset.id===id){
+        mb.querySelector('.btn-jyvais-ico').textContent = liking?'♥':'♡';
+        mb.classList.toggle('on',liking);
+        mb.dataset.likes = likes;
+        const mc = mb.querySelector('.btn-jyvais-count');
+        if(mc){ mc.textContent = likes; mc.hidden = likes<=0; }
+      }
+      if(liking) spawnHearts(btn);
+      patchLikes(id, likes);
     }catch(ex){}
   };
 
@@ -1598,14 +1612,28 @@ function startStoriesAutoScroll(container) {
       const s = localStorage.getItem('jyvais');
       let arr = s ? JSON.parse(s) : [];
       const on = arr.includes(id);
+      const liking = !on;
       if(on){ arr = arr.filter(x=>x!==id); }
       else { arr.push(id); }
       localStorage.setItem('jyvais', JSON.stringify(arr));
-      btn.querySelector('.btn-jyvais-ico').textContent = on ? '♡' : '♥';
-      btn.classList.toggle('on', !on);
+      btn.querySelector('.btn-jyvais-ico').textContent = liking ? '♥' : '♡';
+      btn.classList.toggle('on', liking);
+      let likes = parseInt(btn.dataset.likes||'0',10) || 0;
+      likes = liking ? likes+1 : Math.max(0,likes-1);
+      btn.dataset.likes = likes;
+      const cEl = btn.querySelector('.btn-jyvais-count');
+      if(cEl){ cEl.textContent = likes; cEl.hidden = likes<=0; }
       // Sync carte
       const cb = document.querySelector(`.btn-jyvais[data-id="${id}"]`);
-      if(cb){ cb.querySelector('.btn-jyvais-ico').textContent = on?'♡':'♥'; cb.classList.toggle('on',!on); }
+      if(cb){
+        cb.querySelector('.btn-jyvais-ico').textContent = liking?'♥':'♡';
+        cb.classList.toggle('on',liking);
+        cb.dataset.likes = likes;
+        const cc = cb.querySelector('.btn-jyvais-count');
+        if(cc){ cc.textContent = likes; cc.hidden = likes<=0; }
+      }
+      if(liking) spawnHearts(btn);
+      patchLikes(id, likes);
     }catch(ex){}
   };
 
@@ -1620,6 +1648,42 @@ function startStoriesAutoScroll(container) {
           btn.classList.add('on');
         });
       });
+    }catch(ex){}
+  }
+
+  /* Envoie le nouveau total de likes à Airtable (best-effort) */
+  async function patchLikes(id, likes){
+    try{
+      await fetch(`${AT_URL}/${id}`,{method:'PATCH',headers:HEADS,body:JSON.stringify({fields:{'Likes':likes}})});
+    }catch(ex){}
+  }
+
+  /* Effet coeurs flottants façon live, déclenché au like */
+  function spawnHearts(btn){
+    try{
+      const rect = btn.getBoundingClientRect();
+      const originX = rect.left + rect.width/2;
+      const originY = rect.top + rect.height/2;
+      const n = 6 + Math.floor(Math.random()*3);
+      for(let i=0;i<n;i++){
+        setTimeout(()=>{
+          const h = document.createElement('span');
+          h.className = 'heart-float';
+          h.textContent = '♥';
+          const drift = Math.round(Math.random()*70-35);
+          const rot = Math.round(Math.random()*50-25);
+          const size = 14 + Math.random()*12;
+          const dur = 900 + Math.random()*600;
+          h.style.left = originX+'px';
+          h.style.top = originY+'px';
+          h.style.fontSize = size+'px';
+          h.style.setProperty('--drift', drift+'px');
+          h.style.setProperty('--rot', rot+'deg');
+          h.style.setProperty('--dur', dur+'ms');
+          document.body.appendChild(h);
+          setTimeout(()=>h.remove(), dur+80);
+        }, i*70);
+      }
     }catch(ex){}
   }
 

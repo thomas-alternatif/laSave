@@ -1120,3 +1120,49 @@
       .star-btn { color:rgba(0,0,0,0.15); }
     }
 
+
+/* Compteur de likes sur le bouton J'y vais (carte + modal) */
+.btn-jyvais-count {
+  font-size: 9px;
+  font-weight: 700;
+  color: #ff8d98;
+  background: rgba(220,60,80,0.16);
+  border-radius: 99px;
+  padding: 1px 6px;
+  line-height: 1.4;
+  font-variant-numeric: tabular-nums;
+}
+.btn-jyvais-modal .btn-jyvais-count {
+  font-size: 10px;
+  margin-left: 2px;
+}
+
+/* Coeurs flottants façon live, déclenchés au like */
+.heart-float {
+  position: fixed;
+  z-index: 9999;
+  pointer-events: none;
+  color: #ff5468;
+  transform: translate(-50%, -50%);
+  animation: floatHeart var(--dur, 1200ms) ease-out forwards;
+  text-shadow: 0 2px 10px rgba(220,60,80,0.5);
+  will-change: transform, opacity;
+}
+@keyframes floatHeart {
+  0% {
+    transform: translate(-50%, -50%) translateY(0) translateX(0) rotate(0deg) scale(0.5);
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+    transform: translate(-50%, -50%) translateY(-14px) translateX(calc(var(--drift, 0px) * 0.2)) rotate(calc(var(--rot, 0deg) * 0.2)) scale(1.15);
+  }
+  70% { opacity: 1; }
+  100% {
+    transform: translate(-50%, -50%) translateY(-150px) translateX(var(--drift, 0px)) rotate(var(--rot, 0deg)) scale(0.75);
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .heart-float { animation-duration: .01ms !important; }
+}
