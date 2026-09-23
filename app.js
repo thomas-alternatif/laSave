@@ -216,7 +216,7 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
               <h3 class="card-poster-title">${esc(ev.Titre||'Sans titre')}</h3>
               <div class="card-poster-meta">
                 <span class="card-poster-cat" style="color:${m.color}">${esc(cat)}</span>
-                `<button class="btn-jyvais" type="button" data-id="${ev.id||''}" onclick="toggleJyVais(event,this)"><span class="btn-jyvais-ico">♡</span><span class="btn-jyvais-lbl">J'y vais</span></button>`
+                ${`<button class="btn-jyvais" type="button" data-id="${ev.id||''}" onclick="toggleJyVais(event,this)"><span class="btn-jyvais-ico">♡</span><span class="btn-jyvais-lbl">J'y vais</span></button>`}
               </div>
             </div>
           </div>
