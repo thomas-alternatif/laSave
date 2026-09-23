@@ -216,7 +216,7 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
               <h3 class="card-poster-title">${esc(ev.Titre||'Sans titre')}</h3>
               <div class="card-poster-meta">
                 <span class="card-poster-cat" style="color:${m.color}">${esc(cat)}</span>
-                ${vues>0?`<span class="card-poster-sep">·</span><span class="card-poster-vues"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> ${vues}</span>`:''}
+                `<button class="btn-jyvais" type="button" data-id="${ev.id||''}" onclick="toggleJyVais(event,this)"><span class="btn-jyvais-ico">♡</span><span class="btn-jyvais-lbl">J'y vais</span></button>`
               </div>
             </div>
           </div>
@@ -465,8 +465,10 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
       }
       org.innerHTML=h; org.style.display='block';
     } else org.style.display='none';
+    const jyVaisActive=ev.id&&(()=>{try{const s=localStorage.getItem('jyvais');const arr=s?JSON.parse(s):[];return arr.includes(ev.id);}catch(e){return false;}})();
     $('#modal-foot').innerHTML=`
-      <span class="modal-foot-label">Agenda</span>
+      <button class="btn-jyvais-modal ${jyVaisActive?'on':''}" type="button" onclick="toggleJyVaisModal(event,this,'${ev.id||''}')"><span class="btn-jyvais-ico">${jyVaisActive?'♥':'♡'}</span><span>J'y vais</span></button>
+      <span class="modal-foot-label" style="margin-top:8px">Agenda</span>
       <button class="cal-btn" id="modal-apple-btn" type="button">${APPLE_SVG} Apple / Outlook</button>
       <a class="cal-btn" href="${gcalUrl(ev)}" target="_blank" rel="noopener">${GCAL_SVG} Google Calendar</a>
       <button class="cal-btn" onclick="openShareModal(window.__modalEv)" type="button" style="margin-left:auto;">
@@ -478,6 +480,7 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
     $('#modal-apple-btn').onclick=()=>genICS(ev);
     $('#modal-overlay').classList.add('open');document.body.style.overflow='hidden';
     if(ev.id)trackView(ev.id);
+    initJyVais();
   }
   function closeModal(){$('#modal-overlay').classList.remove('open');document.body.style.overflow='';}
 
@@ -1275,6 +1278,7 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
 /* ── ORGANISATEURS (table Airtable dédiée) ── */
 // ID de la table Organisateurs — à mettre à jour quand tu me donnes l'ID Airtable
 const AT_TABLE_ORGAS = 'tblgaldbDy7el5Qw1';
+  const AT_TABLE_AVIS = 'tbl1VfPYliWdORuzN';
 
 async function fetchOrganisateurs() {
   if (AT_TABLE_ORGAS === 'METTRE_ID_TABLE_ICI') return [];
@@ -1567,4 +1571,134 @@ function startStoriesAutoScroll(container) {
     container.scrollBy({ left: STEP, behavior: 'smooth' });
     onStart(); onEnd();
   });
+
+  /* ── J'Y VAIS ── */
+  window.toggleJyVais = function(e, btn){
+    e.stopPropagation();
+    const id = btn.dataset.id; if(!id) return;
+    try{
+      const s = localStorage.getItem('jyvais');
+      let arr = s ? JSON.parse(s) : [];
+      const on = arr.includes(id);
+      if(on){ arr = arr.filter(x=>x!==id); }
+      else { arr.push(id); }
+      localStorage.setItem('jyvais', JSON.stringify(arr));
+      btn.querySelector('.btn-jyvais-ico').textContent = on ? '♡' : '♥';
+      btn.classList.toggle('on', !on);
+      // Sync modal si ouverte
+      const mb = document.querySelector('.btn-jyvais-modal');
+      if(mb && mb.dataset.id===id){ mb.querySelector('.btn-jyvais-ico').textContent = on?'♡':'♥'; mb.classList.toggle('on',!on); }
+    }catch(ex){}
+  };
+
+  window.toggleJyVaisModal = function(e, btn, id){
+    e.stopPropagation();
+    if(!id) return;
+    try{
+      const s = localStorage.getItem('jyvais');
+      let arr = s ? JSON.parse(s) : [];
+      const on = arr.includes(id);
+      if(on){ arr = arr.filter(x=>x!==id); }
+      else { arr.push(id); }
+      localStorage.setItem('jyvais', JSON.stringify(arr));
+      btn.querySelector('.btn-jyvais-ico').textContent = on ? '♡' : '♥';
+      btn.classList.toggle('on', !on);
+      // Sync carte
+      const cb = document.querySelector(`.btn-jyvais[data-id="${id}"]`);
+      if(cb){ cb.querySelector('.btn-jyvais-ico').textContent = on?'♡':'♥'; cb.classList.toggle('on',!on); }
+    }catch(ex){}
+  };
+
+  /* Initialise l'état J'y vais au chargement */
+  function initJyVais(){
+    try{
+      const s = localStorage.getItem('jyvais');
+      const arr = s ? JSON.parse(s) : [];
+      arr.forEach(id=>{
+        document.querySelectorAll(`.btn-jyvais[data-id="${id}"]`).forEach(btn=>{
+          btn.querySelector('.btn-jyvais-ico').textContent='♥';
+          btn.classList.add('on');
+        });
+      });
+    }catch(ex){}
+  }
+
+  /* ── VOTRE AVIS ── */
+  (function(){
+    // Injecter le bouton flottant + modal feedback
+    const html = `
+      <button id="btn-avis" type="button" onclick="openAvisModal()" aria-label="Donner votre avis">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <span>Votre avis</span>
+      </button>
+      <div id="avis-overlay" aria-hidden="true">
+        <div id="avis-modal" role="dialog" aria-label="Votre avis">
+          <button id="avis-close" onclick="closeAvisModal()" aria-label="Fermer">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+          <div id="avis-title">Votre avis nous aide !</div>
+          <div id="avis-subtitle">Ce site vous est-il utile ?</div>
+          <div id="avis-stars" role="group" aria-label="Note">
+            ${[1,2,3,4,5].map(n=>`<button class="star-btn" data-v="${n}" type="button" aria-label="${n} étoile${n>1?'s':''}" onclick="setAvisNote(${n})">★</button>`).join('')}
+          </div>
+          <textarea id="avis-comment" placeholder="Un commentaire ? (facultatif)" rows="3" maxlength="500"></textarea>
+          <button id="avis-send" type="button" onclick="sendAvis()">Envoyer</button>
+          <div id="avis-thanks" hidden>Merci pour votre retour ! 🙏</div>
+        </div>
+      </div>`;
+    const div = document.createElement('div');
+    div.innerHTML = html;
+    document.body.appendChild(div);
+  })();
+
+  let _avisNote = 0;
+
+  window.openAvisModal = function(){
+    document.getElementById('avis-overlay').removeAttribute('aria-hidden');
+    document.getElementById('avis-overlay').classList.add('open');
+    document.body.style.overflow='hidden';
+  };
+  window.closeAvisModal = function(){
+    document.getElementById('avis-overlay').setAttribute('aria-hidden','true');
+    document.getElementById('avis-overlay').classList.remove('open');
+    document.body.style.overflow='';
+  };
+  window.setAvisNote = function(n){
+    _avisNote = n;
+    document.querySelectorAll('.star-btn').forEach((b,i)=>{
+      b.classList.toggle('on', i < n);
+    });
+  };
+  window.sendAvis = async function(){
+    const btn = document.getElementById('avis-send');
+    const comment = (document.getElementById('avis-comment').value||'').trim();
+    if(!_avisNote){ document.getElementById('avis-stars').classList.add('shake'); setTimeout(()=>document.getElementById('avis-stars').classList.remove('shake'),600); return; }
+    btn.disabled = true; btn.textContent = 'Envoi…';
+    try{
+      const now = new Date();
+      const iso = now.getFullYear()+'-'+(String(now.getMonth()+1).padStart(2,'0'))+'-'+(String(now.getDate()).padStart(2,'0'))+'T'+(String(now.getHours()).padStart(2,'0'))+':'+(String(now.getMinutes()).padStart(2,'0'))+':00.000';
+      await fetch(`https://api.airtable.com/v0/${AT_BASE}/${AT_TABLE_AVIS}`,{
+        method:'POST',
+        headers:HEADS,
+        body:JSON.stringify({fields:{
+          'Titre': 'Avis #'+(Date.now()%100000),
+          'Note': _avisNote,
+          'Commentaire': comment||null,
+          'Page': window.location.pathname||'/',
+          'Date envoi': iso
+        }})
+      });
+      document.getElementById('avis-send').hidden=true;
+      document.getElementById('avis-thanks').hidden=false;
+      setTimeout(closeAvisModal, 2000);
+    }catch(ex){
+      btn.disabled=false; btn.textContent='Envoyer';
+    }
+  };
+
+  document.getElementById('avis-overlay').addEventListener('click', e=>{
+    if(e.target===document.getElementById('avis-overlay')) closeAvisModal();
+  });
+
+
 }
