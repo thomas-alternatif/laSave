@@ -221,6 +221,15 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
             </div>
           </div>
         </div>
+        <div class="card-poster-land">
+          <div class="card-poster-land-title">${esc(ev.Titre||'Sans titre')}</div>
+          <div class="card-poster-land-info">
+            <span class="card-poster-land-cat" style="background:${m.color}22;color:${m.color}">${esc(cat)}</span>
+            ${dateStr?`<span style="color:var(--text-muted)">·</span><span>${dateStr}</span>`:''}
+            ${ev.Commune?`<span style="color:var(--text-muted)">·</span><span>${esc(ev.Commune)}</span>`:''}
+          </div>
+          ${excerpt?`<p class="card-poster-land-excerpt">${esc(excerpt)}</p>`:''}
+        </div>
         <div class="card-poster-foot">
           <button class="btn-card-more" type="button">En savoir plus</button>
         </div>
