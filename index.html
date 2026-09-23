@@ -15,7 +15,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Yeseva+One&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=24" />
+  <link rel="stylesheet" href="style.css?v=25" />
   <meta name="theme-color" content="#0d0d0d" media="(prefers-color-scheme: dark)" />
   <meta name="theme-color" content="#f5f1ea" media="(prefers-color-scheme: light)" />
   <noscript><style>body{display:grid;place-items:center;min-height:100vh;font-family:sans-serif;padding:2rem;text-align:center}</style><p>laSave nécessite JavaScript pour fonctionner.</p></noscript>
@@ -457,12 +457,12 @@
   function draw(t){
     if (!mq.matches){ cv.style.display='none'; return; }
     cv.style.display='block';
-    // Fond dégradé diagonal: lavande bas-gauche → blanc → pêche haut-droit
+    // Fond dégradé: bleu-lavande → gris perle (pas de rosé)
     var bg = ctx.createLinearGradient(0, H * 0.85, W * 0.9, H * 0.05);
-    bg.addColorStop(0,   'hsl(222,32%,81%)');
-    bg.addColorStop(0.35,'hsl(228,20%,91%)');
-    bg.addColorStop(0.65,'hsl(220,12%,96%)');
-    bg.addColorStop(1,   'hsl(32,38%,87%)');
+    bg.addColorStop(0,   'hsl(222,28%,83%)');
+    bg.addColorStop(0.4, 'hsl(224,16%,92%)');
+    bg.addColorStop(0.75,'hsl(220,8%,96%)');
+    bg.addColorStop(1,   'hsl(215,12%,93%)');
     ctx.fillStyle = bg;
     ctx.fillRect(0, 0, W, H);
     // Calcul des points du maillage déformés par une vague diagonale
@@ -482,12 +482,13 @@
         };
       }
     }
-    // Tracé du maillage
-    ctx.lineWidth = 0.65;
+    // Tracé du maillage — flou + discret
+    ctx.filter = 'blur(2px)';
+    ctx.lineWidth = 0.5;
     for (r = 0; r <= ROWS; r++){
       for (c = 0; c <= COLS; c++){
         var p = pts[r][c];
-        var a = (0.08 + p.bright * 0.65).toFixed(2);
+        var a = (0.03 + p.bright * 0.22).toFixed(2);
         ctx.strokeStyle = 'rgba(255,255,255,' + a + ')';
         if (c < COLS){
           ctx.beginPath(); ctx.moveTo(p.x, p.y);
@@ -499,6 +500,7 @@
         }
       }
     }
+    ctx.filter = 'none';
   }
   var t0 = null;
   function loop(ts){ if (!t0) t0 = ts; draw(ts - t0); requestAnimationFrame(loop); }
