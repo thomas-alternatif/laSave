@@ -208,7 +208,7 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
     const orgaPhoto = orga?.photo || null;
     const orgaInitiales = orgaNom.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
     const orgaCouleur = `hsl(${orgaNom.split('').reduce((a,c)=>a+c.charCodeAt(0),0)%360},45%,55%)`;
-    const liked = isLiked(ev.id), nLikes = ev.Likes||0;
+    const liked = isLiked(ev.id), nLikes = Math.max(0, parseInt(ev.Likes,10)||0), evId = esc(ev.id||'');
     const excerpt = ev.Description ? ev.Description.slice(0,260)+(ev.Description.length>260?'…':'') : '';
 
     card.innerHTML=`
@@ -247,7 +247,7 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
               <h3 class="card-poster-title">${esc(ev.Titre||'Sans titre')}</h3>
               <div class="card-poster-meta">
                 <span class="card-poster-cat" style="color:${m.color}">${esc(cat)}</span>
-                ${`<button class="btn-heart ${liked?'on':''}" type="button" data-like-id="${ev.id||''}" data-likes="${nLikes}" onclick="toggleLike(event,this)" aria-label="J'aime"><span class="btn-jyvais-ico">${liked?'♥':'♡'}</span><span class="btn-jyvais-count keep">${nLikes}</span></button>`}
+                ${`<button class="btn-heart ${liked?'on':''}" type="button" data-like-id="${evId}" data-likes="${nLikes}" onclick="toggleLike(event,this)" aria-label="J'aime"><span class="btn-jyvais-ico">${liked?'♥':'♡'}</span><span class="btn-jyvais-count keep">${nLikes}</span></button>`}
               </div>
             </div>
           </div>
@@ -256,14 +256,14 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
           <div class="card-poster-land-title">${esc(ev.Titre||'Sans titre')}</div>
           <div class="card-poster-land-info">
             <span class="card-poster-land-cat" style="background:${m.color}22;color:${m.color}">${esc(cat)}</span>
-            ${dateStr?`<span style="color:var(--text-muted)">·</span><span>${dateStr}</span>`:''}
+            ${dateStr?`<span style="color:var(--text-muted)">·</span><span>${esc(dateStr)}</span>`:''}
             ${ev.Commune?`<span style="color:var(--text-muted)">·</span><span>${esc(ev.Commune)}</span>`:''}
           </div>
           ${excerpt?`<p class="card-poster-land-excerpt">${esc(excerpt)}</p>`:''}
         </div>
         <div class="card-poster-foot">
           <button class="btn-card-more" type="button">En savoir plus</button>
-          <button class="btn-card-go ${liked?'on':''}" type="button" data-like-id="${ev.id||''}" data-likes="${nLikes}" onclick="toggleLike(event,this)"><span class="btn-jyvais-ico">${liked?'♥':'♡'}</span><span>J'y vais</span></button>
+          <button class="btn-card-go ${liked?'on':''}" type="button" data-like-id="${evId}" data-likes="${nLikes}" onclick="toggleLike(event,this)"><span class="btn-jyvais-ico">${liked?'♥':'♡'}</span><span>J'y vais</span></button>
         </div>
       </div>
     `;
@@ -417,11 +417,15 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
       photoEl.querySelector('.modal-photo').src=photo;
       photoEl.querySelector('.modal-photo').alt=`Affiche : ${ev.Titre||''}`;
       // J'y vais en bas à gauche de l'affiche (affiché sur mobile)
-      const on=isLiked(ev.id),n=ev.Likes||0;
+      const on=isLiked(ev.id),n=Math.max(0,parseInt(ev.Likes,10)||0);
       let go=photoEl.querySelector('.modal-photo-go');
       if(!go){go=document.createElement('button');go.type='button';go.className='modal-photo-go';go.setAttribute('onclick','toggleLike(event,this)');photoEl.appendChild(go);}
       go.dataset.likeId=ev.id||'';go.dataset.likes=n;go.classList.toggle('on',on);
-      go.innerHTML=`<span class="btn-jyvais-ico">${on?'♥':'♡'}</span><span>J'y vais</span><span class="btn-jyvais-count"${n>0?'':' hidden'}>${n}</span>`;
+      go.replaceChildren();
+      const gi=document.createElement('span');gi.className='btn-jyvais-ico';gi.textContent=on?'♥':'♡';
+      const gl=document.createElement('span');gl.textContent="J'y vais";
+      const gc=document.createElement('span');gc.className='btn-jyvais-count';gc.textContent=String(n);gc.hidden=n<=0;
+      go.append(gi,gl,gc);
     }
     else if(photoEl)photoEl.remove();
     $('.modal').classList.toggle('has-photo',!!photo);
