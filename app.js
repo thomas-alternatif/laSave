@@ -191,7 +191,7 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
     const cat=ev['Catégorie']||'Autre',m=CAT_META[cat]||CAT_META['Autre'];
     const photo=getPhoto(ev),soon=isSoon(ev.Date),featured=ev['À la une'],vues=ev.Vues||0;
     const isRec=ev['Récurrence']&&ev['Récurrence']!=='Aucune';
-    const dateStr=ev.Date?fmtDate(ev.Date):(isRec?(ev['Jour/Période']||ev['Récurrence']):'');
+    const dateStr=ev.Date?fmtDate(ev.Date):(isRec?((ev['Période']||ev['Jour/Période'])||ev['Récurrence']):'');
 
     const card=document.createElement('article');
     card.className='card';card.dataset.cat=cat;
@@ -430,11 +430,11 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
     else if(photoEl)photoEl.remove();
     $('.modal').classList.toggle('has-photo',!!photo);
     const mi=[];
-    if(ev.Date)mi.push(`<span class="modal-meta-item">📅 <strong>${fmtDate(ev.Date)}</strong>${ev['Date de fin']?' → '+fmtDate(ev['Date de fin']):''}</span>`);
+    if(ev.Date)mi.push(`<span class="modal-meta-item">📅 <strong>${esc(fmtDate(ev.Date))}</strong>${ev['Date de fin']?' → '+esc(fmtDate(ev['Date de fin'])):''}</span>`);
     if(ev.Heure)mi.push(`<span class="modal-meta-item">🕐 <strong>${esc(ev.Heure)}</strong></span>`);
     if(ev.Commune)mi.push(`<span class="modal-meta-item">📍 <strong>${esc(ev.Commune)}</strong>${ev.Lieu?' — '+esc(ev.Lieu):''}</span>`);
     if(ev.Tarif)mi.push(`<span class="modal-meta-item">💰 <strong>${esc(ev.Tarif)}</strong></span>`);
-    if(ev['Récurrence']&&ev['Récurrence']!=='Aucune')mi.push(`<span class="modal-meta-item">↻ <strong>${esc(ev['Récurrence'])}</strong>${ev['Jour/Période']?' — '+esc(ev['Jour/Période']):''}</span>`);
+    if(ev['Récurrence']&&ev['Récurrence']!=='Aucune')mi.push(`<span class="modal-meta-item">↻ <strong>${esc(ev['Récurrence'])}</strong>${(ev['Période']||ev['Jour/Période'])?' — '+esc((ev['Période']||ev['Jour/Période'])):''}</span>`);
     $('#modal-meta').innerHTML=mi.join('');
     $('#modal-desc').textContent=ev.Description||'';
     const org=$('#modal-org');
@@ -509,9 +509,10 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
       org.innerHTML=h; org.style.display='block';
     } else org.style.display='none';
     const jyVaisActive=isLiked(ev.id);
+    const mLikes=Math.max(0,parseInt(ev.Likes,10)||0);
     $('#modal-foot').innerHTML=`
       <div class="mf-top">
-        <button class="btn-jyvais-modal ${jyVaisActive?'on':''}" type="button" data-like-id="${ev.id||''}" data-likes="${ev.Likes||0}" onclick="toggleLike(event,this)"><span class="btn-jyvais-ico">${jyVaisActive?'♥':'♡'}</span><span>J'y vais</span><span class="btn-jyvais-count"${(ev.Likes||0)>0?'':' hidden'}>${ev.Likes||0}</span></button>
+        <button class="btn-jyvais-modal ${jyVaisActive?'on':''}" type="button" data-like-id="${esc(ev.id||'')}" data-likes="${mLikes}" onclick="toggleLike(event,this)"><span class="btn-jyvais-ico">${jyVaisActive?'♥':'♡'}</span><span>J'y vais</span><span class="btn-jyvais-count"${mLikes>0?'':' hidden'}>${mLikes}</span></button>
         <button class="mf-btn mf-share" onclick="openShareModal(window.__modalEv)" type="button">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
           Partager
@@ -521,7 +522,7 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
         <span class="modal-foot-label">Ajouter à mon agenda</span>
         <div class="mf-cal-btns">
           <button class="mf-btn" id="modal-apple-btn" type="button">${APPLE_SVG} Apple / Outlook</button>
-          <a class="mf-btn" href="${gcalUrl(ev)}" target="_blank" rel="noopener">${GCAL_SVG} Google Agenda</a>
+          <a class="mf-btn" href="${esc(gcalUrl(ev))}" target="_blank" rel="noopener">${GCAL_SVG} Google Agenda</a>
         </div>
       </div>
     `;
@@ -555,7 +556,7 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
     const ev=feats[i],m=CAT_META[ev['Catégorie']]||CAT_META['Autre'];
     const bg=$('#ns-bg');bg.style.backgroundImage=`url("${String(getPhoto(ev)||'').replace(/["\\\n]/g,'')}")`;bg.classList.remove('z');setTimeout(()=>bg.classList.add('z'),50);
     const cnt=$('#ns-content');
-    cnt.innerHTML=`<div class="ns-ey"><span class="ns-pill" style="background:${m.color}28;color:${m.color}">${esc(ev['Catégorie']||'')}</span></div><h2 class="ns-t">${esc(ev.Titre||'')}</h2><div class="ns-bar" style="background:${m.color}"></div><div class="ns-m">${ev.Date?`<span>📅 ${fmtDate(ev.Date)}</span><span class="ns-s"></span>`:''} ${ev.Commune?`<span>📍 ${esc(ev.Commune)}</span>`:''}</div>${ev.Organisation?`<div class="ns-org">par <strong>${esc(ev.Organisation)}</strong></div>`:''}${ev.Description?`<p class="ns-desc">${esc(ev.Description)}</p>`:''}<button class="ns-cta" type="button">Voir l'événement →</button>`;
+    cnt.innerHTML=`<div class="ns-ey"><span class="ns-pill" style="background:${m.color}28;color:${m.color}">${esc(ev['Catégorie']||'')}</span></div><h2 class="ns-t">${esc(ev.Titre||'')}</h2><div class="ns-bar" style="background:${m.color}"></div><div class="ns-m">${ev.Date?`<span>📅 ${esc(fmtDate(ev.Date))}</span><span class="ns-s"></span>`:''} ${ev.Commune?`<span>📍 ${esc(ev.Commune)}</span>`:''}</div>${ev.Organisation?`<div class="ns-org">par <strong>${esc(ev.Organisation)}</strong></div>`:''}${ev.Description?`<p class="ns-desc">${esc(ev.Description)}</p>`:''}<button class="ns-cta" type="button">Voir l'événement →</button>`;
     cnt.querySelector('.ns-cta').onclick=()=>openModal(ev);
     requestAnimationFrame(()=>cnt.querySelectorAll('.ns-t,.ns-bar,.ns-m,.ns-org,.ns-desc,.ns-cta').forEach(el=>el.classList.add('in')));
     $$('.ns-th').forEach((t,j)=>t.classList.toggle('on',j===slideIdx));
@@ -1004,7 +1005,7 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
         const cat=ev['Catégorie']||'Autre';
         const m=CAT_META[cat]||CAT_META['Autre'];
         const photo=getPhoto(ev);
-        const dateStr=ev.Date?fmtShort(ev.Date):(ev['Jour/Période']||'');
+        const dateStr=ev.Date?fmtShort(ev.Date):((ev['Période']||ev['Jour/Période'])||'');
         return`<div class="orga-event-card">
           <div class="orga-event-img" style="${photo?`background-image:url(${esc(photo)})`:``}">
             ${!photo?`<span style="font-size:28px">${m.emoji}</span>`:''}
@@ -1016,7 +1017,7 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
               ${ev.Commune?`<span>📍 ${esc(ev.Commune)}</span>`:''}
               ${dateStr?`<span>📅 ${esc(dateStr)}</span>`:''}
             </div>
-            <button class="orga-event-more btn-card-more" data-evid="${ev.id}" type="button">En savoir plus</button>
+            <button class="orga-event-more btn-card-more" data-evid="${esc(ev.id)}" type="button">En savoir plus</button>
           </div>
         </div>`;
       }).join('');
@@ -1288,8 +1289,8 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
       const f=r.fields,cat=f['Catégorie']||'Autre',meta=CAT_META[cat]||CAT_META['Autre'];
       const date=f['Date']?new Date(f['Date']).toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'}):'—';
       const btn=isArchive
-        ?`<button class="btn-archive-one" data-id="${r.id}" type="button">Archiver</button>`
-        :`<button class="btn-republish" data-id="${r.id}" type="button">Remettre en ligne</button>`;
+        ?`<button class="btn-archive-one" data-id="${esc(r.id)}" type="button">Archiver</button>`
+        :`<button class="btn-republish" data-id="${esc(r.id)}" type="button">Remettre en ligne</button>`;
       return`<tr><td><span class="admin-ev-title">${esc(f['Titre']||'—')}</span></td><td><span class="admin-ev-date" style="${isArchive?'color:#ff5080':''}">${date}</span></td><td><span class="admin-ev-cat" style="background:${meta.color}22;color:${meta.color}">${esc(cat)}</span></td><td>${esc(f['Commune']||'—')}</td><td>${btn}</td></tr>`;
     }).join('');
 
