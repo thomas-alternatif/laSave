@@ -150,23 +150,24 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
     $('#share-copy-url').textContent=urlDirect;
     const grid=$('#share-grid');
     grid.innerHTML=`
-      <button class="share-opt" onclick="doShare('whatsapp','${esc(titre)}','${esc(urlWorker)}')" type="button">
+      <button class="share-opt" data-share="whatsapp" data-url="w" type="button">
         <span class="share-opt-ico"><svg width="26" height="26" viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M11.998 0C5.372 0 0 5.373 0 12.001c0 2.117.556 4.103 1.528 5.83L0 24l6.335-1.661A11.947 11.947 0 0012 24c6.628 0 12-5.372 12-12 0-6.627-5.372-12.001-12-12.001zm0 21.985a9.96 9.96 0 01-5.073-1.387l-.362-.216-3.758.986 1.003-3.66-.237-.377A9.955 9.955 0 012.015 12C2.015 6.481 6.48 2.015 12 2.015S21.985 6.481 21.985 12c0 5.52-4.466 9.985-9.987 9.985z"/></svg></span>
         WhatsApp
       </button>
-      <button class="share-opt" onclick="doShare('facebook','${esc(titre)}','${esc(urlDirect)}')" type="button">
+      <button class="share-opt" data-share="facebook" data-url="d" type="button">
         <span class="share-opt-ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="#1877F2"><path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.41c0-3.025 1.792-4.697 4.533-4.697 1.312 0 2.686.236 2.686.236v2.97h-1.513c-1.491 0-1.956.93-1.956 1.886v2.267h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z"/></svg></span>
         Facebook
       </button>
-      <button class="share-opt" onclick="doShare('instagram','${esc(titre)}','${esc(urlDirect)}')" type="button">
+      <button class="share-opt" data-share="instagram" data-url="d" type="button">
         <span class="share-opt-ico" style="background:linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);border:none;"><svg width="22" height="22" viewBox="0 0 24 24" fill="white"><rect x="2" y="2" width="20" height="20" rx="5.5"/><circle cx="12" cy="12" r="4.5" fill="none" stroke="white" stroke-width="2"/><circle cx="17.5" cy="6.5" r="1.2" fill="white"/></svg></span>
         Instagram
       </button>
-      <button class="share-opt" onclick="doShare('sms','${esc(titre)}','${esc(urlDirect)}')" type="button">
+      <button class="share-opt" data-share="sms" data-url="d" type="button">
         <span class="share-opt-ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#5dd470" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
         Message
       </button>
     `;
+    grid.querySelectorAll('[data-share]').forEach(b=>b.addEventListener('click',()=>doShare(b.dataset.share,titre,b.dataset.url==='w'?urlWorker:urlDirect)));
     $('#share-modal').classList.add('open');
     document.body.style.overflow='hidden';
   }
@@ -538,7 +539,7 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
   function renderSlider(){
     const c=$('#featured-container');
     let th='<span class="ns-num" id="ns-num"></span>';
-    feats.forEach((_,i)=>th+=`<div class="ns-th${i===slideIdx?' on':''}" data-i="${i}"><img src="${getPhoto(feats[i])}" alt="" loading="lazy"/></div>`);
+    feats.forEach((_,i)=>th+=`<div class="ns-th${i===slideIdx?' on':''}" data-i="${i}"><img src="${esc(getPhoto(feats[i]))}" alt="" loading="lazy"/></div>`);
     c.innerHTML=`<div id="ns-bg"></div><div id="ns-prog"></div><div class="ns-top-shadow"></div><div id="ns-content"></div><button class="ns-arr ns-prev" type="button" aria-label="Précédent">‹</button><button class="ns-arr ns-next" type="button" aria-label="Suivant">›</button><div class="ns-thumbs">${th}</div>`;
     $('.ns-prev').onclick=()=>goSlide(slideIdx-1);
     $('.ns-next').onclick=()=>goSlide(slideIdx+1);
@@ -548,7 +549,7 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
   function showSlide(i){
     if(i<0)i=feats.length-1;if(i>=feats.length)i=0;slideIdx=i;
     const ev=feats[i],m=CAT_META[ev['Catégorie']]||CAT_META['Autre'];
-    const bg=$('#ns-bg');bg.style.backgroundImage=`url(${getPhoto(ev)})`;bg.classList.remove('z');setTimeout(()=>bg.classList.add('z'),50);
+    const bg=$('#ns-bg');bg.style.backgroundImage=`url("${String(getPhoto(ev)||'').replace(/["\\\n]/g,'')}")`;bg.classList.remove('z');setTimeout(()=>bg.classList.add('z'),50);
     const cnt=$('#ns-content');
     cnt.innerHTML=`<div class="ns-ey"><span class="ns-pill" style="background:${m.color}28;color:${m.color}">${esc(ev['Catégorie']||'')}</span></div><h2 class="ns-t">${esc(ev.Titre||'')}</h2><div class="ns-bar" style="background:${m.color}"></div><div class="ns-m">${ev.Date?`<span>📅 ${fmtDate(ev.Date)}</span><span class="ns-s"></span>`:''} ${ev.Commune?`<span>📍 ${esc(ev.Commune)}</span>`:''}</div>${ev.Organisation?`<div class="ns-org">par <strong>${esc(ev.Organisation)}</strong></div>`:''}${ev.Description?`<p class="ns-desc">${esc(ev.Description)}</p>`:''}<button class="ns-cta" type="button">Voir l'événement →</button>`;
     cnt.querySelector('.ns-cta').onclick=()=>openModal(ev);
@@ -916,7 +917,7 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
       item.innerHTML=`
         <div class="story-ring">
           <div class="story-inner">
-            ${orga.photo?`<img src="${esc(orga.photo)}" alt="${esc(orga.nom)}" loading="lazy"/>`:`<div class="story-inner-placeholder" style="background:${couleur}22;color:${couleur};font-family:'Playfair Display',serif;font-weight:700;font-size:18px;">${initiales}</div>`}
+            ${orga.photo?`<img src="${esc(orga.photo)}" alt="${esc(orga.nom)}" loading="lazy"/>`:`<div class="story-inner-placeholder" style="background:${couleur}22;color:${couleur};font-family:'Playfair Display',serif;font-weight:700;font-size:18px;">${esc(initiales)}</div>`}
           </div>
         </div>
         <span class="story-label">${esc(orga.nom)}</span>`;
@@ -944,7 +945,7 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
     const initiales=orga.nom.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
     const couleur=`hsl(${orga.nom.split('').reduce((a,c)=>a+c.charCodeAt(0),0)%360},45%,55%)`;
     const av=$('#orga-modal-avatar');
-    av.innerHTML=orga.photo?`<img src="${esc(orga.photo)}" alt="${esc(orga.nom)}"/>`:`<span style="color:${couleur};font-family:'Playfair Display',serif;font-weight:700;">${initiales}</span>`;
+    av.innerHTML=orga.photo?`<img src="${esc(orga.photo)}" alt="${esc(orga.nom)}"/>`:`<span style="color:${couleur};font-family:'Playfair Display',serif;font-weight:700;">${esc(initiales)}</span>`;
     $('#orga-modal-name').textContent=orga.nom;
     $('#orga-modal-meta').textContent=`${orga.ateliers.length?orga.ateliers.length+' atelier'+(orga.ateliers.length>1?'s':''):''}${orga.commune?' · '+orga.commune:''}`;
     const body=$('#orga-modal-body');
@@ -1172,7 +1173,7 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
       if(av){
         av.innerHTML=photo
           ?`<img src="${esc(photo)}" alt="${esc(orga.Nom)}"/>`
-          :`<span style="color:${couleur}">${initiales}</span>`;
+          :`<span style="color:${couleur}">${esc(initiales)}</span>`;
       }
       const title=$('#member-welcome-title');
       if(title)title.textContent=`Bienvenue, ${orga.Nom} !`;
@@ -1393,7 +1394,7 @@ function buildOrganisateurs(orgas, allEvts) {
         <div class="story-inner">
           ${photo
             ? `<img src="${esc(photo)}" alt="${esc(orga.Nom)}" loading="lazy"/>`
-            : `<div class="story-inner-placeholder" style="background:${couleur}22;color:${couleur};font-family:'Playfair Display',serif;font-weight:700;font-size:18px;">${initiales}</div>`
+            : `<div class="story-inner-placeholder" style="background:${couleur}22;color:${couleur};font-family:'Playfair Display',serif;font-weight:700;font-size:18px;">${esc(initiales)}</div>`
           }
         </div>
       </div>
