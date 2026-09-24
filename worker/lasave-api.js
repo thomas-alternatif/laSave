@@ -62,6 +62,19 @@ async function listAll(env, table, params = '') {
   return out;
 }
 
+/* ── limiteur anti-abus : N requêtes max par fenêtre, par adresse IP ── */
+async function tooMany(req, bucket, max, windowSec) {
+  const ip = req.headers.get('CF-Connecting-IP') || 'inconnu';
+  const key = new Request(`https://rl.lasave.local/${bucket}/${encodeURIComponent(ip)}`);
+  const cache = caches.default;
+  const hit = await cache.match(key);
+  const n = hit ? Number(await hit.text()) || 0 : 0;
+  if (n >= max) return true;
+  await cache.put(key, new Response(String(n + 1), { headers: { 'Cache-Control': `max-age=${windowSec}` } }));
+  return false;
+}
+const slowDown = req => json(req, { error: 'Trop de tentatives, réessayez dans quelques minutes.' }, 429);
+
 /* ── session admin : jeton signé HMAC, valable 12 h ── */
 async function hmac(env, msg) {
   const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(env.ADMIN_PWD + '|' + env.AIRTABLE_TOKEN), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
@@ -102,6 +115,32 @@ async function route(req, env, ctx) {
     return new Response(res.body, { headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'public, max-age=60', ...cors(req) } });
   }
 
+  // Page de partage : aperçu (titre, image) pour Facebook/WhatsApp puis redirection vers le site
+  let sm;
+  if (m === 'GET' && (sm = p.match(/^\/e\/(rec[A-Za-z0-9]{14})$/))) {
+    const id = sm[1], home = 'https://la-save.fr';
+    let ev = null;
+    try { const r = await at(env, `${T_EVENTS}/${id}`); if (r.fields.Statut === 'Publié') ev = r.fields; } catch {}
+    if (!ev) return Response.redirect(home, 302);
+    const esc = s => String(s || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    const titre = ev.Titre || 'Événement', commune = ev.Commune || '', cat = ev['Catégorie'] || '';
+    const desc = (ev.Description || '').slice(0, 200) || `${cat} à ${commune}`;
+    const photo = ev.Photo?.[0]?.thumbnails?.large?.url || ev.Photo?.[0]?.url || `${home}/images/hero-chapiteau.webp`;
+    const back = `${home}/#event-${id}`;
+    const html = `<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta property="og:type" content="website"/><meta property="og:url" content="${esc(req.url)}"/>
+<meta property="og:title" content="${esc(titre)}"/><meta property="og:description" content="${esc(desc)}"/>
+<meta property="og:image" content="${esc(photo)}"/><meta property="og:site_name" content="laSave — Agenda festif &amp; culturel"/>
+<meta name="twitter:card" content="summary_large_image"/><meta name="twitter:title" content="${esc(titre)}"/>
+<meta name="twitter:description" content="${esc(desc)}"/><meta name="twitter:image" content="${esc(photo)}"/>
+<meta name="description" content="${esc(desc)}"/><title>${esc(titre)} — laSave</title>
+<meta http-equiv="refresh" content="0; url=${esc(back)}"/>
+<style>body{font-family:-apple-system,sans-serif;background:#08111e;color:#e8e8e8;display:grid;place-items:center;min-height:100vh;margin:0;padding:2rem}a{color:#c8a96e}</style>
+</head><body><p>${esc(titre)} — <a href="${esc(back)}">voir l’événement sur laSave →</a></p></body></html>`;
+    return new Response(html, { headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'public, max-age=300' } });
+  }
+
   // Organisateurs publiés (sans leur code membre)
   if (m === 'GET' && p === '/orgas') {
     const recs = await listAll(env, T_ORGAS, '&filterByFormula=' + encodeURIComponent('{Publié}=1') + '&sort[0][field]=Ordre&sort[0][direction]=asc');
@@ -110,6 +149,7 @@ async function route(req, env, ctx) {
 
   // Vérification d'un code membre : ne renvoie que l'organisateur correspondant
   if (m === 'POST' && p === '/code') {
+    if (await tooMany(req, 'code', 10, 600)) return slowDown(req);
     const code = String((await body()).code || '').trim().toUpperCase().slice(0, 40);
     if (!code) return json(req, { error: 'Code manquant' }, 400);
     const recs = await listAll(env, T_ORGAS);
@@ -120,6 +160,7 @@ async function route(req, env, ctx) {
 
   // Nouvel événement proposé (toujours « En attente »)
   if (m === 'POST' && p === '/events') {
+    if (await tooMany(req, 'submit', 5, 3600)) return slowDown(req);
     const b = await body();
     if (b.website) return json(req, { ok: true }); // pot de miel anti-robot
     if (b['Jour/Période'] && !b['Période']) b['Période'] = b['Jour/Période'];
@@ -137,10 +178,12 @@ async function route(req, env, ctx) {
   if (m === 'POST' && (mm = p.match(/^\/events\/(rec\w+)\/(view|like)$/))) {
     const [, id, what] = mm;
     if (!isId(id)) return json(req, { error: 'id' }, 400);
+    if (await tooMany(req, `${what}-${id}`, what === 'like' ? 4 : 10, 3600)) return slowDown(req);
     const field = what === 'view' ? 'Vues' : 'Likes';
     const delta = what === 'view' ? 1 : ((await body()).delta === -1 ? -1 : 1);
-    const cur = await at(env, `${T_EVENTS}/${id}`);
-    if (cur.fields.Statut !== 'Publié') return json(req, { error: 'introuvable' }, 404);
+    let cur;
+    try { cur = await at(env, `${T_EVENTS}/${id}`); } catch { return json(req, { error: 'Événement introuvable' }, 404); }
+    if (cur.fields.Statut !== 'Publié') return json(req, { error: 'Événement introuvable' }, 404);
     const n = Math.max(0, (cur.fields[field] || 0) + delta);
     await at(env, `${T_EVENTS}/${id}`, { method: 'PATCH', body: JSON.stringify({ fields: { [field]: n } }) });
     return json(req, { [field]: n });
@@ -148,6 +191,7 @@ async function route(req, env, ctx) {
 
   // Avis visiteurs
   if (m === 'POST' && p === '/avis') {
+    if (await tooMany(req, 'avis', 5, 3600)) return slowDown(req);
     const b = await body();
     const note = Math.round(Number(b.note));
     if (!(note >= 1 && note <= 5)) return json(req, { error: 'Note invalide' }, 400);
@@ -159,6 +203,7 @@ async function route(req, env, ctx) {
 
   // Envoi d'affiche vers ImgBB (la clé reste ici)
   if (m === 'POST' && p === '/upload') {
+    if (await tooMany(req, 'upload', 10, 3600)) return slowDown(req);
     const fd = await req.formData();
     const file = fd.get('image');
     if (!file || typeof file === 'string') return json(req, { error: 'Image manquante' }, 400);
@@ -172,6 +217,7 @@ async function route(req, env, ctx) {
 
   /* ── Admin ── */
   if (m === 'POST' && p === '/admin/login') {
+    if (await tooMany(req, 'login', 8, 900)) return slowDown(req);
     const pwd = String((await body()).pwd || '');
     if (!env.ADMIN_PWD || !sameText(pwd, env.ADMIN_PWD)) {
       await new Promise(r => setTimeout(r, 800)); // ralentit les essais au hasard
@@ -190,6 +236,7 @@ async function route(req, env, ctx) {
     if (m === 'PATCH' && (mm = p.match(/^\/admin\/events\/(rec\w+)$/))) {
       const statut = (await body()).Statut;
       if (!isId(mm[1]) || !ADMIN_STATUTS.includes(statut)) return json(req, { error: 'Requête invalide' }, 400);
+      try { await at(env, `${T_EVENTS}/${mm[1]}`); } catch { return json(req, { error: 'Événement introuvable' }, 404); }
       await at(env, `${T_EVENTS}/${mm[1]}`, { method: 'PATCH', body: JSON.stringify({ fields: { Statut: statut } }) });
       await caches.default.delete(new Request(url.origin + '/events'));
       return json(req, { ok: true });
@@ -204,6 +251,6 @@ export default {
   async fetch(req, env, ctx) {
     if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors(req) });
     try { return await route(req, env, ctx); }
-    catch (e) { return json(req, { error: e.message || 'Erreur serveur' }, e.status && e.status < 500 ? e.status : 500); }
+    catch (e) { console.error(e); return json(req, { error: 'Le service est momentanément indisponible, réessayez plus tard.' }, 502); }
   },
 };
