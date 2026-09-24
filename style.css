@@ -1306,3 +1306,20 @@ body.modal-open #btn-avis, body:has(.modal-overlay.open) #btn-avis, body:has(.or
   .modal-overlay, .orga-modal-overlay { padding:.75rem; }
   .modal { max-height:calc(100dvh - 1.5rem); }
 }
+
+/* ── Icônes agenda : ne jamais les écraser ── */
+.mf-btn svg, .mf-btn img, .cal-btn svg { flex-shrink:0; width:16px; height:16px; min-width:16px; max-width:none; display:block; }
+.mf-btn span, .mf-btn { text-overflow:ellipsis; }
+
+/* ── Mobile : agenda d'abord, puis Partager sur toute la largeur ── */
+@media (max-width:700px), (hover:none), (pointer:coarse) {
+  .modal-foot { gap:12px; padding:16px 16px 20px; }
+  .mf-cal { order:1; }
+  .mf-top { order:2; flex-wrap:nowrap; gap:8px; padding-top:12px; border-top:1px solid var(--border); }
+  .mf-top > * { flex:1 1 0; min-width:0; justify-content:center; }
+  .mf-share { color:var(--gold, #c8a96e); border-color:rgba(200,169,110,0.45); background:rgba(200,169,110,0.08); font-weight:600; }
+  .mf-cal-btns .mf-btn { padding:0 10px; gap:7px; font-size:12px; }
+}
+@media (prefers-color-scheme: light) and (max-width:700px) {
+  .mf-share { color:#7a6330; border-color:rgba(160,130,70,0.45); background:rgba(200,169,110,0.12); }
+}
