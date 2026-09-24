@@ -247,7 +247,7 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
               <h3 class="card-poster-title">${esc(ev.Titre||'Sans titre')}</h3>
               <div class="card-poster-meta">
                 <span class="card-poster-cat" style="color:${m.color}">${esc(cat)}</span>
-                ${`<button class="btn-heart ${liked?'on':''}" type="button" data-like-id="${evId}" data-likes="${nLikes}" onclick="toggleLike(event,this)" aria-label="J'aime"><span class="btn-jyvais-ico">${liked?'♥':'♡'}</span><span class="btn-jyvais-count keep">${nLikes}</span></button>`}
+                ${`<button class="btn-heart ${liked?'on':''}" type="button" data-like-id="${evId}" data-likes="${nLikes}" data-action="like" aria-label="J'aime"><span class="btn-jyvais-ico">${liked?'♥':'♡'}</span><span class="btn-jyvais-count keep">${nLikes}</span></button>`}
               </div>
             </div>
           </div>
@@ -263,13 +263,13 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
         </div>
         <div class="card-poster-foot">
           <button class="btn-card-more" type="button">En savoir plus</button>
-          <button class="btn-card-go ${liked?'on':''}" type="button" data-like-id="${evId}" data-likes="${nLikes}" onclick="toggleLike(event,this)"><span class="btn-jyvais-ico">${liked?'♥':'♡'}</span><span>J'y vais</span></button>
+          <button class="btn-card-go ${liked?'on':''}" type="button" data-like-id="${evId}" data-likes="${nLikes}" data-action="like"><span class="btn-jyvais-ico">${liked?'♥':'♡'}</span><span>J'y vais</span></button>
         </div>
       </div>
     `;
 
     card.addEventListener('click',e=>{
-      if(e.target.closest('.btn-share,.btn-card-more'))return;
+      if(e.target.closest('.btn-share,.btn-card-more,[data-action]'))return;
       const orgaEl=e.target.closest('.card-poster-orga');
       const o=orgaEl&&orgaEl.dataset.orga?findOrga(orgaEl.dataset.orga):null;
       if(o){
@@ -419,7 +419,7 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
       // J'y vais en bas à gauche de l'affiche (affiché sur mobile)
       const on=isLiked(ev.id),n=Math.max(0,parseInt(ev.Likes,10)||0);
       let go=photoEl.querySelector('.modal-photo-go');
-      if(!go){go=document.createElement('button');go.type='button';go.className='modal-photo-go';go.setAttribute('onclick','toggleLike(event,this)');photoEl.appendChild(go);}
+      if(!go){go=document.createElement('button');go.type='button';go.className='modal-photo-go';go.dataset.action='like';photoEl.appendChild(go);}
       go.dataset.likeId=ev.id||'';go.dataset.likes=n;go.classList.toggle('on',on);
       go.replaceChildren();
       const gi=document.createElement('span');gi.className='btn-jyvais-ico';gi.textContent=on?'♥':'♡';
@@ -512,8 +512,8 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
     const mLikes=Math.max(0,parseInt(ev.Likes,10)||0);
     $('#modal-foot').innerHTML=`
       <div class="mf-top">
-        <button class="btn-jyvais-modal ${jyVaisActive?'on':''}" type="button" data-like-id="${esc(ev.id||'')}" data-likes="${mLikes}" onclick="toggleLike(event,this)"><span class="btn-jyvais-ico">${jyVaisActive?'♥':'♡'}</span><span>J'y vais</span><span class="btn-jyvais-count"${mLikes>0?'':' hidden'}>${mLikes}</span></button>
-        <button class="mf-btn mf-share" onclick="openShareModal(window.__modalEv)" type="button">
+        <button class="btn-jyvais-modal ${jyVaisActive?'on':''}" type="button" data-like-id="${esc(ev.id||'')}" data-likes="${mLikes}" data-action="like"><span class="btn-jyvais-ico">${jyVaisActive?'♥':'♡'}</span><span>J'y vais</span><span class="btn-jyvais-count"${mLikes>0?'':' hidden'}>${mLikes}</span></button>
+        <button class="mf-btn mf-share" data-action="share-modal" type="button">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
           Partager
         </button>
@@ -1673,22 +1673,22 @@ function startStoriesAutoScroll(container) {
   (function(){
     // Injecter le bouton flottant + modal feedback
     const html = `
-      <button id="btn-avis" type="button" onclick="openAvisModal()" aria-label="Donner votre avis">
+      <button id="btn-avis" type="button" data-action="avis-open" aria-label="Donner votre avis">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
         <span>Votre avis</span>
       </button>
       <div id="avis-overlay" aria-hidden="true">
         <div id="avis-modal" role="dialog" aria-label="Votre avis">
-          <button id="avis-close" onclick="closeAvisModal()" aria-label="Fermer">
+          <button id="avis-close" data-action="avis-close" aria-label="Fermer">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
           <div id="avis-title">Votre avis nous aide !</div>
           <div id="avis-subtitle">Ce site vous est-il utile ?</div>
           <div id="avis-stars" role="group" aria-label="Note">
-            ${[1,2,3,4,5].map(n=>`<button class="star-btn" data-v="${n}" type="button" aria-label="${n} étoile${n>1?'s':''}" onclick="setAvisNote(${n})">★</button>`).join('')}
+            ${[1,2,3,4,5].map(n=>`<button class="star-btn" data-v="${n}" type="button" aria-label="${n} étoile${n>1?'s':''}" data-action="avis-note" data-arg="${n}">★</button>`).join('')}
           </div>
           <textarea id="avis-comment" placeholder="Un commentaire ? (facultatif)" rows="3" maxlength="500"></textarea>
-          <button id="avis-send" type="button" onclick="sendAvis()">Envoyer</button>
+          <button id="avis-send" type="button" data-action="avis-send">Envoyer</button>
           <div id="avis-thanks" hidden>Merci pour votre retour ! 🙏</div>
         </div>
       </div>`;
@@ -1739,3 +1739,22 @@ function startStoriesAutoScroll(container) {
     if(e.target===document.getElementById('avis-overlay')) closeAvisModal();
   });
 })();
+
+/* ═══ Actions des boutons (remplace les onclick en ligne, compatible CSP) ═══ */
+document.addEventListener('click',function(e){
+  const el=e.target.closest('[data-action]'); if(!el)return;
+  const a=el.dataset.action, arg=el.dataset.arg;
+  switch(a){
+    case 'like': toggleLike(e,el); break;
+    case 'share-modal': openShareModal(window.__modalEv); break;
+    case 'avis-open': openAvisModal(); break;
+    case 'avis-close': closeAvisModal(); break;
+    case 'avis-send': sendAvis(); break;
+    case 'avis-note': setAvisNote(Number(arg)); break;
+    case 'tarif': { const f=document.getElementById('f-tarif'); if(f)f.value=arg; break; }
+    case 'section': e.preventDefault(); showSection(arg, el.hasAttribute('data-self')?el:null); break;
+    case 'legal': e.preventDefault(); showSection('legal',null); openLegalTab(arg); break;
+    case 'admin-tab': switchAdminTab(arg); break;
+    case 'toggle-block': toggleBlock(el); break;
+  }
+},true);

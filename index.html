@@ -2,6 +2,8 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://lasave-api.partage.workers.dev; object-src 'none'; base-uri 'self'; form-action 'self'; frame-src 'none'; worker-src 'none'; manifest-src 'self'" />
+  <meta name="referrer" content="strict-origin-when-cross-origin" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>laSave — Agenda festif de la vallée de la Save</title>
   <meta name="description" content="Concerts, fêtes, marchés et spectacles en Haute-Garonne. L'agenda culturel de la vallée de la Save." />
@@ -48,7 +50,7 @@
   <canvas id="bg-light" aria-hidden="true"></canvas>
 
   <header class="header" id="main-header">
-    <a class="logo" href="#" onclick="showSection('agenda',null);return false;">
+    <a class="logo" href="#" data-action="section" data-arg="agenda">
       <span class="logo-name">la<span>Save</span></span>
       <span class="logo-tagline">Agenda festif &amp; culturel</span>
     </a>
@@ -57,11 +59,11 @@
 
 
     <nav class="nav" aria-label="Navigation principale">
-      <button class="nav-btn active" onclick="showSection('agenda',this)">Agenda</button>
+      <button class="nav-btn active" data-action="section" data-arg="agenda" data-self>Agenda</button>
       <button class="nav-search-btn" id="nav-search-btn" type="button" aria-label="Rechercher" title="Rechercher et filtrer">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
       </button>
-      <button class="nav-btn nav-cta" onclick="showSection('partager',this)">
+      <button class="nav-btn nav-cta" data-action="section" data-arg="partager" data-self>
         <svg width="11" height="11" viewBox="0 0 13 13" fill="none" aria-hidden="true"><line x1="6.5" y1="1" x2="6.5" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="1" y1="6.5" x2="12" y2="6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
         Partager
       </button>
@@ -218,7 +220,7 @@
           <div class="form-block-header">
             <div class="form-block-num dim">2</div>
             <div><div class="form-block-title">Détails</div><div class="form-block-sub">Description, tarif, récurrence — recommandé</div></div>
-            <button type="button" class="form-block-toggle" onclick="toggleBlock(this)" aria-expanded="false"><span>Afficher</span></button>
+            <button type="button" class="form-block-toggle" data-action="toggle-block" aria-expanded="false"><span>Afficher</span></button>
           </div>
           <div class="form-block-body collapsed" id="block-details">
             <div class="form-group"><label class="form-label" for="f-desc">Description</label><textarea class="form-textarea" id="f-desc" placeholder="Décrivez l'événement en quelques lignes…"></textarea></div>
@@ -226,10 +228,10 @@
               <div class="form-group">
                 <label class="form-label" for="f-tarif">Tarif</label>
                 <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
-                  <button type="button" onclick="document.getElementById('f-tarif').value='Gratuit'" class="tq">Gratuit</button>
-                  <button type="button" onclick="document.getElementById('f-tarif').value='Entrée libre'" class="tq">Entrée libre</button>
-                  <button type="button" onclick="document.getElementById('f-tarif').value='Sur réservation'" class="tq">Sur réservation</button>
-                  <button type="button" onclick="document.getElementById('f-tarif').value='Participation libre'" class="tq">Chapeau</button>
+                  <button type="button" data-action="tarif" data-arg="Gratuit" class="tq">Gratuit</button>
+                  <button type="button" data-action="tarif" data-arg="Entrée libre" class="tq">Entrée libre</button>
+                  <button type="button" data-action="tarif" data-arg="Sur réservation" class="tq">Sur réservation</button>
+                  <button type="button" data-action="tarif" data-arg="Participation libre" class="tq">Chapeau</button>
                 </div>
                 <input class="form-input" type="text" id="f-tarif" placeholder="Gratuit / 5 € / Sur réservation…" />
               </div>
@@ -251,7 +253,7 @@
           <div class="form-block-header">
             <div class="form-block-num dim">3</div>
             <div><div class="form-block-title">Contact</div><div class="form-block-sub">Organisateur, réseaux sociaux</div></div>
-            <button type="button" class="form-block-toggle" onclick="toggleBlock(this)" aria-expanded="false"><span>Afficher</span></button>
+            <button type="button" class="form-block-toggle" data-action="toggle-block" aria-expanded="false"><span>Afficher</span></button>
           </div>
           <div class="form-block-body collapsed" id="block-contact">
             <div class="form-group"><label class="form-label" for="f-org">Organisateur / association</label><input class="form-input" type="text" id="f-org" placeholder="Marie Dupont / Association Les Amis de…" /></div>
@@ -274,7 +276,7 @@
         <div class="consent-block">
           <label class="consent-row">
             <input type="checkbox" id="f-consent" required />
-            <span>J'accepte que mes informations soient utilisées pour la publication de mon événement sur laSave. <a href="#" onclick="showSection('legal',null);openLegalTab('rgpd');return false;">En savoir plus</a></span>
+            <span>J'accepte que mes informations soient utilisées pour la publication de mon événement sur laSave. <a href="#" data-action="legal" data-arg="rgpd">En savoir plus</a></span>
           </label>
         </div>
         <div class="submit-area">
@@ -366,9 +368,9 @@
       </div>
     </div>
     <nav class="footer-links" aria-label="Liens secondaires">
-      <a onclick="showSection('partager',null)">Partager un événement</a>
-      <a onclick="showSection('legal',null);openLegalTab('mentions')">Mentions légales</a>
-      <a onclick="showSection('legal',null);openLegalTab('rgpd')">Confidentialité</a>
+      <a data-action="section" data-arg="partager">Partager un événement</a>
+      <a data-action="legal" data-arg="mentions">Mentions légales</a>
+      <a data-action="legal" data-arg="rgpd">Confidentialité</a>
     </nav>
   </footer>
 
@@ -460,79 +462,14 @@
       </div>
       <!-- Onglets -->
       <div style="display:flex;gap:0;margin-bottom:1.5rem;border-bottom:1px solid var(--border);">
-        <button class="legal-tab on" id="admin-tab-archive" onclick="switchAdminTab('archive')" type="button">À archiver</button>
-        <button class="legal-tab" id="admin-tab-archived" onclick="switchAdminTab('archived')" type="button">Archivés</button>
+        <button class="legal-tab on" id="admin-tab-archive" data-action="admin-tab" data-arg="archive" type="button">À archiver</button>
+        <button class="legal-tab" id="admin-tab-archived" data-action="admin-tab" data-arg="archived" type="button">Archivés</button>
       </div>
       <div id="admin-table-wrap"></div>
     </div>
   </section>
   <script type="application/ld+json" id="jsonld-events">[]</script>
-  <script src="app.js?v=29" defer></script>
-  <script>/* Filet de sécurité : l'écran d'ouverture ne reste jamais bloqué */setTimeout(function(){var s=document.getElementById('splash');if(s)s.classList.add('out');},9000);</script>
-  <script>
-(function(){
-  var cv = document.getElementById('bg-light');
-  if (!cv || !cv.getContext) return;
-  var mq = window.matchMedia('(prefers-color-scheme:light)');
-  var ctx = cv.getContext('2d');
-  var W, H;
-  function resize(){ W = cv.width = window.innerWidth; H = cv.height = window.innerHeight; }
-  resize();
-  window.addEventListener('resize', resize);
-  var COLS = 28, ROWS = 18;
-  function draw(t){
-    if (!mq.matches){ cv.style.display='none'; return; }
-    cv.style.display='block';
-    // Fond dégradé: bleu-lavande → gris perle (pas de rosé)
-    var bg = ctx.createLinearGradient(0, H * 0.85, W * 0.9, H * 0.05);
-    bg.addColorStop(0,   'hsl(222,28%,83%)');
-    bg.addColorStop(0.4, 'hsl(224,16%,92%)');
-    bg.addColorStop(0.75,'hsl(220,8%,96%)');
-    bg.addColorStop(1,   'hsl(215,12%,93%)');
-    ctx.fillStyle = bg;
-    ctx.fillRect(0, 0, W, H);
-    // Calcul des points du maillage déformés par une vague diagonale
-    var pts = [], r, c;
-    for (r = 0; r <= ROWS; r++){
-      pts[r] = [];
-      for (c = 0; c <= COLS; c++){
-        var px = (c / COLS) * W;
-        var py = (r / ROWS) * H;
-        var u = c / COLS - r / ROWS;           // axe diagonal
-        var phase = u * Math.PI * 3 - t * 0.0006;
-        var amp = Math.sin(phase) * H * 0.13;
-        pts[r][c] = {
-          x: px - amp * 0.42,
-          y: py + amp,
-          bright: (Math.sin(phase + 0.4) + 1) * 0.5
-        };
-      }
-    }
-    // Tracé du maillage — flou + discret
-    ctx.filter = 'blur(2px)';
-    ctx.lineWidth = 0.5;
-    for (r = 0; r <= ROWS; r++){
-      for (c = 0; c <= COLS; c++){
-        var p = pts[r][c];
-        var a = (0.03 + p.bright * 0.22).toFixed(2);
-        ctx.strokeStyle = 'rgba(255,255,255,' + a + ')';
-        if (c < COLS){
-          ctx.beginPath(); ctx.moveTo(p.x, p.y);
-          ctx.lineTo(pts[r][c+1].x, pts[r][c+1].y); ctx.stroke();
-        }
-        if (r < ROWS){
-          ctx.beginPath(); ctx.moveTo(p.x, p.y);
-          ctx.lineTo(pts[r+1][c].x, pts[r+1][c].y); ctx.stroke();
-        }
-      }
-    }
-    ctx.filter = 'none';
-  }
-  var t0 = null;
-  function loop(ts){ if (!t0) t0 = ts; draw(ts - t0); requestAnimationFrame(loop); }
-  mq.addEventListener('change', function(e){ if (!e.matches) cv.style.display='none'; });
-  requestAnimationFrame(loop);
-})();
-  </script>
+  <script src="app.js?v=30" defer></script>
+  <script src="boot.js?v=1" defer></script>
 </body>
 </html>
