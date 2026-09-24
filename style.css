@@ -1202,3 +1202,11 @@
   .mf-btn:hover { background:rgba(200,169,110,0.15); color:#0a0a0a; }
   .btn-card-go:hover, .btn-card-go.on { background:rgba(220,60,80,0.12); border-color:rgba(220,60,80,0.45); color:#d23a4d; }
 }
+
+/* « Votre avis » masqué au niveau du pied de page */
+#btn-avis { transition: transform .25s, opacity .25s, box-shadow .18s; }
+#btn-avis.hide { opacity:0; transform:translateY(12px); pointer-events:none; }
+
+/* Plus de texte au survol des cartes */
+.card:hover .card-poster-land { max-height:220px; }
+.card-poster-land-excerpt { -webkit-line-clamp:6; }
