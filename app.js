@@ -19,6 +19,15 @@ function hideSplash(){
   const wait=Math.max(0,600-performance.now());
   setTimeout(()=>{s.classList.add('out');setTimeout(()=>s.remove(),600);},wait);
 }
+async function api(path,opts={}){
+  const h=opts.body&&!(opts.body instanceof FormData)?{'Content-Type':'application/json'}:{};
+  const tok=(()=>{try{return sessionStorage.getItem('lasave_admin')||'';}catch(e){return '';}})();
+  if(path.startsWith('/admin/')&&tok)h.Authorization='Bearer '+tok;
+  const r=await fetch(API+path,{...opts,headers:{...h,...(opts.headers||{})}});
+  const d=await r.json().catch(()=>({}));
+  if(!r.ok)throw Object.assign(new Error(d.error||('Erreur '+r.status)),{status:r.status});
+  return d;
+}
 function isLiked(id){
   if(!id) return false;
   try{ const s=localStorage.getItem('jyvais'); return (s?JSON.parse(s):[]).includes(id); }catch(e){ return false; }
@@ -28,10 +37,8 @@ const IG_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAOOElEQVR42p2XebBmVX
 const FB_B64="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";
 
 
-  const AT_TOKEN='patRv7hhMKwMbLtBO.f5f8251ad0b08fd5267257eec47c07ee79e7d44bacf538be0ecdffcdda2c7ea2';
-  const AT_BASE='appHgiuv0ClNd8qsV',AT_TABLE='tbl6Um2XQPq4JPxCg';
-  const AT_URL=`https://api.airtable.com/v0/${AT_BASE}/${AT_TABLE}`;
-  const HEADS={'Authorization':`Bearer ${AT_TOKEN}`,'Content-Type':'application/json'};
+  /* Toutes les données passent par l'API laSave (Cloudflare Worker) : aucune clé secrète ici */
+  const API='__API_URL__';
   const AGENDA_EMAIL='agenda.de.la.save@gmail.com';
   const COMMUNES=['Aussonne','Beaupuy','Bellegarde-Sainte-Marie','Bouconne','Brignemont','Cabanac-Séguenville','Caubiac','Cox','Daux','Drudas','Garac','Le Grès','Lévignac','Lagraulet-Saint-Nicolas','Larra','Launac','Laréole','Le Burgaud','Mérenvielle','Menville','Merville','Mondonville','Montaigut-sur-Save','Pelleport','Pradère-les-Bourguets','Puysségur','Saint-Cézert','Saint-Paul-sur-Save','Seilh','Thil','Vignaux'].sort();
 
@@ -87,17 +94,14 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
       const raw=localStorage.getItem(CACHE_KEY);
       if(raw){const{ts,data}=JSON.parse(raw);if(Date.now()-ts<CACHE_TTL)return data;}
     }catch(_){}
-    const filter=encodeURIComponent("{Statut}='Publié'"),url=`${AT_URL}?filterByFormula=${filter}&pageSize=100`;
-    let records=[],offset='';
     try{
-      do{const u=offset?`${url}&offset=${offset}`:url;const r=await fetch(u,{headers:HEADS});if(!r.ok)throw Error(''+r.status);const d=await r.json();records=records.concat(d.records||[]);offset=d.offset||'';}while(offset);
-      const data=records.map(r=>({id:r.id,...r.fields}));
+      const data=await api('/events');
       try{localStorage.setItem(CACHE_KEY,JSON.stringify({ts:Date.now(),data}));}catch(_){}
       return data;
     }catch(e){console.error(e);return[]}
   }
   async function trackView(id){
-    try{const r=await fetch(`${AT_URL}/${id}`,{headers:HEADS});if(!r.ok)return;const d=await r.json();const v=d.fields['Vues']||0;await fetch(`${AT_URL}/${id}`,{method:'PATCH',headers:HEADS,body:JSON.stringify({fields:{'Vues':v+1}})});}catch(e){}
+    try{await api(`/events/${id}/view`,{method:'POST'});}catch(e){}
   }
 
   /* ── CALENDRIER ── */
@@ -642,7 +646,7 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
       if(!titre||!cat||!commune){alert('Titre, catégorie et commune sont obligatoires.');return;}
       if(!$('#f-consent').checked){alert("Merci d'accepter les conditions de traitement.");return;}
       const btn=$('#submit-btn');btn.disabled=true;const orig=btn.innerHTML;btn.textContent='Envoi…';
-      const fields={'Titre':titre,'Catégorie':cat,'Commune':commune,'Statut':'En attente'};
+      const fields={'Titre':titre,'Catégorie':cat,'Commune':commune};
       if($('#f-date').value)fields['Date']=$('#f-date').value;
       if($('#f-date-fin').value)fields['Date de fin']=$('#f-date-fin').value;
       if($('#f-heure').value)fields['Heure']=$('#f-heure').value;
@@ -681,10 +685,9 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
       if($('#f-message-prive').value)fields['Message privé']=$('#f-message-prive').value;
       // Photo uploadée via ImgBB
       const photoUrl=$('#f-photo-url')?.value;
-      if(photoUrl)fields['Photo']=[{url:photoUrl}];
+      if(photoUrl)fields.photoUrl=photoUrl;
       try{
-        const res=await fetch(AT_URL,{method:'POST',headers:HEADS,body:JSON.stringify({fields})});
-        if(!res.ok)throw Error('Erreur '+res.status);
+        await api('/events',{method:'POST',body:JSON.stringify(fields)});
         $('#agenda-form').style.display='none';$('#success-msg').style.display='block';
         $('#success-msg').scrollIntoView({behavior:'smooth',block:'center'});
       }catch(err){alert('Erreur : '+err.message);btn.disabled=false;btn.innerHTML=orig;}
@@ -1033,7 +1036,6 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
   function closeOrgaModal(){const o=$('#orga-modal-overlay');if(!o.classList.contains('open'))return;o.classList.remove('open');unlockScroll();}
 
   /* ── UPLOAD PHOTO (ImgBB) ── */
-  const IMGBB_KEY='ca0f64f266be0ec12ed5b8b11ab0b773';
 
   function setupPhotoUpload(){
     const dropzone=$('#photo-dropzone');
@@ -1089,10 +1091,9 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
       try{
         const fd=new FormData();
         fd.append('image',file);
-        const r=await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_KEY}`,{method:'POST',body:fd});
-        const d=await r.json();
-        if(d.success&&d.data&&d.data.url){
-          urlField.value=d.data.url;
+        const d=await api('/upload',{method:'POST',body:fd});
+        if(d.url){
+          urlField.value=d.url;
           status.className='photo-dropzone-status done'; status.textContent='✓ Affiche ajoutée';
         }else{ throw new Error('Upload échoué'); }
       }catch(e){
@@ -1124,12 +1125,9 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
       const code=input.value.trim().toUpperCase();
       if(!code){msg.className='member-block-msg err';msg.textContent='Veuillez saisir votre code.';return;}
 
-      if(!allOrgasList.length){
-        msg.className='member-block-msg loading';msg.textContent='Vérification…';
-        allOrgasList=await fetchAllOrganisateursForCodes();
-      }
-
-      const orga=allOrgasList.find(o=>o.Code&&o.Code.trim().toUpperCase()===code);
+      msg.className='member-block-msg loading';msg.textContent='Vérification…';
+      let orga=null;
+      try{orga=await api('/code',{method:'POST',body:JSON.stringify({code})});}catch(e){orga=null;}
       if(!orga){
         msg.className='member-block-msg err';
         msg.textContent='Code non reconnu. Vérifiez votre code ou contactez la mairie.';
@@ -1189,7 +1187,6 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
   }
 
   /* ── ADMIN ── */
-  const ADMIN_PWD='lasave2026'; // ← change ce mot de passe avant de mettre en ligne
 
   function setupAdmin(){
     function checkHash(){
@@ -1199,13 +1196,21 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
     checkHash();
 
     const pwdInput=$('#admin-pwd'),loginError=$('#admin-login-error');
-    function tryLogin(){
-      if(pwdInput.value===ADMIN_PWD){$('#admin-login').style.display='none';$('#admin-panel').style.display='block';loadAdminEvents();}
-      else{loginError.style.display='block';pwdInput.value='';pwdInput.focus();}
+    const showPanel=()=>{$('#admin-login').style.display='none';$('#admin-panel').style.display='block';loadAdminEvents();};
+    async function tryLogin(){
+      const b=$('#admin-login-btn');b.disabled=true;
+      try{
+        const d=await api('/admin/login',{method:'POST',body:JSON.stringify({pwd:pwdInput.value})});
+        try{sessionStorage.setItem('lasave_admin',d.token);}catch(e){}
+        loginError.style.display='none';showPanel();
+      }catch(e){loginError.style.display='block';pwdInput.value='';pwdInput.focus();}
+      b.disabled=false;
     }
+    try{if(sessionStorage.getItem('lasave_admin'))showPanel();}catch(e){}
     $('#admin-login-btn').addEventListener('click',tryLogin);
     pwdInput.addEventListener('keydown',e=>{if(e.key==='Enter')tryLogin();});
     $('#admin-logout').addEventListener('click',()=>{
+      try{sessionStorage.removeItem('lasave_admin');}catch(e){}
       $('#admin-login').style.display='flex';$('#admin-panel').style.display='none';
       pwdInput.value='';loginError.style.display='none';
       window.location.hash='';showSection('agenda',null);
@@ -1242,13 +1247,13 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
     const today=new Date();today.setHours(0,0,0,0);
 
     const isArchive=adminCurrentTab==='archive';
-    const filterStatut=isArchive?"{Statut}='Publié'":"{Statut}='Archivé'";
-    const filter=encodeURIComponent(filterStatut);
-    const url=`${AT_URL}?filterByFormula=${filter}&pageSize=100`;
-    let records=[],offset='';
+    let records=[];
     try{
-      do{const u=offset?`${url}&offset=${offset}`:url;const r=await fetch(u,{headers:HEADS});const d=await r.json();records=records.concat(d.records||[]);offset=d.offset||'';}while(offset);
-    }catch(e){wrap.innerHTML='<div class="admin-empty">Erreur de chargement.</div>';return;}
+      records=await api('/admin/events?statut='+encodeURIComponent(isArchive?'Publié':'Archivé'));
+    }catch(e){
+      if(e.status===401){try{sessionStorage.removeItem('lasave_admin');}catch(_){} $('#admin-login').style.display='flex';$('#admin-panel').style.display='none';return;}
+      wrap.innerHTML='<div class="admin-empty">Erreur de chargement.</div>';return;
+    }
 
     let list;
     if(isArchive){
@@ -1306,7 +1311,7 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
   }
 
   async function setStatut(id,statut){
-    try{const res=await fetch(`${AT_URL}/${id}`,{method:'PATCH',headers:HEADS,body:JSON.stringify({fields:{Statut:statut}})});return res.ok;}
+    try{await api(`/admin/events/${id}`,{method:'PATCH',body:JSON.stringify({Statut:statut})});return true;}
     catch(e){return false;}
   }
   function showAdminMsg(text,type){
@@ -1316,31 +1321,9 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
 
 /* ── ORGANISATEURS (table Airtable dédiée) ── */
 // ID de la table Organisateurs — à mettre à jour quand tu me donnes l'ID Airtable
-const AT_TABLE_ORGAS = 'tblgaldbDy7el5Qw1';
-const AT_TABLE_AVIS = 'tbl1VfPYliWdORuzN';
 
 async function fetchOrganisateurs() {
-  if (AT_TABLE_ORGAS === 'METTRE_ID_TABLE_ICI') return [];
-  const filter = encodeURIComponent("{Publié}=1");
-  const url = `https://api.airtable.com/v0/${AT_BASE}/${AT_TABLE_ORGAS}?filterByFormula=${filter}&sort[0][field]=Ordre&sort[0][direction]=asc`;
-  try {
-    const r = await fetch(url, { headers: HEADS });
-    if (!r.ok) return [];
-    const d = await r.json();
-    return (d.records || []).map(r => ({ id: r.id, ...r.fields }));
-  } catch (e) { return []; }
-}
-
-// Charge TOUS les organisateurs (même non publiés) pour la validation des codes
-async function fetchAllOrganisateursForCodes() {
-  if (AT_TABLE_ORGAS === 'METTRE_ID_TABLE_ICI') return [];
-  const url = `https://api.airtable.com/v0/${AT_BASE}/${AT_TABLE_ORGAS}`;
-  try {
-    const r = await fetch(url, { headers: HEADS });
-    if (!r.ok) return [];
-    const d = await r.json();
-    return (d.records || []).map(r => ({ id: r.id, ...r.fields }));
-  } catch (e) { return []; }
+  try { return await api('/orgas'); } catch (e) { return []; }
 }
 
 function buildOrganisateurs(orgas, allEvts) {
@@ -1637,13 +1620,16 @@ function startStoriesAutoScroll(container) {
     if(ev) ev.Likes = likes;
     if(window.__modalEv && window.__modalEv.id===id) window.__modalEv.Likes = likes;
     if(liking) spawnHearts(btn);
-    patchLikes(id, likes);
+    patchLikes(id, liking?1:-1);
   };
 
   /* Envoie le nouveau total de likes à Airtable (best-effort) */
   async function patchLikes(id, likes){
     try{
-      await fetch(`${AT_URL}/${id}`,{method:'PATCH',headers:HEADS,body:JSON.stringify({fields:{'Likes':likes}})});
+      const d=await api(`/events/${id}/like`,{method:'POST',body:JSON.stringify({delta:likes})});
+      const n=d.Likes;
+      document.querySelectorAll(`[data-like-id="${id}"]`).forEach(b=>{b.dataset.likes=n;const c=b.querySelector('.btn-jyvais-count');if(c){c.textContent=n;if(!c.classList.contains('keep'))c.hidden=n<=0;}});
+      const ev=(typeof allEvents!=='undefined')&&allEvents.find(x=>x.id===id);if(ev)ev.Likes=n;
     }catch(ex){}
   }
 
@@ -1733,17 +1719,7 @@ function startStoriesAutoScroll(container) {
     try{
       const now = new Date();
       const iso = now.getFullYear()+'-'+(String(now.getMonth()+1).padStart(2,'0'))+'-'+(String(now.getDate()).padStart(2,'0'))+'T'+(String(now.getHours()).padStart(2,'0'))+':'+(String(now.getMinutes()).padStart(2,'0'))+':00.000';
-      await fetch(`https://api.airtable.com/v0/${AT_BASE}/${AT_TABLE_AVIS}`,{
-        method:'POST',
-        headers:HEADS,
-        body:JSON.stringify({fields:{
-          'Titre': 'Avis #'+(Date.now()%100000),
-          'Note': _avisNote,
-          'Commentaire': comment||null,
-          'Page': window.location.pathname||'/',
-          'Date envoi': iso
-        }})
-      });
+      await api('/avis',{method:'POST',body:JSON.stringify({note:_avisNote,commentaire:comment,page:window.location.pathname||'/'})});
       document.getElementById('avis-send').hidden=true;
       document.getElementById('avis-thanks').hidden=false;
       setTimeout(closeAvisModal, 2000);
