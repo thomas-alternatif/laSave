@@ -1126,11 +1126,12 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
       if(!code){msg.className='member-block-msg err';msg.textContent='Veuillez saisir votre code.';return;}
 
       msg.className='member-block-msg loading';msg.textContent='Vérification…';
-      let orga=null;
-      try{orga=await api('/code',{method:'POST',body:JSON.stringify({code})});}catch(e){orga=null;}
+      let orga=null,errMsg='Code non reconnu. Vérifiez votre code ou contactez la mairie.';
+      try{orga=await api('/code',{method:'POST',body:JSON.stringify({code})});}
+      catch(e){orga=null;if(e.status!==404)errMsg=e.message||'Vérification impossible pour le moment, réessayez plus tard.';}
       if(!orga){
         msg.className='member-block-msg err';
-        msg.textContent='Code non reconnu. Vérifiez votre code ou contactez la mairie.';
+        msg.textContent=errMsg;
         return;
       }
 
