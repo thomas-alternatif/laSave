@@ -38,7 +38,7 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
 
 
   /* Toutes les données passent par l'API laSave (Cloudflare Worker) : aucune clé secrète ici */
-  const API='__API_URL__';
+  const API='https://lasave-api.partage.workers.dev';
   const AGENDA_EMAIL='agenda.de.la.save@gmail.com';
   const COMMUNES=['Aussonne','Beaupuy','Bellegarde-Sainte-Marie','Bouconne','Brignemont','Cabanac-Séguenville','Caubiac','Cox','Daux','Drudas','Garac','Le Grès','Lévignac','Lagraulet-Saint-Nicolas','Larra','Launac','Laréole','Le Burgaud','Mérenvielle','Menville','Merville','Mondonville','Montaigut-sur-Save','Pelleport','Pradère-les-Bourguets','Puysségur','Saint-Cézert','Saint-Paul-sur-Save','Seilh','Thil','Vignaux'].sort();
 
