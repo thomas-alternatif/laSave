@@ -1323,3 +1323,20 @@ body.modal-open #btn-avis, body:has(.modal-overlay.open) #btn-avis, body:has(.or
 @media (prefers-color-scheme: light) and (max-width:700px) {
   .mf-share { color:#7a6330; border-color:rgba(160,130,70,0.45); background:rgba(200,169,110,0.12); }
 }
+
+/* ── Cartes fantômes pendant le chargement ── */
+.sk-card { border-radius:16px; overflow:hidden; border:1px solid rgba(255,255,255,0.07); background:rgba(12,12,18,0.45); }
+.sk-img { height:330px; }
+.sk-foot { height:48px; display:flex; align-items:center; justify-content:flex-end; padding:0 14px; border-top:1px solid rgba(255,255,255,0.05); }
+.sk-foot span { width:104px; height:26px; border-radius:99px; }
+.sk-img, .sk-foot span {
+  background:linear-gradient(100deg, rgba(255,255,255,0.04) 30%, rgba(255,255,255,0.09) 50%, rgba(255,255,255,0.04) 70%);
+  background-size:300% 100%; animation:skShine 1.6s ease-in-out infinite;
+}
+@keyframes skShine { 0%{background-position:100% 0} 100%{background-position:0 0} }
+@media (max-width:700px) { .sk-img { height:255px; } .sk-card:nth-child(n+3) { display:none; } }
+@media (prefers-color-scheme: light) {
+  .sk-card { background:rgba(255,255,255,0.6); border-color:rgba(0,0,0,0.06); }
+  .sk-img, .sk-foot span { background-image:linear-gradient(100deg, rgba(0,0,0,0.04) 30%, rgba(0,0,0,0.08) 50%, rgba(0,0,0,0.04) 70%); }
+}
+@media (prefers-reduced-motion: reduce) { .sk-img, .sk-foot span { animation:none; } }

@@ -13,6 +13,12 @@ function unlockScroll(){
   document.body.classList.remove('modal-open');
   window.scrollTo(0,__lockY);
 }
+/* Ferme l'écran d'ouverture (reste au moins 600 ms pour éviter un flash) */
+function hideSplash(){
+  const s=document.getElementById('splash'); if(!s||s.classList.contains('out'))return;
+  const wait=Math.max(0,600-performance.now());
+  setTimeout(()=>{s.classList.add('out');setTimeout(()=>s.remove(),600);},wait);
+}
 function isLiked(id){
   if(!id) return false;
   try{ const s=localStorage.getItem('jyvais'); return (s?JSON.parse(s):[]).includes(id); }catch(e){ return false; }
@@ -758,6 +764,7 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
     // buildOrganisateurs en premier pour peupler orgasMap avant renderEvents
     buildOrganisateurs(orgas, allEvents);
     buildCatMenu();setupSlider(allEvents);renderEvents();
+    hideSplash();
     buildMobileCats(allEvents);
     injectJsonLd(allEvents);
     setupAdmin();

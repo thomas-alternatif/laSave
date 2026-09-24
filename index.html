@@ -15,12 +15,34 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Yeseva+One&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=41" />
+  <link rel="stylesheet" href="style.css?v=42" />
   <meta name="theme-color" content="#0d0d0d" media="(prefers-color-scheme: dark)" />
   <meta name="theme-color" content="#f5f1ea" media="(prefers-color-scheme: light)" />
-  <noscript><style>body{display:grid;place-items:center;min-height:100vh;font-family:sans-serif;padding:2rem;text-align:center}</style><p>laSave nécessite JavaScript pour fonctionner.</p></noscript>
+  <style>
+    /* Écran d'ouverture (inline : visible avant le chargement de style.css) */
+    #splash{position:fixed;inset:0;z-index:9000;display:grid;place-items:center;background:#08111e;transition:opacity .5s ease,visibility .5s;}
+    #splash.out{opacity:0;visibility:hidden;pointer-events:none;}
+    .splash-inner{display:flex;flex-direction:column;align-items:center;gap:10px;}
+    .splash-logo{font-family:'Playfair Display',Georgia,'Times New Roman',serif;font-weight:900;font-size:clamp(40px,9vw,64px);letter-spacing:-.01em;color:#e8e8e8;line-height:1;opacity:0;transform:translateY(8px);animation:spIn .7s cubic-bezier(.2,.8,.2,1) .05s forwards;}
+    .splash-logo span{color:#c8a96e;}
+    .splash-tag{font-family:'DM Sans',system-ui,sans-serif;font-size:10px;font-weight:500;letter-spacing:.24em;text-transform:uppercase;color:rgba(232,232,232,.6);opacity:0;animation:spIn .7s ease .25s forwards;}
+    .splash-bar{position:relative;width:120px;height:2px;margin-top:18px;border-radius:2px;overflow:hidden;background:rgba(200,169,110,.15);opacity:0;animation:spIn .5s ease .4s forwards;}
+    .splash-bar i{position:absolute;inset:0;width:40%;border-radius:2px;background:linear-gradient(90deg,transparent,#c8a96e,transparent);animation:spBar 1.1s ease-in-out infinite;}
+    @keyframes spIn{to{opacity:1;transform:none}}
+    @keyframes spBar{0%{transform:translateX(-100%)}100%{transform:translateX(250%)}}
+    @media (prefers-color-scheme: light){#splash{background:#edf4f8}.splash-logo{color:#0a0a0a}.splash-tag{color:rgba(0,0,0,.55)}}
+    @media (prefers-reduced-motion: reduce){.splash-logo,.splash-tag,.splash-bar{animation:none;opacity:1;transform:none}.splash-bar i{animation-duration:2.5s}}
+  </style>
+  <noscript><style>#splash{display:none}body{display:grid;place-items:center;min-height:100vh;font-family:sans-serif;padding:2rem;text-align:center}</style><p>laSave nécessite JavaScript pour fonctionner.</p></noscript>
 </head>
 <body>
+  <div id="splash" role="status" aria-label="Chargement de laSave">
+    <div class="splash-inner">
+      <div class="splash-logo">la<span>Save</span></div>
+      <div class="splash-tag">Agenda festif &amp; culturel</div>
+      <div class="splash-bar"><i></i></div>
+    </div>
+  </div>
   <!-- Fond catégorie dynamique -->
   <div class="cat-bg" id="cat-bg" aria-hidden="true"></div>
   <canvas id="bg-light" aria-hidden="true"></canvas>
@@ -88,7 +110,14 @@
     <!-- Grille -->
     <div class="grid-wrap">
       <div class="grid" id="events-container" role="region" aria-label="Liste des événements">
-        <div class="loading">Chargement…</div>
+        <div class="sk-card" aria-hidden="true"><div class="sk-img"></div><div class="sk-foot"><span></span></div></div>
+        <div class="sk-card" aria-hidden="true"><div class="sk-img"></div><div class="sk-foot"><span></span></div></div>
+        <div class="sk-card" aria-hidden="true"><div class="sk-img"></div><div class="sk-foot"><span></span></div></div>
+        <div class="sk-card" aria-hidden="true"><div class="sk-img"></div><div class="sk-foot"><span></span></div></div>
+        <div class="sk-card" aria-hidden="true"><div class="sk-img"></div><div class="sk-foot"><span></span></div></div>
+        <div class="sk-card" aria-hidden="true"><div class="sk-img"></div><div class="sk-foot"><span></span></div></div>
+        <div class="sk-card" aria-hidden="true"><div class="sk-img"></div><div class="sk-foot"><span></span></div></div>
+        <div class="sk-card" aria-hidden="true"><div class="sk-img"></div><div class="sk-foot"><span></span></div></div>
       </div>
     </div>
   </main>
@@ -438,7 +467,8 @@
     </div>
   </section>
   <script type="application/ld+json" id="jsonld-events">[]</script>
-  <script src="app.js?v=21" defer></script>
+  <script src="app.js?v=22" defer></script>
+  <script>/* Filet de sécurité : l'écran d'ouverture ne reste jamais bloqué */setTimeout(function(){var s=document.getElementById('splash');if(s)s.classList.add('out');},9000);</script>
   <script>
 (function(){
   var cv = document.getElementById('bg-light');
