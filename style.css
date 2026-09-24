@@ -1266,3 +1266,26 @@
 @media (prefers-reduced-motion: reduce) {
   .card-poster-land, .btn-card-more, .btn-card-go { transition-duration:.01ms; }
 }
+
+/* ── J'y vais sur l'affiche de la fiche (mobile uniquement) ── */
+.modal-photo-go { display:none; }
+@media (hover:none), (pointer:coarse) {
+  /* Cartes : seulement le cœur + nombre */
+  .btn-card-go, .card:hover .btn-card-go { display:none; }
+  /* Fiche : J'y vais en bas à gauche de l'affiche, aligné sur « Agrandir » */
+  .modal-photo-go {
+    display:flex; align-items:center; gap:5px; position:absolute; left:10px; bottom:10px; z-index:2;
+    font-family:inherit; font-size:11px; font-weight:600; line-height:1; color:#fff;
+    background:rgba(0,0,0,0.6); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
+    border:1px solid rgba(255,255,255,0.18); border-radius:99px; padding:5px 11px 5px 10px; cursor:pointer;
+    transition:background .18s, border-color .18s, color .18s;
+  }
+  .modal-photo-go.on { background:rgba(220,60,80,0.75); border-color:rgba(255,120,135,0.6); }
+  .modal-photo-go .btn-jyvais-ico { font-size:12px; }
+  .modal-photo-go.on .btn-jyvais-ico { animation: pop .3s cubic-bezier(.34,1.56,.64,1); }
+  .modal-photo-go .btn-jyvais-count { background:rgba(255,255,255,0.18); color:#fff; font-size:10px; }
+  .modal-zoom-hint { padding:5px 10px; line-height:1; border:1px solid transparent; }
+  /* Pas de doublon dans le pied de fiche quand l'affiche existe */
+  .modal.has-photo .mf-top .btn-jyvais-modal { display:none; }
+  .modal.has-photo .mf-top { justify-content:flex-end; }
+}

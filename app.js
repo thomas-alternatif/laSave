@@ -387,12 +387,19 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
         photoEl.className='modal-photo-wrap';
         photoEl.innerHTML=`<img class="modal-photo" alt=""/><div class="modal-zoom-hint"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg> Agrandir</div>`;
         $('.modal').insertBefore(photoEl,$('.modal-head'));
-        photoEl.onclick=()=>{$('#lightbox-img').src=photo;$('#lightbox-img').alt=ev.Titre||'';$('#lightbox').classList.add('open');};
+        photoEl.onclick=e=>{if(e.target.closest('.modal-photo-go'))return;const im=photoEl.querySelector('.modal-photo');$('#lightbox-img').src=im.src;$('#lightbox-img').alt=im.alt;$('#lightbox').classList.add('open');};
       }
       photoEl.querySelector('.modal-photo').src=photo;
       photoEl.querySelector('.modal-photo').alt=`Affiche : ${ev.Titre||''}`;
+      // J'y vais en bas à gauche de l'affiche (affiché sur mobile)
+      const on=isLiked(ev.id),n=ev.Likes||0;
+      let go=photoEl.querySelector('.modal-photo-go');
+      if(!go){go=document.createElement('button');go.type='button';go.className='modal-photo-go';go.setAttribute('onclick','toggleLike(event,this)');photoEl.appendChild(go);}
+      go.dataset.likeId=ev.id||'';go.dataset.likes=n;go.classList.toggle('on',on);
+      go.innerHTML=`<span class="btn-jyvais-ico">${on?'♥':'♡'}</span><span>J'y vais</span><span class="btn-jyvais-count"${n>0?'':' hidden'}>${n}</span>`;
     }
     else if(photoEl)photoEl.remove();
+    $('.modal').classList.toggle('has-photo',!!photo);
     const mi=[];
     if(ev.Date)mi.push(`<span class="modal-meta-item">📅 <strong>${fmtDate(ev.Date)}</strong>${ev['Date de fin']?' → '+fmtDate(ev['Date de fin']):''}</span>`);
     if(ev.Heure)mi.push(`<span class="modal-meta-item">🕐 <strong>${esc(ev.Heure)}</strong></span>`);
