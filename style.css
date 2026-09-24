@@ -1210,3 +1210,59 @@
 /* Plus de texte au survol des cartes */
 .card:hover .card-poster-land { max-height:220px; }
 .card-poster-land-excerpt { -webkit-line-clamp:6; }
+
+/* ══ Effet paysage v2 ══
+   Plus aucune animation de hauteur : la carte garde toujours la même taille
+   (les cartes voisines ne bougent plus), le panneau texte glisse par-dessus
+   l'affiche et seuls transform/opacity sont animés (fluide, GPU). */
+.card-poster { position:relative; }
+.card-poster-img, .card:hover .card-poster-img { height:330px; transition:none; }
+.card-poster-land, .card:hover .card-poster-land { max-height:none; }
+.card-poster-land {
+  position:absolute; left:0; right:0; top:124px; bottom:0; z-index:1;
+  display:flex; flex-direction:column;
+  padding:12px 14px 88px;
+  background:var(--land-bg, rgba(14,14,20,0.95));
+  border-top:1px solid rgba(255,255,255,0.08);
+  transform:translateY(100%); opacity:0; pointer-events:none;
+  transition:transform .42s cubic-bezier(.22,.8,.24,1), opacity .22s ease;
+  will-change:transform;
+}
+.card-poster-land-excerpt { -webkit-line-clamp:5; min-height:0; }
+.card-poster-foot { position:relative; z-index:2; flex-direction:row; justify-content:flex-end; align-items:center; }
+.card-poster-foot .btn-card-more, .card-poster-foot .btn-card-go { height:28px; box-sizing:border-box; padding:0 14px; line-height:1; }
+.btn-card-more { transition:transform .4s cubic-bezier(.22,.8,.24,1), background .18s, color .18s, border-color .18s; }
+.btn-card-go {
+  position:absolute; right:14px; bottom:11px; margin:0; max-height:none; border-width:1px;
+  opacity:0; transform:translateY(8px); pointer-events:none;
+  transition:opacity .25s ease .05s, transform .4s cubic-bezier(.22,.8,.24,1), background .18s, color .18s, border-color .18s;
+}
+/* Les rangées défilantes ne coupent plus la carte quand elle se soulève */
+.grid-section .grid { padding-top:8px; margin-top:-8px; }
+
+@media (hover:hover) and (pointer:fine) {
+  .card:hover { transform:translateY(-5px); }
+  .card:hover .card-poster-land, .card:focus-within .card-poster-land { transform:none; opacity:1; padding:12px 14px 88px; }
+  .card:hover .btn-card-more, .card:focus-within .btn-card-more { transform:translateY(-35px); }
+  .card:hover .btn-card-go, .card:focus-within .btn-card-go { opacity:1; transform:none; pointer-events:auto; margin:0; max-height:none; padding:0 14px; }
+}
+@media (max-width:700px) {
+  .card-poster-img, .card:hover .card-poster-img { height:255px; }
+  .card-poster-land { top:96px; }
+  .card-poster-land-excerpt { -webkit-line-clamp:3; }
+}
+/* Tactile : pas d'effet paysage (il s'accrochait au toucher), J'y vais toujours visible */
+@media (hover:none), (pointer:coarse) {
+  .card-poster-land { display:none; }
+  .card:hover { transform:none; }
+  .card:hover .card-poster-img img { transform:none; }
+  .card:hover .card-poster-bottom { opacity:1; pointer-events:auto; }
+  .card-poster-foot { flex-direction:column; align-items:flex-end; gap:7px; }
+  .btn-card-go, .card:hover .btn-card-go { position:static; opacity:1; transform:none; pointer-events:auto; margin:0; }
+}
+@media (prefers-color-scheme: light) {
+  .card-poster-land { --land-bg: rgba(250,248,243,0.97); border-top-color:rgba(0,0,0,0.08); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .card-poster-land, .btn-card-more, .btn-card-go { transition-duration:.01ms; }
+}
