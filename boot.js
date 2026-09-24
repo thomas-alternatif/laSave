@@ -12,6 +12,7 @@
   window.addEventListener('resize', resize);
   var COLS = 28, ROWS = 18;
   function draw(t){
+    if (window.__motionPaused || document.documentElement.classList.contains('motion-paused')){ requestAnimationFrame(draw); return; }
     if (!mq.matches){ cv.style.display='none'; return; }
     cv.style.display='block';
     // Fond dégradé: bleu-lavande → gris perle (pas de rosé)

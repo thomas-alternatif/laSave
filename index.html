@@ -17,7 +17,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Yeseva+One&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=42" />
+  <link rel="stylesheet" href="style.css?v=43" />
   <meta name="theme-color" content="#0d0d0d" media="(prefers-color-scheme: dark)" />
   <meta name="theme-color" content="#f5f1ea" media="(prefers-color-scheme: light)" />
   <style>
@@ -38,6 +38,7 @@
   <noscript><style>#splash{display:none}body{display:grid;place-items:center;min-height:100vh;font-family:sans-serif;padding:2rem;text-align:center}</style><p>laSave nécessite JavaScript pour fonctionner.</p></noscript>
 </head>
 <body>
+  <a class="skip-link" href="#contenu">Aller aux événements</a>
   <div id="splash" role="status" aria-label="Chargement de laSave">
     <div class="splash-inner">
       <div class="splash-logo">la<span>Save</span></div>
@@ -72,6 +73,7 @@
 
   <!-- ══ AGENDA ══ -->
   <main id="section-agenda" class="section active">
+    <h1 class="sr-only">Agenda festif et culturel de la vallée de la Save</h1>
     <!-- Slider -->
     <div class="slider-wrap" id="slider-wrap" style="display:none;">
       <div id="featured-container"></div>
@@ -83,7 +85,7 @@
         <label class="sr-only" for="s-input">Rechercher</label>
         <div class="search-bar">
           <svg class="s-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-          <input type="text" class="s-input" id="s-input" placeholder="Rechercher un événement, une commune…" autocomplete="off" aria-controls="suggest-box" aria-expanded="false" />
+          <input type="text" class="s-input" id="s-input" placeholder="Rechercher un événement, une commune…" autocomplete="off" role="combobox" aria-autocomplete="list" aria-controls="suggest-box" aria-expanded="false" />
           <button class="s-clear" id="s-clear" type="button" aria-label="Effacer">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
           </button>
@@ -110,7 +112,7 @@
     </div>
 
     <!-- Grille -->
-    <div class="grid-wrap">
+    <div class="grid-wrap" id="contenu" tabindex="-1">
       <div class="grid" id="events-container" role="region" aria-label="Liste des événements">
         <div class="sk-card" aria-hidden="true"><div class="sk-img"></div><div class="sk-foot"><span></span></div></div>
         <div class="sk-card" aria-hidden="true"><div class="sk-img"></div><div class="sk-foot"><span></span></div></div>
@@ -338,19 +340,61 @@
       <div class="legal-content" id="tab-cookies" role="tabpanel">
         <h2>Cookies et traceurs</h2>
         <p>laSave n'utilise <strong>aucun cookie</strong> de tracking, de publicité ou de profilage.</p>
-        <p>Un <code>localStorage</code> technique mémorise votre préférence d'affichage (grille/liste). Cette donnée reste sur votre appareil.</p>
+        <p>Un stockage technique local (<code>localStorage</code>) mémorise vos « J'y vais » et votre préférence d'animations. Ces données restent sur votre appareil et ne sont jamais transmises.</p>
+        <p>Les données du site transitent par une interface hébergée par Cloudflare, qui traite votre adresse IP uniquement pour limiter les abus (envois répétés). Cette information est conservée au maximum une heure.</p>
         <p>Les polices sont chargées depuis Google Fonts, ce qui peut impliquer un transfert d'adresse IP vers les États-Unis.</p>
       </div>
       <div class="legal-content" id="tab-a11y" role="tabpanel">
         <h2>Déclaration d'accessibilité</h2>
-        <p>La Mairie de Saint-Paul-sur-Save s'engage à rendre son site accessible (loi n° 2005-102, décret n° 2019-768).</p>
-        <h3>État : conformité partielle</h3>
-        <p>Un audit RGAA 4 complet est en cours de planification.</p>
-        <h3>Contact accessibilité</h3>
-        <p><a href="mailto:agenda.de.la.save@gmail.com">agenda.de.la.save@gmail.com</a></p>
+        <p>La Mairie de Saint-Paul-sur-Save s'engage à rendre ses services numériques accessibles, conformément à l'article 47 de la loi n° 2005-102 du 11 février 2005. Cette déclaration s'applique au site <strong>la-save.fr</strong>.</p>
+
+        <h3>État de conformité</h3>
+        <p>Le site la-save.fr est <strong>partiellement conforme</strong> avec le référentiel général d'amélioration de l'accessibilité (RGAA), version 4.1.2, d'après une vérification interne. Un audit complet est programmé pour établir le taux de conformité précis (voir le plan d'action ci-dessous).</p>
+
+        <h3>Améliorations déjà réalisées</h3>
+        <ul>
+          <li>Lien d'accès direct aux événements en début de page et titre de niveau 1 sur chaque page.</li>
+          <li>Navigation complète au clavier, focus visible, fenêtres (fiche, avis, partage) qui gardent et restituent le focus, fermeture par la touche Échap.</li>
+          <li>Bouton « J'aime » dont l'état est annoncé par les lecteurs d'écran.</li>
+          <li>Erreurs du formulaire affichées à côté des champs concernés et annoncées vocalement.</li>
+          <li>Bouton pour mettre en pause toutes les animations (diaporama, organisateurs, fond animé) et respect du réglage « réduire les animations » de l'appareil.</li>
+          <li>Contrastes des textes vérifiés en thème clair et sombre avec l'outil axe.</li>
+        </ul>
+
+        <h3>Contenus non accessibles connus</h3>
+        <ul>
+          <li>Les affiches d'événements sont des images fournies par les organisateurs : les informations qu'elles contiennent sont reprises dans le texte de la fiche, mais pas toujours intégralement.</li>
+          <li>Les descriptions sont rédigées par les organisateurs et peuvent contenir des abréviations ou des mises en forme non structurées.</li>
+        </ul>
+
+        <h3>Établissement de cette déclaration</h3>
+        <p>Déclaration établie le 25 septembre 2026, sur la base d'une vérification interne (outil automatique axe-core et tests de navigation au clavier), réalisée avec Chrome et Safari sur ordinateur et mobile.</p>
+
+        <h3>Retour d'information et contact</h3>
+        <p>Si vous n'arrivez pas à accéder à un contenu ou à un service, contactez-nous pour être orienté vers une alternative accessible ou obtenir le contenu sous une autre forme : <a href="mailto:agenda.de.la.save@gmail.com">agenda.de.la.save@gmail.com</a> ou Mairie de Saint-Paul-sur-Save, 9 route de Cox, 31530 Saint-Paul-sur-Save.</p>
+
         <h3>Voies de recours</h3>
-        <p><a href="https://www.defenseurdesdroits.fr" target="_blank" rel="noopener">Défenseur des droits</a> — Libre réponse 71120, 75342 Paris CEDEX 07</p>
-        <p style="margin-top:2rem;font-size:11px;color:var(--text-muted);">Déclaration établie le 17 mai 2026.</p>
+        <p>Si vous avez signalé un défaut d'accessibilité qui vous empêche d'accéder à un contenu ou à un service et que vous n'avez pas obtenu de réponse satisfaisante, vous pouvez :</p>
+        <ul>
+          <li>écrire un message au <a href="https://formulaire.defenseurdesdroits.fr/" target="_blank" rel="noopener">Défenseur des droits</a> ;</li>
+          <li>contacter <a href="https://www.defenseurdesdroits.fr/carte-des-delegues" target="_blank" rel="noopener">le délégué du Défenseur des droits dans votre région</a> ;</li>
+          <li>envoyer un courrier gratuit, sans timbre : Défenseur des droits, Libre réponse 71120, 75342 Paris CEDEX 07.</li>
+        </ul>
+
+        <h2>Schéma pluriannuel de mise en accessibilité 2026-2028</h2>
+        <p>Le site la-save.fr est le seul service numérique concerné par ce schéma. Son suivi est assuré par le conseiller municipal délégué à la culture et à la communication.</p>
+        <ul>
+          <li><strong>2026</strong> : corrections techniques prioritaires (réalisées), audit RGAA sur un échantillon de pages, publication du taux de conformité.</li>
+          <li><strong>2027</strong> : correction des non-conformités relevées par l'audit, consignes d'accessibilité pour les organisateurs qui publient des événements (texte des affiches, descriptions).</li>
+          <li><strong>2028</strong> : nouvel audit, mise à jour de cette déclaration, prise en compte du RGAA 5.</li>
+        </ul>
+
+        <h3>Plan d'action 2026</h3>
+        <ul>
+          <li>Septembre 2026 : corrections clavier, focus, contrastes, animations et formulaires. <em>Fait.</em></li>
+          <li>4e trimestre 2026 : audit RGAA 4.1.2 sur l'accueil, une fiche d'événement, le formulaire de proposition, la page « Votre avis » et les mentions légales.</li>
+          <li>Après l'audit : mise à jour de l'état de conformité et de cette déclaration.</li>
+        </ul>
       </div>
     </div>
   </section>
@@ -368,9 +412,11 @@
       </div>
     </div>
     <nav class="footer-links" aria-label="Liens secondaires">
-      <a data-action="section" data-arg="partager">Partager un événement</a>
-      <a data-action="legal" data-arg="mentions">Mentions légales</a>
-      <a data-action="legal" data-arg="rgpd">Confidentialité</a>
+      <a href="#" data-action="section" data-arg="partager">Partager un événement</a>
+      <a href="#" data-action="legal" data-arg="mentions">Mentions légales</a>
+      <a href="#" data-action="legal" data-arg="rgpd">Confidentialité</a>
+      <a href="#" data-action="legal" data-arg="a11y" class="footer-a11y">Accessibilité : partiellement conforme</a>
+      <button type="button" class="footer-motion" data-action="motion" aria-pressed="false">Mettre en pause les animations</button>
     </nav>
   </footer>
 
@@ -469,7 +515,7 @@
     </div>
   </section>
   <script type="application/ld+json" id="jsonld-events">[]</script>
-  <script src="app.js?v=30" defer></script>
-  <script src="boot.js?v=1" defer></script>
+  <script src="app.js?v=31" defer></script>
+  <script src="boot.js?v=2" defer></script>
 </body>
 </html>

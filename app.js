@@ -121,7 +121,7 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
     return'https://calendar.google.com/calendar/render?'+p;
   }
   function genICS(ev){
-    const d=buildDates(ev);if(!d){alert('Date manquante.');return;}
+    const d=buildDates(ev);if(!d){announce("Impossible d'ajouter à l'agenda : cet événement n'a pas de date.");return;}
     const ics=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//laSave//FR','BEGIN:VEVENT',`UID:${ev.id}@la-save.fr`,`DTSTAMP:${new Date().toISOString().replace(/[-:]/g,'').split('.')[0]}Z`,`DTSTART:${d.s}`,`DTEND:${d.e}`,`SUMMARY:${(ev.Titre||'').replace(/\n/g,'\\n')}`,`DESCRIPTION:${(ev.Description||'').replace(/\n/g,'\\n')}`,`LOCATION:${[ev.Lieu,ev.Commune].filter(Boolean).join(', ')}`,'END:VEVENT','END:VCALENDAR'].join('\r\n');
     const blob=new Blob([ics],{type:'text/calendar'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=`${(ev.Titre||'evenement').replace(/[^a-z0-9]/gi,'_')}.ics`;a.click();URL.revokeObjectURL(url);
   }
@@ -180,7 +180,7 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
       sms:`sms:?body=${encodeURIComponent(titre+' — '+url)}`
     };
     if(platform==='instagram'){
-      navigator.clipboard.writeText(titre+' '+url).then(()=>alert('Lien copié ! Collez-le dans votre message Instagram.')).catch(()=>{});
+      navigator.clipboard.writeText(titre+' '+url).then(()=>announce('Lien copié ! Collez-le dans votre message Instagram.')).catch(()=>{});
       return;
     }
     if(maps[platform])window.open(maps[platform],'_blank','noopener,width=600,height=500');
@@ -247,7 +247,7 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
               <h3 class="card-poster-title">${esc(ev.Titre||'Sans titre')}</h3>
               <div class="card-poster-meta">
                 <span class="card-poster-cat" style="color:${m.color}">${esc(cat)}</span>
-                ${`<button class="btn-heart ${liked?'on':''}" type="button" data-like-id="${evId}" data-likes="${nLikes}" data-action="like" aria-label="J'aime"><span class="btn-jyvais-ico">${liked?'♥':'♡'}</span><span class="btn-jyvais-count keep">${nLikes}</span></button>`}
+                ${`<button class="btn-heart ${liked?'on':''}" type="button" data-like-id="${evId}" data-likes="${nLikes}" data-action="like" aria-pressed="${liked}" aria-label="J'aime (${nLikes})"><span class="btn-jyvais-ico">${liked?'♥':'♡'}</span><span class="btn-jyvais-count keep">${nLikes}</span></button>`}
               </div>
             </div>
           </div>
@@ -410,6 +410,8 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
       if(!photoEl){
         photoEl=document.createElement('div');
         photoEl.className='modal-photo-wrap';
+        photoEl.tabIndex=0;photoEl.setAttribute('role','button');photoEl.setAttribute('aria-label',"Agrandir l'affiche");
+        photoEl.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target===photoEl){e.preventDefault();photoEl.click();}});
         photoEl.innerHTML=`<img class="modal-photo" alt=""/><div class="modal-zoom-hint"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg> Agrandir</div>`;
         $('.modal').insertBefore(photoEl,$('.modal-head'));
         photoEl.onclick=e=>{if(e.target.closest('.modal-photo-go'))return;const im=photoEl.querySelector('.modal-photo');$('#lightbox-img').src=im.src;$('#lightbox-img').alt=im.alt;$('#lightbox').classList.add('open');};
@@ -545,7 +547,9 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
     const c=$('#featured-container');
     let th='<span class="ns-num" id="ns-num"></span>';
     feats.forEach((_,i)=>th+=`<div class="ns-th${i===slideIdx?' on':''}" data-i="${i}"><img src="${esc(getPhoto(feats[i]))}" alt="" loading="lazy"/></div>`);
-    c.innerHTML=`<div id="ns-bg"></div><div id="ns-prog"></div><div class="ns-top-shadow"></div><div id="ns-content"></div><button class="ns-arr ns-prev" type="button" aria-label="Précédent">‹</button><button class="ns-arr ns-next" type="button" aria-label="Suivant">›</button><div class="ns-thumbs">${th}</div>`;
+    c.innerHTML=`<div id="ns-bg"></div><div id="ns-prog"></div><div class="ns-top-shadow"></div><div id="ns-content"></div><button class="ns-pause" type="button" data-action="motion" aria-pressed="false">Pause</button><button class="ns-arr ns-prev" type="button" aria-label="Précédent">‹</button><button class="ns-arr ns-next" type="button" aria-label="Suivant">›</button><div class="ns-thumbs">${th}</div>`;
+    c.addEventListener('mouseenter',()=>{slideHold=true;clearTimeout(slideTimer);});c.addEventListener('mouseleave',()=>{slideHold=false;startSlideTimer();});
+    c.addEventListener('focusin',()=>{slideHold=true;clearTimeout(slideTimer);});c.addEventListener('focusout',e=>{if(!c.contains(e.relatedTarget)){slideHold=false;startSlideTimer();}});
     $('.ns-prev').onclick=()=>goSlide(slideIdx-1);
     $('.ns-next').onclick=()=>goSlide(slideIdx+1);
     $$('.ns-th').forEach(t=>t.onclick=()=>goSlide(+t.dataset.i));
@@ -564,7 +568,9 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
     startProg();
   }
   function goSlide(i){clearTimeout(slideTimer);showSlide(i);startSlideTimer();}
-  function startSlideTimer(){clearTimeout(slideTimer);slideTimer=setTimeout(()=>goSlide(slideIdx+1),7000);}
+  let slideHold=false;
+  function startSlideTimer(){clearTimeout(slideTimer);if(window.__motionPaused||slideHold)return;slideTimer=setTimeout(()=>goSlide(slideIdx+1),7000);}
+  window.__sliderMotion=p=>{document.querySelectorAll('.ns-pause').forEach(b=>b.textContent=p?'Lecture':'Pause');p?clearTimeout(slideTimer):startSlideTimer();};
   function startProg(){const p=$('#ns-prog');if(!p)return;p.style.transition='none';p.style.width='0%';requestAnimationFrame(()=>{p.style.transition='width 7s linear';p.style.width='100%';});}
 
 
@@ -649,8 +655,10 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
     $('#agenda-form').addEventListener('submit',async e=>{
       e.preventDefault();
       const titre=$('#f-titre').value.trim(),cat=$('#f-cat').value,commune=$('#f-commune').value.trim();
-      if(!titre||!cat||!commune){alert('Titre, catégorie et commune sont obligatoires.');return;}
-      if(!$('#f-consent').checked){alert("Merci d'accepter les conditions de traitement.");return;}
+      formError(null);
+      const manquant=[!titre&&'#f-titre',!cat&&'#f-cat',!commune&&'#f-commune'].filter(Boolean);
+      if(manquant.length){formError('Titre, catégorie et commune sont obligatoires.',manquant);return;}
+      if(!$('#f-consent').checked){formError("Merci d'accepter les conditions de traitement des données.",['#f-consent']);return;}
       const btn=$('#submit-btn');btn.disabled=true;const orig=btn.innerHTML;btn.textContent='Envoi…';
       const fields={'Titre':titre,'Catégorie':cat,'Commune':commune};
       if($('#f-date').value)fields['Date']=$('#f-date').value;
@@ -696,7 +704,7 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
         await api('/events',{method:'POST',body:JSON.stringify(fields)});
         $('#agenda-form').style.display='none';$('#success-msg').style.display='block';
         $('#success-msg').scrollIntoView({behavior:'smooth',block:'center'});
-      }catch(err){alert('Erreur : '+err.message);btn.disabled=false;btn.innerHTML=orig;}
+      }catch(err){formError("L'envoi a échoué : "+err.message+' Réessayez dans un instant.');btn.disabled=false;btn.innerHTML=orig;}
     });
   }
 
@@ -704,6 +712,7 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
   window.showSection=function(name,el){
     $$('.section').forEach(s=>s.classList.remove('active'));const t=$('#section-'+name);if(t)t.classList.add('active');
     if(el){$$('.nav-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');}
+    const T={agenda:'laSave — Agenda festif de la vallée de la Save',partager:'Ajouter un événement — laSave',legal:'Mentions légales — laSave',admin:'Administration — laSave'};if(T[name])document.title=T[name];
     window.scrollTo({top:0,behavior:'smooth'});
   };
   window.openLegalTab=function(name){
@@ -1444,7 +1453,8 @@ function addGridNav(head, grid, title) {
     btn.type = 'button';
     btn.className = 'section-nav-btn';
     btn.setAttribute('aria-label', ariaLabel);
-    btn.setAttribute('aria-controls', grid.id || undefined);
+    if(!grid.id)grid.id='grille-'+Math.random().toString(36).slice(2,8);
+    btn.setAttribute('aria-controls', grid.id);
     // Chevron SVG
     const d = label === 'prev'
       ? 'M9 2 4 7l5 5'
@@ -1549,7 +1559,7 @@ function startStoriesAutoScroll(container) {
     if (lastTs === null) lastTs = ts;
     const dt = Math.min((ts - lastTs) / 1000, 0.1);
     lastTs = ts;
-    if (!paused && !userInteracting && setWidth > 0) {
+    if (!paused && !userInteracting && !window.__motionPaused && setWidth > 0) {
       container.scrollLeft += SPEED * dt;
       if (container.scrollLeft >= setWidth) {
         container.scrollLeft -= setWidth;
@@ -1567,6 +1577,8 @@ function startStoriesAutoScroll(container) {
   // Pause au survol (desktop)
   outer.addEventListener('mouseenter', () => { paused = true; });
   outer.addEventListener('mouseleave', () => { paused = false; lastTs = null; });
+  outer.addEventListener('focusin', () => { paused = true; });
+  outer.addEventListener('focusout', e => { if (!outer.contains(e.relatedTarget)) { paused = false; lastTs = null; } });
 
   // Pause sur interaction utilisateur, reprise après 2s
   const onStart = () => {
@@ -1618,6 +1630,8 @@ function startStoriesAutoScroll(container) {
     likes = liking ? likes+1 : Math.max(0,likes-1);
     document.querySelectorAll(`[data-like-id="${id}"]`).forEach(b=>{
       b.classList.toggle('on', liking);
+      b.setAttribute('aria-pressed', String(liking));
+      if(b.classList.contains('btn-heart'))b.setAttribute('aria-label', `J'aime (${likes})`);
       b.dataset.likes = likes;
       const ico=b.querySelector('.btn-jyvais-ico'); if(ico) ico.textContent = liking?'♥':'♡';
       const c=b.querySelector('.btn-jyvais-count');
@@ -1677,9 +1691,9 @@ function startStoriesAutoScroll(container) {
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
         <span>Votre avis</span>
       </button>
-      <div id="avis-overlay" aria-hidden="true">
-        <div id="avis-modal" role="dialog" aria-label="Votre avis">
-          <button id="avis-close" data-action="avis-close" aria-label="Fermer">
+      <div id="avis-overlay" aria-hidden="true" inert>
+        <div id="avis-modal" role="dialog" aria-modal="true" aria-labelledby="avis-title">
+          <button id="avis-close" type="button" data-action="avis-close" aria-label="Fermer">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
           <div id="avis-title">Votre avis nous aide !</div>
@@ -1687,7 +1701,7 @@ function startStoriesAutoScroll(container) {
           <div id="avis-stars" role="group" aria-label="Note">
             ${[1,2,3,4,5].map(n=>`<button class="star-btn" data-v="${n}" type="button" aria-label="${n} étoile${n>1?'s':''}" data-action="avis-note" data-arg="${n}">★</button>`).join('')}
           </div>
-          <textarea id="avis-comment" placeholder="Un commentaire ? (facultatif)" rows="3" maxlength="500"></textarea>
+          <textarea id="avis-comment" aria-label="Commentaire (facultatif)" placeholder="Un commentaire ? (facultatif)" rows="3" maxlength="500"></textarea>
           <button id="avis-send" type="button" data-action="avis-send">Envoyer</button>
           <div id="avis-thanks" hidden>Merci pour votre retour ! 🙏</div>
         </div>
@@ -1756,5 +1770,68 @@ document.addEventListener('click',function(e){
     case 'legal': e.preventDefault(); showSection('legal',null); openLegalTab(arg); break;
     case 'admin-tab': switchAdminTab(arg); break;
     case 'toggle-block': toggleBlock(el); break;
+    case 'motion': setMotion(!window.__motionPaused); break;
   }
 },true);
+
+/* ═══ Accessibilité ═══ */
+// Message d'erreur du formulaire, affiché à côté du bouton et annoncé aux lecteurs d'écran
+function formError(msg, champs=[]){
+  let box=document.getElementById('form-error');
+  const form=document.getElementById('agenda-form');
+  document.querySelectorAll('#agenda-form [aria-invalid]').forEach(el=>el.removeAttribute('aria-invalid'));
+  if(!msg){ if(box)box.hidden=true; return; }
+  if(!box&&form){ box=document.createElement('p'); box.id='form-error'; box.className='form-error'; box.setAttribute('role','alert'); const sb=document.getElementById('submit-btn'); (sb?sb.parentNode:form).insertBefore(box, sb||null); }
+  if(!box) return;
+  box.textContent=msg; box.hidden=false;
+  champs.forEach(s=>{const el=document.querySelector(s); if(el)el.setAttribute('aria-invalid','true');});
+  const first=champs.length&&document.querySelector(champs[0]); if(first)first.focus(); else box.scrollIntoView({block:'center'});
+}
+// Petite bulle d'information (remplace les alert) + annonce vocale
+function announce(msg){
+  let t=document.getElementById('toast');
+  if(!t){ t=document.createElement('div'); t.id='toast'; t.setAttribute('role','status'); t.setAttribute('aria-live','polite'); document.body.appendChild(t); }
+  t.textContent=msg; t.classList.add('on'); clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('on'),4000);
+}
+// Fenêtres : le focus entre dans la fenêtre, y reste, et revient au bouton d'origine à la fermeture
+(function(){
+  const IDS=['modal-overlay','orga-modal-overlay','share-modal','avis-overlay','lightbox'];
+  const openers=new Map();
+  const FOC='a[href],button:not([disabled]),input:not([disabled]),select,textarea,[tabindex]:not([tabindex="-1"])';
+  const visible=el=>el.offsetParent!==null||getComputedStyle(el).position==='fixed';
+  const focusables=d=>[...d.querySelectorAll(FOC)].filter(el=>!el.closest('[hidden],[inert]')&&visible(el));
+  const isOpen=d=>d.classList.contains('open');
+  function sync(d){
+    if(isOpen(d)){
+      d.inert=false; d.removeAttribute('aria-hidden');
+      if(!openers.has(d.id)){ openers.set(d.id, document.activeElement); setTimeout(()=>{const f=focusables(d); const c=d.querySelector('[aria-label="Fermer"],[id$="-close"]'); (c&&visible(c)?c:f[0]||d).focus?.();},60); }
+    }else{
+      d.inert=true;
+      if(openers.has(d.id)){ const o=openers.get(d.id); openers.delete(d.id); if(o&&document.contains(o)&&!document.querySelector(IDS.map(i=>'#'+i+'.open').join(',')))o.focus?.(); }
+    }
+  }
+  function init(){
+    IDS.forEach(id=>{const d=document.getElementById(id); if(!d||d._a11y)return; d._a11y=true; sync(d); new MutationObserver(()=>sync(d)).observe(d,{attributes:true,attributeFilter:['class']});});
+  }
+  init(); document.addEventListener('DOMContentLoaded',init); setTimeout(init,1500);
+  document.addEventListener('keydown',e=>{
+    if(e.key!=='Tab')return;
+    const open=IDS.map(i=>document.getElementById(i)).filter(d=>d&&isOpen(d)).pop(); if(!open)return;
+    const f=focusables(open); if(!f.length)return;
+    const first=f[0], last=f[f.length-1];
+    if(!open.contains(document.activeElement)){e.preventDefault();first.focus();}
+    else if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}
+    else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}
+  });
+})();
+// Animations : bouton pause global (diaporama, organisateurs, fond animé) + respect du réglage système
+window.__motionPaused=(()=>{try{return localStorage.getItem('lasave_motion')==='off';}catch(e){return false;}})()||matchMedia('(prefers-reduced-motion: reduce)').matches;
+function setMotion(paused){
+  window.__motionPaused=paused;
+  try{localStorage.setItem('lasave_motion',paused?'off':'on');}catch(e){}
+  document.querySelectorAll('[data-action="motion"]').forEach(b=>{b.setAttribute('aria-pressed',String(paused));b.textContent=paused?'Relancer les animations':'Mettre en pause les animations';});
+  document.documentElement.classList.toggle('motion-paused',paused);
+  if(typeof window.__sliderMotion==='function')window.__sliderMotion(paused);
+}
+document.addEventListener('DOMContentLoaded',()=>setMotion(window.__motionPaused));
+if(document.readyState!=='loading')setMotion(window.__motionPaused);
