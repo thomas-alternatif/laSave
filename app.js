@@ -221,7 +221,7 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
               <div class="card-poster-avatar">
                 ${orgaPhoto
                   ?`<img src="${esc(orgaPhoto)}" alt="${esc(orgaNom)}" loading="lazy"/>`
-                  :`<span style="color:${orgaCouleur};font-size:11px;font-weight:700;">${orgaInitiales}</span>`
+                  :`<span style="color:${orgaCouleur};font-size:11px;font-weight:700;">${esc(orgaInitiales)}</span>`
                 }
               </div>
             </div>`:''}
