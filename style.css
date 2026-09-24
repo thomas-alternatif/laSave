@@ -1289,3 +1289,20 @@
   .modal.has-photo .mf-top .btn-jyvais-modal { display:none; }
   .modal.has-photo .mf-top { justify-content:flex-end; }
 }
+
+/* ── Fiche ouverte : « Votre avis » masqué ── */
+body.modal-open #btn-avis, body:has(.modal-overlay.open) #btn-avis, body:has(.orga-modal-overlay.open) #btn-avis { opacity:0; transform:translateY(12px); pointer-events:none; }
+
+/* ── Fiche : défilement vertical uniquement ── */
+.modal-overlay, .orga-modal-overlay { overscroll-behavior:contain; touch-action:none; }
+.modal, .orga-modal { overflow-x:hidden; overscroll-behavior:contain; touch-action:pan-y; -webkit-overflow-scrolling:touch; box-sizing:border-box; max-width:min(540px, 100%); }
+.orga-modal { max-width:min(580px, 100%); }
+.modal *, .orga-modal * { max-width:100%; box-sizing:border-box; }
+.modal-desc, .modal-title, .modal-meta-item { overflow-wrap:anywhere; }
+.mf-cal-btns { grid-template-columns:repeat(2, minmax(0,1fr)); }
+.mf-btn { min-width:0; overflow:hidden; text-overflow:ellipsis; }
+.mf-top { flex-wrap:wrap; }
+@media (max-width:700px) {
+  .modal-overlay, .orga-modal-overlay { padding:.75rem; }
+  .modal { max-height:calc(100dvh - 1.5rem); }
+}

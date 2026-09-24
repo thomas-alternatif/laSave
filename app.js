@@ -1,4 +1,18 @@
 /* État « J'y vais / like » par visiteur (global, utilisé par les cartes et la fiche) */
+/* Bloque le défilement de la page derrière une fiche ouverte (iOS ignore overflow:hidden sur body) */
+let __lockY=0,__locks=0;
+function lockScroll(){
+  if(__locks++>0)return;
+  __lockY=window.scrollY;
+  const b=document.body.style;b.position='fixed';b.top=(-__lockY)+'px';b.left='0';b.right='0';b.width='100%';b.overflow='hidden';
+  document.body.classList.add('modal-open');
+}
+function unlockScroll(){
+  if(__locks===0||--__locks>0)return;
+  const b=document.body.style;b.position='';b.top='';b.left='';b.right='';b.width='';b.overflow='';
+  document.body.classList.remove('modal-open');
+  window.scrollTo(0,__lockY);
+}
 function isLiked(id){
   if(!id) return false;
   try{ const s=localStorage.getItem('jyvais'); return (s?JSON.parse(s):[]).includes(id); }catch(e){ return false; }
@@ -498,10 +512,10 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
     `;
     window.__modalEv=ev;
     $('#modal-apple-btn').onclick=()=>genICS(ev);
-    $('#modal-overlay').classList.add('open');document.body.style.overflow='hidden';
+    if(!$('#modal-overlay').classList.contains('open'))lockScroll();$('#modal-overlay').classList.add('open');
     if(ev.id)trackView(ev.id);
   }
-  function closeModal(){$('#modal-overlay').classList.remove('open');document.body.style.overflow='';}
+  function closeModal(){const o=$('#modal-overlay');if(!o.classList.contains('open'))return;o.classList.remove('open');unlockScroll();}
 
   /* ── SLIDER ── */
   let slideIdx=0,slideTimer=null,feats=[];
@@ -1005,11 +1019,11 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
         if(ev){closeOrgaModal();setTimeout(()=>openModal(ev),150);}
       });
     });
+    if(!$('#orga-modal-overlay').classList.contains('open'))lockScroll();
     $('#orga-modal-overlay').classList.add('open');
-    document.body.style.overflow='hidden';
   }
 
-  function closeOrgaModal(){$('#orga-modal-overlay').classList.remove('open');document.body.style.overflow='';}
+  function closeOrgaModal(){const o=$('#orga-modal-overlay');if(!o.classList.contains('open'))return;o.classList.remove('open');unlockScroll();}
 
   /* ── UPLOAD PHOTO (ImgBB) ── */
   const IMGBB_KEY='ca0f64f266be0ec12ed5b8b11ab0b773';
