@@ -104,45 +104,44 @@ Gardez ce code pour vous : il est propre à votre structure.
 
 Mairie de Saint-Paul-sur-Save — Commission culture
 ${SITE}`;
-  const html = `<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><title>Votre code organisateur laSave</title></head>
-<body style="margin:0;padding:0;background:#f3f5f5;">
-<div style="display:none;max-height:0;overflow:hidden;opacity:0;">Votre code pour proposer vos événements sur l'agenda culturel de la vallée de la Save.</div>
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f3f5f5;"><tr><td align="center" style="padding:28px 12px;">
-<table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px;background:#ffffff;border-radius:14px;overflow:hidden;font-family:'Segoe UI',Helvetica,Arial,sans-serif;color:#16191a;">
-  <tr><td style="padding:24px 32px 18px;">
-    <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
-      <td style="padding-right:14px;"><img src="${SITE}/images/logo-saint-paul.png" width="56" height="54" alt="Saint-Paul-sur-Save" style="display:block;border:0;"></td>
-      <td><div style="font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:#5b6468;">Mairie de Saint-Paul-sur-Save</div>
-          <div style="font-size:22px;font-weight:700;color:#16191a;line-height:1.2;">la<span style="color:#096c71;">Save</span></div></td>
-    </tr></table>
+  const html = `<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light dark"><meta name="supported-color-schemes" content="light dark"><title>Votre code organisateur laSave</title></head>
+<body style="margin:0;padding:0;background:#08111e;">
+<div style="display:none;max-height:0;overflow:hidden;opacity:0;">Votre code pour proposer vos événements sur laSave, l'agenda festif et culturel de la vallée de la Save.</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#08111e;"><tr><td align="center" style="padding:32px 12px;">
+<table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
+  <tr><td align="center" style="padding:6px 24px 26px;">
+    <div style="font-family:Georgia,'Times New Roman',serif;font-size:34px;font-weight:700;letter-spacing:-.5px;color:#e8e8e8;line-height:1;">la<span style="color:#c8a96e;">Save</span></div>
+    <div style="margin-top:8px;font-size:10px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#9aa3ad;">Agenda festif &amp; culturel</div>
   </td></tr>
-  <tr><td style="font-size:0;line-height:0;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
-    <td height="5" style="background:#FFA823;width:33.3%;"></td><td height="5" style="background:#5C96AB;width:33.3%;"></td><td height="5" style="background:#B923FF;width:33.4%;"></td>
-  </tr></table></td></tr>
-  <tr><td style="padding:32px 32px 8px;">
-    <h1 style="margin:0 0 12px;font-size:24px;line-height:1.25;color:#16191a;">Votre code organisateur</h1>
-    <p style="margin:0 0 20px;font-size:16px;line-height:1.6;color:#3b4245;">Bonjour ${n},<br>voici le code qui vous permet de proposer vos événements sur <strong>laSave</strong>, l'agenda culturel de la vallée de la Save.</p>
-  </td></tr>
-  <tr><td align="center" style="padding:4px 32px 24px;">
-    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="background:#e8f3f3;border:2px dashed #096c71;border-radius:12px;"><tr>
-      <td style="padding:16px 22px;font-family:'Courier New',Courier,monospace;font-size:24px;font-weight:700;letter-spacing:2px;white-space:nowrap;color:#096c71;">${escH(code)}</td>
-    </tr></table>
-  </td></tr>
-  <tr><td style="padding:0 32px 8px;">
-    <p style="margin:0 0 10px;font-size:15px;font-weight:700;color:#16191a;">Comment l'utiliser&nbsp;?</p>
-    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="font-size:15px;line-height:1.55;color:#3b4245;">
-      <tr><td valign="top" style="padding:0 10px 8px 0;font-weight:700;color:#8a5200;">1.</td><td style="padding-bottom:8px;">Ouvrez la page « Partager » du site laSave.</td></tr>
-      <tr><td valign="top" style="padding:0 10px 8px 0;font-weight:700;color:#8a5200;">2.</td><td style="padding-bottom:8px;">Saisissez ce code dans l'<strong>espace organisateur</strong> : vos informations se remplissent toutes seules.</td></tr>
-      <tr><td valign="top" style="padding:0 10px 8px 0;font-weight:700;color:#8a5200;">3.</td><td style="padding-bottom:8px;">Décrivez votre événement et envoyez-le. La mairie le relit puis le publie sous 48&nbsp;h.</td></tr>
+  <tr><td style="background:#121a26;border:1px solid #243041;border-radius:16px;overflow:hidden;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+      <tr><td height="4" style="font-size:0;line-height:0;background:#7B5EA7;background-image:linear-gradient(90deg,#E8609A,#7B5EA7);">&nbsp;</td></tr>
+      <tr><td style="padding:34px 34px 6px;">
+        <div style="font-size:11px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:#c8a96e;margin-bottom:12px;">Espace organisateur</div>
+        <h1 style="margin:0 0 14px;font-family:Georgia,'Times New Roman',serif;font-size:28px;line-height:1.2;font-weight:700;color:#ffffff;">Votre code est prêt</h1>
+        <p style="margin:0 0 22px;font-size:16px;line-height:1.65;color:#c3cad2;">Bonjour ${n},<br>voici votre code pour proposer vos événements sur <strong style="color:#ffffff;">laSave</strong>, l'agenda festif et culturel de la vallée de la Save.</p>
+      </td></tr>
+      <tr><td align="center" style="padding:0 34px 26px;">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="background:#0b121c;border:1px solid #c8a96e;border-radius:12px;"><tr>
+          <td style="padding:16px 30px;font-family:'Courier New',Courier,monospace;font-size:26px;font-weight:700;letter-spacing:3px;white-space:nowrap;color:#c8a96e;">${escH(code)}</td>
+        </tr></table>
+      </td></tr>
+      <tr><td style="padding:0 34px 6px;">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="font-size:15px;line-height:1.6;color:#c3cad2;">
+          <tr><td valign="top" style="padding:0 12px 10px 0;font-family:Georgia,serif;font-size:17px;font-weight:700;color:#c8a96e;">1</td><td style="padding-bottom:10px;">Ouvrez la page <strong style="color:#fff;">Partager</strong> sur la-save.fr.</td></tr>
+          <tr><td valign="top" style="padding:0 12px 10px 0;font-family:Georgia,serif;font-size:17px;font-weight:700;color:#c8a96e;">2</td><td style="padding-bottom:10px;">Saisissez ce code : vos informations se remplissent toutes seules.</td></tr>
+          <tr><td valign="top" style="padding:0 12px 10px 0;font-family:Georgia,serif;font-size:17px;font-weight:700;color:#c8a96e;">3</td><td style="padding-bottom:10px;">Décrivez votre événement et envoyez-le : la mairie le relit puis le publie sous 48&nbsp;h.</td></tr>
+        </table>
+      </td></tr>
+      <tr><td align="center" style="padding:18px 34px 30px;">
+        <a href="${SITE}/#partager" style="display:inline-block;background:#7B5EA7;background-image:linear-gradient(135deg,#E8609A,#7B5EA7);color:#ffffff;text-decoration:none;font-weight:700;font-size:15px;padding:14px 30px;border-radius:99px;">+ Proposer un événement</a>
+      </td></tr>
+      <tr><td style="padding:0 34px 30px;"><p style="margin:0;font-size:13px;line-height:1.55;color:#8d97a3;border-top:1px solid #243041;padding-top:18px;">Ce code est propre à votre structure : partagez-le seulement avec les personnes qui publient en son nom. Vous ne l'avez pas demandé&nbsp;? Ignorez simplement ce message.</p></td></tr>
     </table>
   </td></tr>
-  <tr><td align="center" style="padding:16px 32px 28px;">
-    <a href="${SITE}/#partager" style="display:inline-block;background:#096c71;color:#ffffff;text-decoration:none;font-weight:700;font-size:16px;padding:14px 26px;border-radius:10px;">Proposer un événement</a>
-  </td></tr>
-  <tr><td style="padding:0 32px 28px;"><p style="margin:0;font-size:13px;line-height:1.5;color:#5b6468;background:#f6f8f8;border-radius:10px;padding:12px 14px;">Ce code est propre à votre structure : ne le partagez qu'avec les personnes qui publient en son nom. Vous ne l'avez pas demandé&nbsp;? Ignorez simplement ce message.</p></td></tr>
-  <tr><td style="background:#16191a;padding:20px 32px;font-size:12px;line-height:1.6;color:#c9d0d2;">
-    Mairie de Saint-Paul-sur-Save — Commission culture<br>9 route de Cox, 31530 Saint-Paul-sur-Save<br>
-    <a href="${SITE}" style="color:#FFA823;text-decoration:none;">la-save.fr</a>
+  <tr><td align="center" style="padding:24px 24px 0;font-size:12px;line-height:1.7;color:#7d8793;">
+    <img src="${SITE}/images/logo-saint-paul.png" width="44" height="42" alt="Saint-Paul-sur-Save" style="display:block;margin:0 auto 10px;border:0;border-radius:8px;">
+    Mairie de Saint-Paul-sur-Save — Commission culture<br>9 route de Cox, 31530 Saint-Paul-sur-Save · <a href="${SITE}" style="color:#c8a96e;text-decoration:none;">la-save.fr</a>
   </td></tr>
 </table>
 </td></tr></table></body></html>`;
@@ -154,15 +153,24 @@ async function findOrgaByEmail(env, email) {
   const recs = await listAll(env, T_ORGAS, '&filterByFormula=' + f);
   return recs.find(r => r.fields['Statut code'] !== 'Refusé' && r.fields['Statut code'] !== 'Demandé') || null;
 }
-async function uniqueCode(env) {
+// Mots trop génériques pour servir de code (« Association Les Amis… » → AMIS)
+const CODE_SKIP = new Set(['LE','LA','LES','L','DE','DU','DES','D','ET','AU','AUX','UN','UNE','THE','ASSOCIATION','ASSO','COMITE','CLUB','COMPAGNIE','CIE','AMICALE','COLLECTIF','GROUPE','FOYER','ECOLE','MAIRIE','SAINT','ST']);
+function codeFromName(nom) {
+  const words = String(nom || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().split(/[^A-Z0-9]+/).filter(Boolean);
+  return words.find(w => w.length >= 3 && !CODE_SKIP.has(w)) || words.find(w => w.length >= 2) || 'SAVE';
+}
+async function uniqueCode(env, nom) {
   const all = await listAll(env, T_ORGAS);
   const taken = new Set(all.map(r => (r.fields.Code || '').trim().toUpperCase()));
+  const base = codeFromName(nom).slice(0, 16);
+  if (!taken.has(base)) return base;
+  for (let i = 2; i < 100; i++) if (!taken.has(base + i)) return base + i; // ALTERNATIF2, ALTERNATIF3…
   let c; do { c = newCode(); } while (taken.has(c));
   return c;
 }
 async function sendCodeTo(env, rec) {
   let code = (rec.fields.Code || '').trim();
-  if (!code) code = await uniqueCode(env);
+  if (!code) code = await uniqueCode(env, rec.fields.Nom); // un code déjà connu n'est jamais remplacé
   const m = codeMail(rec.fields.Nom, code);
   await sendMail(env, { to: rec.fields.Email, toName: rec.fields.Nom, ...m });
   await at(env, `${T_ORGAS}/${rec.id}`, { method: 'PATCH', body: JSON.stringify({ fields: { Code: code, 'Statut code': 'Envoyé', 'Code envoyé le': new Date().toISOString() } }) });
@@ -286,7 +294,7 @@ async function route(req, env, ctx) {
       ctx.waitUntil(sendMail(env, {
         to: MAIL_ADMIN, subject: `Demande de code organisateur : ${nom}`, replyTo: email,
         text: `${nom} (${email}) demande un code organisateur.\n\n${message}\n\nValider : ${SITE}/#admin`,
-        html: `<div style="font-family:Helvetica,Arial,sans-serif;font-size:15px;color:#16191a;line-height:1.6"><p><strong>${escH(nom)}</strong> (${escH(email)}) demande un code organisateur sur laSave.</p>${message ? `<blockquote style="margin:0 0 16px;padding:10px 14px;background:#f6f8f8;border-left:4px solid #FFA823">${escH(message)}</blockquote>` : ''}<p><a href="${SITE}/#admin" style="display:inline-block;background:#096c71;color:#fff;text-decoration:none;font-weight:700;padding:10px 18px;border-radius:8px">Valider ou refuser dans l'admin</a></p></div>`,
+        html: `<div style="font-family:Helvetica,Arial,sans-serif;font-size:15px;color:#16191a;line-height:1.6"><p><strong>${escH(nom)}</strong> (${escH(email)}) demande un code organisateur sur laSave.</p>${message ? `<blockquote style="margin:0 0 16px;padding:10px 14px;background:#f6f8f8;border-left:4px solid #FFA823">${escH(message)}</blockquote>` : ''}<p><a href="${SITE}/#admin" style="display:inline-block;background:#7B5EA7;color:#fff;text-decoration:none;font-weight:700;padding:10px 18px;border-radius:8px">Valider ou refuser dans l'admin</a></p></div>`,
       }).catch(e => console.error('alerte mairie', e)));
     }
     return ok;
