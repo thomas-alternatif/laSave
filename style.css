@@ -19,7 +19,7 @@
     /* Mode clair automatique selon l'appareil */
     @media (prefers-color-scheme: light) {
       :root {
-        --bg: #edf4f8;
+        --bg: #f5f1ea;
         --bg-card: rgba(255,255,255,0.7);
         --bg-card-hover: rgba(255,255,255,0.9);
         --border: rgba(0,0,0,0.1);
@@ -29,10 +29,9 @@
         --text-muted: #666;
       }
       body::before { display: none !important; }
-      body { background: transparent !important; }
+      body { background: var(--bg) !important; } /* fond uni */
       /* Désactiver le fond image catégorie (trop sombre pour le mode clair) */
       .cat-bg { display: none !important; }
-      /* fond maillage clair */ #bg-light { display:block; position:fixed; inset:0; z-index:0; pointer-events:none; }
 
 
       /* HEADER */
@@ -547,7 +546,6 @@
 
     /* ── FOND CATÉGORIE DYNAMIQUE ── */
     .cat-bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: 0; transition: opacity .6s ease; }
-    #bg-light { display: none; }
     .cat-bg.on { opacity: 1; background-size: cover; background-position: center; filter: brightness(.18) saturate(1.2) blur(2px); }
     .cat-bg.ambient { opacity: 1; background: linear-gradient(160deg,#040c18,#091d30,#0d3343,#164858,#0d3343,#091d30,#040c18); background-size: 400% 400%; animation: ambientFlow 22s ease infinite; filter: blur(60px) saturate(1.5); }
 
