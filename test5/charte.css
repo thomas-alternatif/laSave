@@ -1,0 +1,109 @@
+/* laSave — test5 : application de la charte graphique (surcouche de style.css + test4/h.css) */
+
+/* ── Jetons de la charte ── */
+:root {
+  --or: #C8A96E;            /* signature : logo, filets, pastilles */
+  --bg: #121212;            /* papier (sombre) */
+  --bg-card: #1C1C1B;       /* surface */
+  --bg-card-hover: #222221;
+  --border: #2E2D2A;        /* lin */
+  --text: #F2F0EC;          /* encre */
+  --text-sub: #C9C5BD;
+  --text-muted: #9C988F;    /* encre douce */
+  --gold: #C8A96E;          /* accent lisible sur fond sombre (8:1) */
+  --grad: #C8A96E;          /* bouton principal */
+  --sur-or: #161616;        /* texte sur bouton principal */
+  --focus: #D9BD85;
+}
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg: #F5F4F1;
+    --bg-card: #FFFFFF;
+    --bg-card-hover: #FFFFFF;
+    --border: #E6E2D9;
+    --text: #161616;
+    --text-sub: #3F3D39;
+    --text-muted: #6F6C66;
+    --gold: #7A5E2A;        /* or profond : liens et accents texte (5,5:1) */
+    --grad: #7A5E2A;        /* bouton principal, texte blanc (6:1) */
+    --sur-or: #FFFFFF;
+    --focus: #7A5E2A;
+  }
+}
+
+/* L'or clair reste la couleur du logo dans les deux thèmes */
+.logo-name span, .footer-logo span, .admin-title span, .splash-logo span { color: var(--or) !important; }
+
+/* Focus clavier : anneau plein de 2 px */
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, [tabindex]:focus-visible {
+  outline: 2px solid var(--focus) !important; outline-offset: 2px;
+}
+
+/* ── Boutons : or profond + texte blanc (clair), or + texte encre (sombre) ── */
+.nav-cta, .btn-primary, .ns-cta, .submit-btn, .share-copy-btn, .btn-archive-all, .member-block-btn, #btn-avis {
+  background: var(--grad) !important; color: var(--sur-or) !important; box-shadow: none !important;
+}
+.nav-cta:hover, .btn-primary:hover, .ns-cta:hover, .submit-btn:hover, .member-block-btn:hover, #btn-avis:hover { filter: brightness(1.08); }
+.form-block-num { background: var(--grad) !important; color: var(--sur-or) !important; }
+.form-block-num.dim { background: transparent !important; color: var(--text-muted) !important; border: 1px solid var(--border); }
+.btn-card-more { border-color: var(--border) !important; color: var(--text) !important; background: var(--bg-card) !important; }
+.btn-card-more:hover { border-color: var(--gold) !important; color: var(--gold) !important; }
+
+/* ── Titres : Playfair, texte en encre ; l'italique doré devient or profond en clair ── */
+.hero-h1 em { color: var(--gold) !important; }
+.hero-kicker { color: var(--text-muted) !important; }
+.hero-kicker::before { background: var(--or) !important; }
+
+/* La ligne de Save sous le titre de page */
+.ligne-save { display: block; margin: -4px 0 20px; stroke: var(--or); stroke-width: 1.5; fill: none; }
+
+/* ── Dates en DM Mono ── */
+.card-poster-date, .ns-m, .modal-date, .card-poster-land-info {
+  font-family: 'DM Mono', ui-monospace, Menlo, monospace !important;
+}
+.card-poster-date { font-weight: 500 !important; letter-spacing: .06em !important; }
+
+/* ── Cartes : coins 12 px, contour lin, ombre discrète ── */
+.card { border-radius: 12px !important; border-color: var(--border) !important; }
+.card-poster-cat { color: rgba(255,255,255,0.88) !important; }
+.cat-dot-mini { width: 7px; height: 7px; }
+.ph-neutre { display: grid !important; place-items: center; background: #1C1C1B !important; }
+.ph-neutre span { font-family: 'Playfair Display', Georgia, serif; font-weight: 900; font-size: 64px; color: var(--or); opacity: .5; }
+
+/* ── Organisateurs : anneau or plein, sans dégradé animé ── */
+.story-ring { background: var(--or) !important; animation: none !important; padding: 2px !important; }
+
+/* ── Pas de dégradé de couleur nulle part ── */
+#featured-container::after, #featured-container::before { background: linear-gradient(to bottom, rgba(22,22,22,0) 45%, rgba(22,22,22,.78)) !important; }
+#featured-container::after { display: none !important; }
+
+/* ── Bloc « Votre avis » : même bouton que les autres ── */
+#btn-avis { border: none !important; }
+
+/* ── Sur-titres et compteurs ── */
+.intro-kicker, .gs-kicker { color: var(--text-muted); }
+.intro-stats b { color: var(--text); }
+
+/* ── Mode clair : barre du haut blanche, cartes blanches ── */
+@media (prefers-color-scheme: light) {
+  .header { background: #FFFFFF !important; border-bottom-color: var(--border) !important; }
+  .card { background: #FFFFFF !important; }
+  .footer { background: #FFFFFF !important; }
+  .consent-row a, .legal-content a, .member-link { color: var(--gold) !important; }
+}
+
+/* ── Icônes au trait à la place des emoji ── */
+.ico { vertical-align: -2px; margin-right: 4px; opacity: .85; flex: none; }
+
+/* ── Diaporama « À la une » : même traitement dans les deux thèmes (voile nuit, texte blanc) ── */
+.ns-t { font-family: 'Playfair Display', Georgia, serif !important; font-weight: 700 !important; letter-spacing: -.01em !important; color: #fff !important; text-shadow: none !important; }
+.ns-pill { background: rgba(255,255,255,.14) !important; color: #fff !important; border: 0 !important; border-radius: 99px !important; }
+.ns-bar { background: var(--or) !important; }
+.ns-m { font-family: 'DM Mono', ui-monospace, Menlo, monospace !important; color: rgba(255,255,255,.88) !important; }
+.ns-org, .ns-desc { color: rgba(255,255,255,.82) !important; }
+.ns-org strong { color: #fff !important; }
+@media (prefers-color-scheme: light) and (min-width: 701px) {
+  #ns-content { background: none !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; border: 0 !important; box-shadow: none !important; padding: 0 3rem 0 4rem !important; left: 0 !important; }
+  #featured-container::before { display: block !important; }
+  .ns-thumbs { background: none !important; }
+}
