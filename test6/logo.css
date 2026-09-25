@@ -1,0 +1,8 @@
+/* laSave — test6 : essai du logo « tamponné » avec vagues */
+.lg-header, .lg-footer, .lg-splash { display: inline-block; line-height: 0; }
+.lg-header img { height: 30px; width: auto; display: block; }
+.lg-footer img { height: 34px; width: auto; display: block; }
+.lg-splash img { height: clamp(52px, 12vw, 84px); width: auto; display: block; }
+.logo { align-items: center !important; }
+.splash-logo { font-size: 0 !important; }
+@media (max-width: 560px) { .lg-header img { height: 26px; } }

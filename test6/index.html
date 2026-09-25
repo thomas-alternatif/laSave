@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://lasave-api.partage.workers.dev; object-src 'none'; base-uri 'self'; form-action 'self'; frame-src 'none'; worker-src 'none'; manifest-src 'self'" />
+  <meta name="referrer" content="strict-origin-when-cross-origin" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>laSave — Agenda festif de la vallée de la Save</title>
+  <meta name="description" content="Concerts, fêtes, marchés et spectacles en Haute-Garonne. L'agenda culturel de la vallée de la Save." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://la-save.fr" />
+  <meta property="og:title" content="laSave — Agenda festif de la vallée de la Save" />
+  <meta property="og:description" content="Concerts, fêtes, marchés et spectacles en Haute-Garonne." />
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="canonical" href="https://la-save.fr" />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230d0d0d'/%3E%3Ctext x='6' y='46' font-size='38' font-family='Georgia,serif' font-weight='400' fill='rgba(255,255,255,0.55)'%3Ela%3C/text%3E%3Ctext x='6' y='46' font-size='38' font-family='Georgia,serif' font-weight='900' fill='%23c8a96e' dx='26'%3ES%3C/text%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Yeseva+One&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../style.css?v=51" />
+  <link rel="stylesheet" href="../test4/h.css?v=1" />
+  <link rel="stylesheet" href="../test5/charte.css?v=1" />
+  <link rel="stylesheet" href="logo.css?v=1" />
+  <meta name="theme-color" content="#121212" media="(prefers-color-scheme: dark)" />
+  <meta name="theme-color" content="#f5f1ea" media="(prefers-color-scheme: light)" />
+  <style>
+    /* Écran d'ouverture (inline : visible avant le chargement de style.css) */
+    #splash{position:fixed;inset:0;z-index:9000;display:grid;place-items:center;background:#121212;transition:opacity .5s ease,visibility .5s;}
+    #splash.out{opacity:0;visibility:hidden;pointer-events:none;}
+    .splash-inner{display:flex;flex-direction:column;align-items:center;gap:10px;}
+    .splash-logo{font-family:'Playfair Display',Georgia,'Times New Roman',serif;font-weight:900;font-size:clamp(40px,9vw,64px);letter-spacing:-.01em;color:#e8e8e8;line-height:1;opacity:0;transform:translateY(8px);animation:spIn .7s cubic-bezier(.2,.8,.2,1) .05s forwards;}
+    .splash-logo span{color:#c8a96e;}
+    .splash-tag{font-family:'DM Sans',system-ui,sans-serif;font-size:10px;font-weight:500;letter-spacing:.24em;text-transform:uppercase;color:rgba(232,232,232,.6);opacity:0;animation:spIn .7s ease .25s forwards;}
+    .splash-bar{position:relative;width:120px;height:2px;margin-top:18px;border-radius:2px;overflow:hidden;background:rgba(200,169,110,.15);opacity:0;animation:spIn .5s ease .4s forwards;}
+    .splash-bar i{position:absolute;inset:0;width:40%;border-radius:2px;background:linear-gradient(90deg,transparent,#c8a96e,transparent);animation:spBar 1.1s ease-in-out infinite;}
+    @keyframes spIn{to{opacity:1;transform:none}}
+    @keyframes spBar{0%{transform:translateX(-100%)}100%{transform:translateX(250%)}}
+    @media (prefers-color-scheme: light){#splash{background:#F5F4F1}.splash-logo{color:#0a0a0a}.splash-tag{color:rgba(0,0,0,.55)}}
+    @media (prefers-reduced-motion: reduce){.splash-logo,.splash-tag,.splash-bar{animation:none;opacity:1;transform:none}.splash-bar i{animation-duration:2.5s}}
+  </style>
+  <noscript><style>#splash{display:none}body{display:grid;place-items:center;min-height:100vh;font-family:sans-serif;padding:2rem;text-align:center}</style><p>laSave nécessite JavaScript pour fonctionner.</p></noscript>
+</head>
+<body>
+  <a class="skip-link" href="#contenu">Aller aux événements</a>
+  <div id="splash" role="status" aria-label="Chargement de laSave">
+    <div class="splash-inner">
+      <div class="splash-logo"><picture class="lg-splash"><source srcset="logo-sombre-l.png" media="(prefers-color-scheme: dark)"><img src="logo-clair-l.png" alt="laSave" width="406" height="100"></picture></div>
+      <div class="splash-tag">Agenda festif &amp; culturel</div>
+      <div class="splash-bar"><i></i></div>
+    </div>
+  </div>
+  <!-- Fond catégorie dynamique -->
+  <div class="cat-bg" id="cat-bg" aria-hidden="true"></div>
+
+  <header class="header" id="main-header">
+    <a class="logo" href="#" data-action="section" data-arg="agenda">
+      <picture class="lg-header"><source srcset="logo-sombre.png" media="(prefers-color-scheme: dark)"><img src="logo-clair.png" alt="laSave" width="406" height="100"></picture>
+      <span class="logo-tagline">Agenda festif &amp; culturel</span>
+    </a>
+
+
+
+
+    <nav class="nav" aria-label="Navigation principale">
+      <button class="nav-btn active" data-action="section" data-arg="agenda" data-self>Agenda</button>
+      <button class="nav-search-btn" id="nav-search-btn" type="button" aria-label="Rechercher" title="Rechercher et filtrer">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      </button>
+      <button class="nav-btn nav-cta" data-action="section" data-arg="partager" data-self>
+        <svg width="11" height="11" viewBox="0 0 13 13" fill="none" aria-hidden="true"><line x1="6.5" y1="1" x2="6.5" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="1" y1="6.5" x2="12" y2="6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        Partager
+      </button>
+    </nav>
+  </header>
+
+  <!-- ══ AGENDA ══ -->
+  <main id="section-agenda" class="section active">
+    <header class="intro" aria-labelledby="intro-title">
+      <p class="intro-kicker">Vallée de la Save · Haute-Garonne</p>
+      <h1 class="intro-title" id="intro-title">Sortir près de chez vous</h1>
+      <svg class="ligne-save" width="240" height="10" viewBox="0 0 240 10" aria-hidden="true" focusable="false"><path d="M0,5.0 L2,6.0 L4,7.0 L6,7.8 L8,8.5 L10,8.9 L12,9.0 L14,8.9 L16,8.5 L18,7.8 L20,7.0 L22,6.0 L24,5.0 L26,4.0 L28,3.0 L30,2.2 L32,1.5 L34,1.1 L36,1.0 L38,1.1 L40,1.5 L42,2.2 L44,3.0 L46,4.0 L48,5.0 L50,6.0 L52,7.0 L54,7.8 L56,8.5 L58,8.9 L60,9.0 L62,8.9 L64,8.5 L66,7.8 L68,7.0 L70,6.0 L72,5.0 L74,4.0 L76,3.0 L78,2.2 L80,1.5 L82,1.1 L84,1.0 L86,1.1 L88,1.5 L90,2.2 L92,3.0 L94,4.0 L96,5.0 L98,6.0 L100,7.0 L102,7.8 L104,8.5 L106,8.9 L108,9.0 L110,8.9 L112,8.5 L114,7.8 L116,7.0 L118,6.0 L120,5.0 L122,4.0 L124,3.0 L126,2.2 L128,1.5 L130,1.1 L132,1.0 L134,1.1 L136,1.5 L138,2.2 L140,3.0 L142,4.0 L144,5.0 L146,6.0 L148,7.0 L150,7.8 L152,8.5 L154,8.9 L156,9.0 L158,8.9 L160,8.5 L162,7.8 L164,7.0 L166,6.0 L168,5.0 L170,4.0 L172,3.0 L174,2.2 L176,1.5 L178,1.1 L180,1.0 L182,1.1 L184,1.5 L186,2.2 L188,3.0 L190,4.0 L192,5.0 L194,6.0 L196,7.0 L198,7.8 L200,8.5 L202,8.9 L204,9.0 L206,8.9 L208,8.5 L210,7.8 L212,7.0 L214,6.0 L216,5.0 L218,4.0 L220,3.0 L222,2.2 L224,1.5 L226,1.1 L228,1.0 L230,1.1 L232,1.5 L234,2.2 L236,3.0 L238,4.0 L240,5.0"/></svg>
+      <p class="intro-lede">Concerts, fêtes, marchés, sport et ateliers dans les communes de la vallée, proposés par les associations et la mairie.</p>
+      <p class="intro-stats" id="hero-stats" hidden><span><b id="hs-events">–</b> <span id="hs-events-l">événements à venir</span></span><span><b id="hs-communes">–</b> <span id="hs-communes-l">communes</span></span><span><b id="hs-orgas">–</b> <span id="hs-orgas-l">organisateurs</span></span></p>
+    </header>
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <div class="search-wrap">
+        <label class="sr-only" for="s-input">Rechercher</label>
+        <div class="search-bar">
+          <svg class="s-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input type="text" class="s-input" id="s-input" placeholder="Rechercher un événement, une commune…" autocomplete="off" role="combobox" aria-autocomplete="list" aria-controls="suggest-box" aria-expanded="false" />
+          <button class="s-clear" id="s-clear" type="button" aria-label="Effacer">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+          </button>
+        </div>
+        <div class="suggest-box" id="suggest-box" role="listbox" aria-label="Suggestions"></div>
+      </div>
+
+      <div class="cat-dd" id="cat-dd">
+        <button class="cat-btn" id="cat-btn" type="button" aria-haspopup="listbox" aria-expanded="false">
+          <span class="cat-dot" id="cat-dot"></span>
+          <span id="cat-label">Toutes catégories</span>
+          <svg class="cat-chev" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+        </button>
+        <div class="cat-menu" id="cat-menu" role="listbox"></div>
+      </div>
+    </div>
+
+    <!-- À la une -->
+    <section class="slider-wrap" id="slider-wrap" style="display:none;" aria-labelledby="une-title">
+      <div class="block-head"><div class="gs-titles"><p class="gs-kicker">Sélection de la mairie</p><h2 class="grid-section-title" id="une-title">À la une</h2></div></div>
+      <div id="featured-container"></div>
+    </section>
+
+    <!-- Ateliers & Cours — style stories -->
+    <div class="ateliers-wrap" id="ateliers-wrap" style="display:none;">
+      <div class="ateliers-head">
+        <div class="gs-titles"><p class="gs-kicker">Associations &amp; structures</p><h2 class="ateliers-title">Ceux qui font vivre la Save</h2></div>
+      </div>
+      <div class="ateliers-stories" id="ateliers-stories"></div>
+    </div>
+
+    <!-- Grille -->
+    <div class="grid-wrap" id="contenu" tabindex="-1">
+      <div class="grid" id="events-container" role="region" aria-label="Liste des événements">
+        <div class="sk-card" aria-hidden="true"><div class="sk-img"></div><div class="sk-foot"><span></span></div></div>
+        <div class="sk-card" aria-hidden="true"><div class="sk-img"></div><div class="sk-foot"><span></span></div></div>
+        <div class="sk-card" aria-hidden="true"><div class="sk-img"></div><div class="sk-foot"><span></span></div></div>
+        <div class="sk-card" aria-hidden="true"><div class="sk-img"></div><div class="sk-foot"><span></span></div></div>
+        <div class="sk-card" aria-hidden="true"><div class="sk-img"></div><div class="sk-foot"><span></span></div></div>
+        <div class="sk-card" aria-hidden="true"><div class="sk-img"></div><div class="sk-foot"><span></span></div></div>
+        <div class="sk-card" aria-hidden="true"><div class="sk-img"></div><div class="sk-foot"><span></span></div></div>
+        <div class="sk-card" aria-hidden="true"><div class="sk-img"></div><div class="sk-foot"><span></span></div></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ══ PARTAGER ══ -->
+  <section id="section-partager" class="section" aria-labelledby="partager-title">
+    <div class="hero-alt">
+      <p class="hero-kicker">Participez</p>
+      <h1 class="hero-h1" id="partager-title" style="font-size:clamp(30px,4vw,52px);">Ajoutez<br><em>votre événement</em></h1>
+      <p class="hero-sub">Remplissez le formulaire. Votre événement sera examiné et publié sous 48 h.</p>
+    </div>
+    <div class="share-section">
+      <!-- Déjà membre : code organisateur -->
+      <div class="member-block" id="member-block">
+        <div class="member-block-row">
+          <div class="member-block-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          </div>
+          <div class="member-block-text">
+            <div class="member-block-title">Vous avez un code organisateur ? <span class="cr-opt">(optionnel)</span></div>
+            <div class="member-block-sub">Saisissez-le : vos informations se rempliront toutes seules. Sans code, remplissez simplement le formulaire ci-dessous.</div>
+          </div>
+        </div>
+        <div class="member-block-input-row">
+          <input class="form-input" type="text" id="f-code" placeholder="Code organisateur" autocomplete="off" style="text-transform:uppercase;letter-spacing:0.1em;" />
+          <button type="button" class="member-block-btn" id="member-code-btn">Valider</button>
+        </div>
+        <div class="member-block-msg" id="member-msg"></div>
+        <div class="member-help" id="member-help">
+          <button type="button" class="member-link" data-action="code-request-toggle" data-mode="forgot" aria-expanded="false" aria-controls="code-request">Code oublié ?</button>
+          <span aria-hidden="true">·</span>
+          <button type="button" class="member-link" data-action="code-request-toggle" data-mode="new" aria-expanded="false" aria-controls="code-request">Obtenir un code</button>
+        </div>
+        <div class="code-request" id="code-request" hidden>
+          <p class="code-request-intro" id="cr-intro"></p>
+          <div class="cr-field" id="cr-nom-wrap">
+            <label class="form-label" for="cr-nom">Nom de votre structure</label>
+            <input class="form-input" type="text" id="cr-nom" autocomplete="organization" maxlength="120" />
+          </div>
+          <div class="cr-field">
+            <label class="form-label" for="cr-email">Votre adresse e-mail</label>
+            <input class="form-input" type="email" id="cr-email" autocomplete="email" required />
+          </div>
+          <div class="cr-field" id="cr-message-wrap">
+            <label class="form-label" for="cr-message">Un mot pour la mairie <span class="cr-opt">(facultatif)</span></label>
+            <textarea class="form-input" id="cr-message" rows="2" maxlength="1500" placeholder="Ex. : association de théâtre de Lévignac"></textarea>
+          </div>
+          <input type="text" id="cr-website" class="hp-field" tabindex="-1" autocomplete="off" aria-hidden="true" />
+          <button type="button" class="member-block-btn" id="cr-send" data-action="code-request-send"></button>
+          <p class="code-request-out" id="cr-out" role="status" aria-live="polite"></p>
+        </div>
+        <div class="member-welcome" id="member-welcome" style="display:none;">
+          <div class="member-welcome-avatar" id="member-welcome-avatar"></div>
+          <div class="member-welcome-text">
+            <div class="member-welcome-title" id="member-welcome-title"></div>
+            <div class="member-welcome-sub">Vos informations ont été pré-remplies</div>
+          </div>
+          <button type="button" class="member-welcome-reset" id="member-welcome-reset" aria-label="Changer de code">✕</button>
+        </div>
+      </div>
+
+      <form id="agenda-form" novalidate>
+        <div class="form-block">
+          <div class="form-block-header">
+            <div class="form-block-num">1</div>
+            <div><div class="form-block-title">L'essentiel <span style="color:var(--text-muted);font-weight:400;font-size:12px;">— obligatoire</span></div><div class="form-block-sub">Ces informations sont indispensables à la publication</div></div>
+          </div>
+          <div class="form-block-body">
+            <div class="form-group">
+              <label class="form-label" for="f-titre">Nom de l'événement *</label>
+              <input class="form-input" type="text" id="f-titre" placeholder="Concert de jazz, Fête du village…" required />
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="f-cat">Catégorie *</label>
+                <select class="form-select" id="f-cat" required>
+                  <option value="">— Choisir —</option>
+                  <option>Concert</option><option>Festival</option><option>Marché</option>
+                  <option>Exposition</option><option>Spectacle</option><option>Sport / Loisir</option>
+                  <option>Guinguette</option><option>Fête &amp; Célébration</option>
+                  <option>Conférence / Atelier</option><option>Autre</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="f-commune">Commune *</label>
+                <input class="form-input" type="text" id="f-commune" placeholder="Saint-Paul-sur-Save…" autocomplete="off" required />
+                <div class="suggestions-box" id="commune-sug" role="listbox"></div>
+              </div>
+            </div>
+            <div class="form-row" style="grid-template-columns:1fr 1fr 1fr;">
+              <div class="form-group"><label class="form-label" for="f-date">Date</label><input class="form-input" type="date" id="f-date" /></div>
+              <div class="form-group"><label class="form-label" for="f-date-fin">Date de fin</label><input class="form-input" type="date" id="f-date-fin" /></div>
+              <div class="form-group"><label class="form-label" for="f-heure">Heure</label><input class="form-input" type="time" id="f-heure" /></div>
+            </div>
+            <div class="form-group"><label class="form-label" for="f-lieu">Lieu / salle</label><input class="form-input" type="text" id="f-lieu" placeholder="Salle des fêtes, Place de la mairie…" /></div>
+            <div class="form-group">
+              <label class="form-label">Photo / affiche <span style="font-size:10px;color:var(--text-muted);font-weight:400;text-transform:none;letter-spacing:0;">— recommandée</span></label>
+              <input type="file" id="f-photo-file" accept="image/jpeg,image/png,image/webp" style="display:none;" />
+              <input type="hidden" id="f-photo-url" />
+              <div class="photo-dropzone" id="photo-dropzone">
+                <div class="photo-dropzone-empty" id="photo-dropzone-empty">
+                  <div class="photo-dropzone-icon">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                  </div>
+                  <div class="photo-dropzone-title">Ajoutez l'affiche de votre événement</div>
+                  <div class="photo-dropzone-sub">Cliquez pour choisir une image · JPG, PNG · max 5 Mo</div>
+                </div>
+                <div class="photo-dropzone-filled" id="photo-dropzone-filled" style="display:none;">
+                  <img id="photo-dropzone-img" alt="Aperçu de l'affiche" />
+                  <div class="photo-dropzone-overlay">
+                    <span class="photo-dropzone-status" id="photo-dropzone-status"></span>
+                    <button type="button" class="photo-dropzone-remove" id="photo-dropzone-remove">Changer d'image</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-block">
+          <div class="form-block-header">
+            <div class="form-block-num dim">2</div>
+            <div><div class="form-block-title">Détails</div><div class="form-block-sub">Description, tarif, récurrence — recommandé</div></div>
+            <button type="button" class="form-block-toggle" data-action="toggle-block" aria-expanded="false"><span>Afficher</span></button>
+          </div>
+          <div class="form-block-body collapsed" id="block-details">
+            <div class="form-group"><label class="form-label" for="f-desc">Description</label><textarea class="form-textarea" id="f-desc" placeholder="Décrivez l'événement en quelques lignes…"></textarea></div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="f-tarif">Tarif</label>
+                <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
+                  <button type="button" data-action="tarif" data-arg="Gratuit" class="tq">Gratuit</button>
+                  <button type="button" data-action="tarif" data-arg="Entrée libre" class="tq">Entrée libre</button>
+                  <button type="button" data-action="tarif" data-arg="Sur réservation" class="tq">Sur réservation</button>
+                  <button type="button" data-action="tarif" data-arg="Participation libre" class="tq">Chapeau</button>
+                </div>
+                <input class="form-input" type="text" id="f-tarif" placeholder="Gratuit / 5 € / Sur réservation…" />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="f-recurrence">Récurrence</label>
+                <select class="form-select" id="f-recurrence">
+                  <option value="Aucune">Aucune (ponctuel)</option>
+                  <option value="Hebdomadaire">Chaque semaine</option>
+                  <option value="Mensuelle">Chaque mois</option>
+                  <option value="Annuelle">Chaque année</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group" id="f-periode-group" style="display:none;"><label class="form-label" for="f-periode">Précisez la période</label><input class="form-input" type="text" id="f-periode" placeholder="Chaque samedi soir de juin à août" /></div>
+          </div>
+        </div>
+
+        <div class="form-block">
+          <div class="form-block-header">
+            <div class="form-block-num dim">3</div>
+            <div><div class="form-block-title">Contact</div><div class="form-block-sub">Organisateur, réseaux sociaux</div></div>
+            <button type="button" class="form-block-toggle" data-action="toggle-block" aria-expanded="false"><span>Afficher</span></button>
+          </div>
+          <div class="form-block-body collapsed" id="block-contact">
+            <div class="form-group"><label class="form-label" for="f-org">Organisateur / association</label><input class="form-input" type="text" id="f-org" placeholder="Marie Dupont / Association Les Amis de…" /></div>
+            <div class="form-group">
+              <label class="form-label">Réseaux &amp; site</label>
+              <div class="social-field"><span class="social-icon" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg></span><input class="form-input" type="text" id="f-insta" placeholder="Instagram — nom_du_compte" aria-label="Instagram" /></div>
+              <div class="social-field"><span class="social-icon" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.41c0-3.025 1.792-4.697 4.533-4.697 1.312 0 2.686.236 2.686.236v2.97h-1.513c-1.491 0-1.956.93-1.956 1.886v2.267h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z"/></svg></span><input class="form-input" type="text" id="f-fb" placeholder="Facebook — nom_de_la_page" aria-label="Facebook" /></div>
+              <div class="social-field"><span class="social-icon" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2c-2.5 3-4 6.5-4 10s1.5 7 4 10M12 2c2.5 3 4 6.5 4 10s-1.5 7-4 10" stroke-linecap="round"/></svg></span><input class="form-input" type="text" id="f-site" placeholder="Site web — www.votre-site.fr" aria-label="Site web" /></div>
+            </div>
+            <div style="border-top:1px solid var(--border);padding-top:16px;margin-top:4px;">
+              <p class="form-hint" style="margin-bottom:12px;"><strong style="color:var(--text-sub);">Informations privées</strong> — non publiées, modérateurs uniquement</p>
+              <div class="form-row">
+                <div class="form-group"><label class="form-label" for="f-contact-prive">Votre contact</label><input class="form-input" type="text" id="f-contact-prive" placeholder="email@exemple.fr ou 06…" /></div>
+                <div class="form-group"><label class="form-label" for="f-message-prive">Message aux modérateurs</label><textarea class="form-textarea" id="f-message-prive" placeholder="Questions, demandes…" style="min-height:70px;"></textarea></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="consent-block">
+          <label class="consent-row">
+            <input type="checkbox" id="f-consent" required />
+            <span>J'accepte que mes informations soient utilisées pour la publication de mon événement sur laSave. <a href="#" data-action="legal" data-arg="rgpd">En savoir plus</a></span>
+          </label>
+        </div>
+        <div class="submit-area">
+          <button class="submit-btn" type="submit" id="submit-btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z"/></svg>
+            Envoyer l'événement
+          </button>
+          <p class="submit-note">Relu et publié sous 48 h par la Mairie de Saint-Paul-sur-Save.</p>
+        </div>
+      </form>
+      <div class="success-msg" id="success-msg" role="status">
+        <div class="success-msg-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M20 6L9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/></svg> Événement reçu !</div>
+        Merci — votre proposition a bien été transmise. Elle sera publiée sous 48 h.
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ LÉGAL ══ -->
+  <section id="section-legal" class="section" aria-labelledby="legal-title">
+    <div class="hero-alt">
+      <p class="hero-kicker">Informations légales</p>
+      <h1 class="hero-h1" id="legal-title" style="font-size:clamp(28px,4vw,48px);">Mentions <em>légales</em></h1>
+    </div>
+    <div class="legal-section">
+      <div class="legal-tabs" role="tablist">
+        <button class="legal-tab on" data-tab="mentions" role="tab" aria-selected="true">Mentions légales</button>
+        <button class="legal-tab" data-tab="rgpd" role="tab" aria-selected="false">RGPD</button>
+        <button class="legal-tab" data-tab="cookies" role="tab" aria-selected="false">Cookies</button>
+        <button class="legal-tab" data-tab="a11y" role="tab" aria-selected="false">Accessibilité</button>
+      </div>
+      <div class="legal-content on" id="tab-mentions" role="tabpanel">
+        <h2>Éditeur du site</h2>
+        <p><strong>Mairie de Saint-Paul-sur-Save</strong><br>9 route de Cox, 31530 Saint-Paul-sur-Save<br>Tél. : 05 61 85 43 77 — Fax : 05 61 85 52 73<br>Email : <a href="mailto:contact@saintpaulsursave.fr">contact@saintpaulsursave.fr</a><br>Statut : Commune — SIRET : 21310507500013</p>
+        <h2>Directrice de la publication</h2>
+        <p>Marie-France URBAN, Maire de Saint-Paul-sur-Save.</p>
+        <h2>Hébergement</h2>
+        <p><strong>GitHub, Inc.</strong> — 88 Colin P. Kelly Jr Street, San Francisco, CA 94107, États-Unis — <a href="https://github.com" target="_blank" rel="noopener">github.com</a></p>
+        <h2>Propriété intellectuelle</h2>
+        <p>Le contenu de ce site est propriété de la Mairie de Saint-Paul-sur-Save ou de ses partenaires. Les descriptions d'événements sont fournies par leurs organisateurs. Toute reproduction sans autorisation est interdite.</p>
+        <h2>Contact</h2>
+        <p><a href="mailto:agenda.de.la.save@gmail.com">agenda.de.la.save@gmail.com</a></p>
+      </div>
+      <div class="legal-content" id="tab-rgpd" role="tabpanel">
+        <h2>Politique de confidentialité</h2>
+        <p>La Mairie de Saint-Paul-sur-Save traite vos données conformément au RGPD.</p>
+        <h3>Données collectées via le formulaire</h3>
+        <p>Titre, description, date, lieu, commune, organisateur, contact public. En privé (non publiées) : votre contact et message aux modérateurs.</p>
+        <h3>Finalité &amp; base légale</h3>
+        <p>Publication d'événements. Base : mission d'intérêt public + consentement.</p>
+        <h3>Destinataires</h3>
+        <p>Modérateurs habilités. Données stockées via Airtable (sous-traitant). Aucune cession à des tiers.</p>
+        <h3>Durée de conservation</h3>
+        <ul><li>Événements publiés : durée d'utilité du site</li><li>Soumissions refusées : 6 mois</li><li>Données privées : suppression après traitement</li></ul>
+        <h3>Vos droits</h3>
+        <p>Accès, rectification, effacement, opposition. Contact : <a href="mailto:contact@saintpaulsursave.fr">contact@saintpaulsursave.fr</a></p>
+        <h3>DPO &amp; recours</h3>
+        <p>DPO mutualisé CDG31 — 590 rue Buissonnière, 31676 Labège Cedex — <a href="https://www.cdg31.fr" target="_blank" rel="noopener">cdg31.fr</a><br>CNIL — <a href="https://www.cnil.fr" target="_blank" rel="noopener">cnil.fr</a></p>
+      </div>
+      <div class="legal-content" id="tab-cookies" role="tabpanel">
+        <h2>Cookies et traceurs</h2>
+        <p>laSave n'utilise <strong>aucun cookie</strong> de tracking, de publicité ou de profilage.</p>
+        <p>Un stockage technique local (<code>localStorage</code>) mémorise vos « J'y vais » et votre préférence d'animations. Ces données restent sur votre appareil et ne sont jamais transmises.</p>
+        <p>Les données du site transitent par une interface hébergée par Cloudflare, qui traite votre adresse IP uniquement pour limiter les abus (envois répétés). Cette information est conservée au maximum une heure.</p>
+        <p>Les polices sont chargées depuis Google Fonts, ce qui peut impliquer un transfert d'adresse IP vers les États-Unis.</p>
+      </div>
+      <div class="legal-content" id="tab-a11y" role="tabpanel">
+        <h2>Déclaration d'accessibilité</h2>
+        <p>La Mairie de Saint-Paul-sur-Save s'engage à rendre ses services numériques accessibles, conformément à l'article 47 de la loi n° 2005-102 du 11 février 2005. Cette déclaration s'applique au site <strong>la-save.fr</strong>.</p>
+
+        <h3>État de conformité</h3>
+        <p>Le site la-save.fr est <strong>partiellement conforme</strong> avec le référentiel général d'amélioration de l'accessibilité (RGAA), version 4.1.2, d'après une vérification interne. Un audit complet est programmé pour établir le taux de conformité précis (voir le plan d'action ci-dessous).</p>
+
+        <h3>Améliorations déjà réalisées</h3>
+        <ul>
+          <li>Lien d'accès direct aux événements en début de page et titre de niveau 1 sur chaque page.</li>
+          <li>Navigation complète au clavier, focus visible, fenêtres (fiche, avis, partage) qui gardent et restituent le focus, fermeture par la touche Échap.</li>
+          <li>Bouton « J'aime » dont l'état est annoncé par les lecteurs d'écran.</li>
+          <li>Erreurs du formulaire affichées à côté des champs concernés et annoncées vocalement.</li>
+          <li>Bouton pour mettre en pause toutes les animations (diaporama, organisateurs, fond animé) et respect du réglage « réduire les animations » de l'appareil.</li>
+          <li>Contrastes des textes vérifiés en thème clair et sombre avec l'outil axe.</li>
+        </ul>
+
+        <h3>Contenus non accessibles connus</h3>
+        <ul>
+          <li>Les affiches d'événements sont des images fournies par les organisateurs : les informations qu'elles contiennent sont reprises dans le texte de la fiche, mais pas toujours intégralement.</li>
+          <li>Les descriptions sont rédigées par les organisateurs et peuvent contenir des abréviations ou des mises en forme non structurées.</li>
+        </ul>
+
+        <h3>Établissement de cette déclaration</h3>
+        <p>Déclaration établie le 25 septembre 2026, sur la base d'une vérification interne (outil automatique axe-core et tests de navigation au clavier), réalisée avec Chrome et Safari sur ordinateur et mobile.</p>
+
+        <h3>Retour d'information et contact</h3>
+        <p>Si vous n'arrivez pas à accéder à un contenu ou à un service, contactez-nous pour être orienté vers une alternative accessible ou obtenir le contenu sous une autre forme : <a href="mailto:agenda.de.la.save@gmail.com">agenda.de.la.save@gmail.com</a> ou Mairie de Saint-Paul-sur-Save, 9 route de Cox, 31530 Saint-Paul-sur-Save.</p>
+
+        <h3>Voies de recours</h3>
+        <p>Si vous avez signalé un défaut d'accessibilité qui vous empêche d'accéder à un contenu ou à un service et que vous n'avez pas obtenu de réponse satisfaisante, vous pouvez :</p>
+        <ul>
+          <li>écrire un message au <a href="https://formulaire.defenseurdesdroits.fr/" target="_blank" rel="noopener">Défenseur des droits</a> ;</li>
+          <li>contacter <a href="https://www.defenseurdesdroits.fr/carte-des-delegues" target="_blank" rel="noopener">le délégué du Défenseur des droits dans votre région</a> ;</li>
+          <li>envoyer un courrier gratuit, sans timbre : Défenseur des droits, Libre réponse 71120, 75342 Paris CEDEX 07.</li>
+        </ul>
+
+        <h2>Schéma pluriannuel de mise en accessibilité 2026-2028</h2>
+        <p>Le site la-save.fr est le seul service numérique concerné par ce schéma. Son suivi est assuré par le conseiller municipal délégué à la culture et à la communication.</p>
+        <ul>
+          <li><strong>2026</strong> : corrections techniques prioritaires (réalisées), audit RGAA sur un échantillon de pages, publication du taux de conformité.</li>
+          <li><strong>2027</strong> : correction des non-conformités relevées par l'audit, consignes d'accessibilité pour les organisateurs qui publient des événements (texte des affiches, descriptions).</li>
+          <li><strong>2028</strong> : nouvel audit, mise à jour de cette déclaration, prise en compte du RGAA 5.</li>
+        </ul>
+
+        <h3>Plan d'action 2026</h3>
+        <ul>
+          <li>Septembre 2026 : corrections clavier, focus, contrastes, animations et formulaires. <em>Fait.</em></li>
+          <li>4e trimestre 2026 : audit RGAA 4.1.2 sur l'accueil, une fiche d'événement, le formulaire de proposition, la page « Votre avis » et les mentions légales.</li>
+          <li>Après l'audit : mise à jour de l'état de conformité et de cette déclaration.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="footer-brand">
+      <div class="footer-logo"><picture class="lg-footer"><source srcset="logo-sombre.png" media="(prefers-color-scheme: dark)"><img src="logo-clair.png" alt="laSave" width="406" height="100"></picture></div>
+      <div class="footer-tagline">Agenda culturel de la Vallée de la Save</div>
+    </div>
+    <div class="footer-mairie">
+      <img src="data:image/png;base64,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" alt="Mairie de Saint-Paul-sur-Save" class="footer-mairie-logo">
+      <div class="footer-mairie-info">
+        <span class="footer-mairie-name">Mairie de Saint-Paul-sur-Save (31)</span>
+        <a href="mailto:contact@saintpaulsursave.fr" class="footer-mairie-contact">contact@saintpaulsursave.fr</a>
+      </div>
+    </div>
+    <nav class="footer-links" aria-label="Liens secondaires">
+      <a href="#" data-action="section" data-arg="partager">Partager un événement</a>
+      <a href="#" data-action="legal" data-arg="mentions">Mentions légales</a>
+      <a href="#" data-action="legal" data-arg="rgpd">Confidentialité</a>
+      <a href="#" data-action="legal" data-arg="a11y" class="footer-a11y">Accessibilité : partiellement conforme</a>
+      <button type="button" class="footer-motion" data-action="motion" aria-pressed="false">Animations : activées</button>
+    </nav>
+  </footer>
+
+  <!-- Modale organisateur ateliers -->
+  <div class="orga-modal-overlay" id="orga-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="orga-modal-name">
+    <div class="orga-modal" id="orga-modal">
+      <button class="orga-modal-close" id="orga-modal-close" type="button" aria-label="Fermer">✕</button>
+      <div class="orga-modal-head">
+        <div class="orga-modal-avatar" id="orga-modal-avatar"></div>
+        <div>
+          <div class="orga-modal-name" id="orga-modal-name"></div>
+          <div class="orga-modal-meta" id="orga-modal-meta"></div>
+        </div>
+      </div>
+      <div class="orga-modal-body" id="orga-modal-body"></div>
+    </div>
+  </div>
+
+  <!-- Modale événement -->
+  <div class="modal-overlay" id="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal" id="modal">
+      <button class="modal-close" id="modal-close" type="button" aria-label="Fermer">✕</button>
+      <div class="modal-head">
+        <span class="modal-cat-pill" id="modal-cat"></span>
+        <h2 class="modal-title" id="modal-title"></h2>
+      </div>
+      <div class="modal-body">
+        <div class="modal-meta" id="modal-meta"></div>
+        <div class="modal-desc" id="modal-desc"></div>
+        <div class="modal-org" id="modal-org" style="display:none;"></div>
+        <div class="modal-foot" id="modal-foot"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lightbox -->
+  <div id="lightbox" role="dialog" aria-modal="true" aria-label="Aperçu photo">
+    <button id="lightbox-close" type="button" aria-label="Fermer">✕</button>
+    <img id="lightbox-img" src="" alt="" />
+  </div>
+
+  <!-- Panneau de partage -->
+  <div class="share-modal" id="share-modal" role="dialog" aria-modal="true" aria-labelledby="share-title">
+    <div class="share-panel" style="position:relative;">
+      <button class="share-close" id="share-close" type="button" aria-label="Fermer">✕</button>
+      <div class="share-panel-title" id="share-title">Partager</div>
+      <div class="share-panel-sub" id="share-sub"></div>
+      <div class="share-grid" id="share-grid"></div>
+      <div class="share-copy">
+        <span class="share-copy-url" id="share-copy-url"></span>
+        <button class="share-copy-btn" id="share-copy-btn" type="button">Copier</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ ADMIN ══ -->
+  <section id="section-admin" class="section" aria-label="Administration">
+    <!-- Écran de connexion -->
+    <div class="admin-login" id="admin-login">
+      <div class="admin-login-box">
+        <div class="admin-login-title">Administration</div>
+        <div class="admin-login-sub">Accès réservé aux modérateurs de laSave.</div>
+        <div class="form-group">
+          <label class="form-label" for="admin-pwd">Mot de passe</label>
+          <input class="form-input" type="password" id="admin-pwd" placeholder="••••••••" autocomplete="current-password" />
+        </div>
+        <button class="submit-btn" id="admin-login-btn" type="button" style="width:100%;justify-content:center;">
+          Accéder
+        </button>
+        <div class="admin-login-error" id="admin-login-error">Mot de passe incorrect.</div>
+      </div>
+    </div>
+
+    <!-- Panneau admin (après connexion) -->
+    <div class="admin-panel" id="admin-panel" style="display:none;">
+      <div class="admin-head">
+        <div>
+          <div class="admin-title">Administration <span>laSave</span></div>
+          <div class="admin-count" id="admin-count"></div>
+        </div>
+        <div class="admin-bar">
+          <div class="admin-msg" id="admin-msg"></div>
+          <button class="btn-archive-all" id="btn-archive-all" type="button">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M21 8v13H3V8"/><path d="M1 3h22v5H1z"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+            Tout archiver
+          </button>
+          <button class="admin-logout" id="admin-logout" type="button">Déconnexion</button>
+        </div>
+      </div>
+      <!-- Onglets -->
+      <div style="display:flex;gap:0;margin-bottom:1.5rem;border-bottom:1px solid var(--border);">
+        <button class="legal-tab on" id="admin-tab-archive" data-action="admin-tab" data-arg="archive" type="button">À archiver</button>
+        <button class="legal-tab" id="admin-tab-archived" data-action="admin-tab" data-arg="archived" type="button">Archivés</button>
+        <button class="legal-tab" id="admin-tab-codes" data-action="admin-tab" data-arg="codes" type="button">Demandes de code <span class="admin-badge" id="codes-badge" hidden></span></button>
+      </div>
+      <div id="admin-table-wrap"></div>
+    </div>
+  </section>
+  <script type="application/ld+json" id="jsonld-events">[]</script>
+  <script src="app.js?v=36" defer></script>
+  <script src="../boot.js?v=3" defer></script>
+</body>
+</html>
