@@ -1127,6 +1127,7 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
 
     const resetWelcome=()=>{
       if(welcome)welcome.style.display='none';
+      $('#member-block')?.classList.remove('is-member');
       input.value='';
       input.disabled=false;
       btn.style.display='';
@@ -1196,6 +1197,7 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
       input.disabled=true;
       btn.style.display='none';
       if(welcome)welcome.style.display='flex';
+      $('#member-block')?.classList.add('is-member');const crb=$('#code-request');if(crb)crb.hidden=true;
     };
 
     btn.addEventListener('click',validate);
@@ -1850,18 +1852,34 @@ if(document.readyState!=='loading')setMotion(window.__motionPaused);
 })();
 
 /* ═══ Codes organisateurs : demande par e-mail + validation dans l'admin ═══ */
+const CR_MODES={
+  forgot:{intro:"Indiquez l'adresse e-mail de votre structure : on vous renvoie votre code.",btn:'Renvoyer mon code',done:'Si cette adresse est connue, votre code arrive dans quelques minutes. Pensez à regarder dans les indésirables.'},
+  new:{intro:"La mairie valide votre demande, puis vous recevez votre code par e-mail.",btn:'Demander mon code',done:'Demande envoyée ! Vous recevrez votre code par e-mail dès sa validation par la mairie.'}
+};
+let crMode='new';
+function setCodeRequestMode(mode){
+  crMode=CR_MODES[mode]?mode:'new';const m=CR_MODES[crMode],isNew=crMode==='new';
+  document.getElementById('cr-intro').textContent=m.intro;
+  document.getElementById('cr-nom-wrap').hidden=!isNew;
+  document.getElementById('cr-message-wrap').hidden=!isNew;
+  const btn=document.getElementById('cr-send');btn.textContent=m.btn;btn.disabled=false;
+  const out=document.getElementById('cr-out');out.className='code-request-out';out.textContent='';
+}
 async function sendCodeRequest(){
-  const email=document.getElementById('cr-email'), nom=document.getElementById('cr-nom'), out=document.getElementById('cr-out'), btn=document.getElementById('cr-send');
+  const email=document.getElementById('cr-email'), nom=document.getElementById('cr-nom'), out=document.getElementById('cr-out'), btn=document.getElementById('cr-send'), m=CR_MODES[crMode], isNew=crMode==='new';
   [email,nom].forEach(el=>el.removeAttribute('aria-invalid'));
   out.className='code-request-out';
+  if(isNew&&!nom.value.trim()){nom.setAttribute('aria-invalid','true');out.classList.add('err');out.textContent='Indiquez le nom de votre structure.';nom.focus();return;}
   if(!/^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(email.value.trim())){email.setAttribute('aria-invalid','true');out.classList.add('err');out.textContent='Indiquez une adresse e-mail valide.';email.focus();return;}
-  if(!nom.value.trim()){nom.setAttribute('aria-invalid','true');out.classList.add('err');out.textContent='Indiquez le nom de votre structure.';nom.focus();return;}
   btn.disabled=true;btn.textContent='Envoi…';
   try{
-    const d=await api('/code/request',{method:'POST',body:JSON.stringify({email:email.value.trim(),nom:nom.value.trim(),message:document.getElementById('cr-message').value.trim(),website:document.getElementById('cr-website').value})});
-    out.classList.add('ok');out.textContent=d.message||'Demande envoyée.';
-    btn.textContent='Demande envoyée';
-  }catch(e){out.classList.add('err');out.textContent=e.message||'Envoi impossible, réessayez plus tard.';btn.disabled=false;btn.textContent='Recevoir mon code';}
+    await api('/code/request',{method:'POST',body:JSON.stringify({email:email.value.trim(),nom:isNew?nom.value.trim():'',message:isNew?document.getElementById('cr-message').value.trim():'',website:document.getElementById('cr-website').value})});
+    out.classList.add('ok');out.textContent=m.done;btn.textContent='Envoyé';
+  }catch(e){
+    // Code oublié + adresse inconnue : même réponse que si elle était connue (on ne révèle pas les adresses inscrites)
+    if(!isNew&&e.status===400&&/nom/i.test(e.message||'')){out.classList.add('ok');out.textContent=m.done;btn.textContent='Envoyé';return;}
+    out.classList.add('err');out.textContent=e.message||'Envoi impossible, réessayez plus tard.';btn.disabled=false;btn.textContent=m.btn;
+  }
 }
 async function loadCodeRequests(){
   const wrap=document.getElementById('admin-table-wrap'),countEl=document.getElementById('admin-count');
@@ -1891,6 +1909,9 @@ function updateCodesBadge(n){const b=document.getElementById('codes-badge');if(b
 document.addEventListener('click',e=>{
   const t=e.target.closest('[data-action="code-request-toggle"],[data-action="code-request-send"]');if(!t)return;
   if(t.dataset.action==='code-request-send'){sendCodeRequest();return;}
-  const box=document.getElementById('code-request'),open=box.hidden;
-  box.hidden=!open;t.setAttribute('aria-expanded',String(open));if(open)document.getElementById('cr-email').focus();
+  const box=document.getElementById('code-request'),mode=t.dataset.mode||'new',same=!box.hidden&&crMode===mode;
+  document.querySelectorAll('[data-action="code-request-toggle"]').forEach(b=>b.setAttribute('aria-expanded','false'));
+  if(same){box.hidden=true;return;}
+  setCodeRequestMode(mode);box.hidden=false;t.setAttribute('aria-expanded','true');
+  document.getElementById(mode==='new'?'cr-nom':'cr-email').focus();
 });

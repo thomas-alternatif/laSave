@@ -17,7 +17,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Yeseva+One&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=45" />
+  <link rel="stylesheet" href="style.css?v=46" />
   <meta name="theme-color" content="#0d0d0d" media="(prefers-color-scheme: dark)" />
   <meta name="theme-color" content="#f5f1ea" media="(prefers-color-scheme: light)" />
   <style>
@@ -141,26 +141,36 @@
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
           </div>
           <div class="member-block-text">
-            <div class="member-block-title">Organisateur régulier ?</div>
-            <div class="member-block-sub">Saisissez votre code pour pré-remplir vos informations</div>
+            <div class="member-block-title">Vous avez un code organisateur ?</div>
+            <div class="member-block-sub">Saisissez-le : vos informations se rempliront toutes seules. Sans code, remplissez simplement le formulaire ci-dessous.</div>
           </div>
         </div>
         <div class="member-block-input-row">
-          <input class="form-input" type="text" id="f-code" placeholder="Code organisateur" autocomplete="off" style="text-transform:uppercase;letter-spacing:0.1em;" />
+          <input class="form-input" type="text" id="f-code" placeholder="Ex. : ALTERNATIF" aria-label="Code organisateur" autocomplete="off" style="text-transform:uppercase;letter-spacing:0.1em;" />
           <button type="button" class="member-block-btn" id="member-code-btn">Valider</button>
         </div>
         <div class="member-block-msg" id="member-msg"></div>
-        <button type="button" class="member-link" data-action="code-request-toggle" aria-expanded="false" aria-controls="code-request">Pas encore de code, ou code oublié&nbsp;? Recevez-le par e-mail</button>
+        <div class="member-help" id="member-help">
+          <button type="button" class="member-link" data-action="code-request-toggle" data-mode="forgot" aria-expanded="false" aria-controls="code-request">Code oublié ?</button>
+          <span aria-hidden="true">·</span>
+          <button type="button" class="member-link" data-action="code-request-toggle" data-mode="new" aria-expanded="false" aria-controls="code-request">Obtenir un code</button>
+        </div>
         <div class="code-request" id="code-request" hidden>
-          <p class="code-request-intro">Déjà inscrit : votre code vous est renvoyé tout de suite. Nouvelle structure : la mairie valide votre demande, puis vous recevez votre code par e-mail.</p>
-          <label class="form-label" for="cr-email">Adresse e-mail de votre structure *</label>
-          <input class="form-input" type="email" id="cr-email" autocomplete="email" required />
-          <label class="form-label" for="cr-nom">Nom de votre structure *</label>
-          <input class="form-input" type="text" id="cr-nom" autocomplete="organization" maxlength="120" required />
-          <label class="form-label" for="cr-message">Présentez-vous en quelques mots (facultatif)</label>
-          <textarea class="form-input" id="cr-message" rows="3" maxlength="1500"></textarea>
+          <p class="code-request-intro" id="cr-intro"></p>
+          <div class="cr-field" id="cr-nom-wrap">
+            <label class="form-label" for="cr-nom">Nom de votre structure</label>
+            <input class="form-input" type="text" id="cr-nom" autocomplete="organization" maxlength="120" />
+          </div>
+          <div class="cr-field">
+            <label class="form-label" for="cr-email">Votre adresse e-mail</label>
+            <input class="form-input" type="email" id="cr-email" autocomplete="email" required />
+          </div>
+          <div class="cr-field" id="cr-message-wrap">
+            <label class="form-label" for="cr-message">Un mot pour la mairie <span class="cr-opt">(facultatif)</span></label>
+            <textarea class="form-input" id="cr-message" rows="2" maxlength="1500" placeholder="Ex. : association de théâtre de Lévignac"></textarea>
+          </div>
           <input type="text" id="cr-website" class="hp-field" tabindex="-1" autocomplete="off" aria-hidden="true" />
-          <button type="button" class="member-block-btn" id="cr-send" data-action="code-request-send">Recevoir mon code</button>
+          <button type="button" class="member-block-btn" id="cr-send" data-action="code-request-send"></button>
           <p class="code-request-out" id="cr-out" role="status" aria-live="polite"></p>
         </div>
         <div class="member-welcome" id="member-welcome" style="display:none;">
@@ -529,7 +539,7 @@
     </div>
   </section>
   <script type="application/ld+json" id="jsonld-events">[]</script>
-  <script src="app.js?v=35" defer></script>
+  <script src="app.js?v=36" defer></script>
   <script src="boot.js?v=2" defer></script>
 </body>
 </html>

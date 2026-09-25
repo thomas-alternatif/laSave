@@ -1369,11 +1369,17 @@ textarea:focus-visible,[role="button"]:focus-visible,[tabindex="0"]:focus-visibl
 @media (prefers-color-scheme: light){ .story-inner-placeholder,.card-poster-avatar span{filter:brightness(.62) saturate(1.2)} }
 
 /* ── Demande de code organisateur ── */
-.member-link{display:inline-block;margin-top:12px;background:none;border:0;padding:0;font:inherit;font-size:13px;color:var(--gold);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
-.code-request{margin-top:14px;display:grid;gap:8px;padding:16px;border:1px solid var(--border);border-radius:10px;background:rgba(255,255,255,.03)}
-.code-request .form-label{font-size:12px;font-weight:600;color:var(--text-sub);margin-top:4px}
-.code-request-intro{font-size:13px;color:var(--text-sub);line-height:1.5}
-.code-request .member-block-btn{justify-self:start;padding:10px 20px;margin-top:6px}
+.member-help{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin-top:12px;font-size:13px;color:var(--text-muted)}
+.member-block.is-member .member-help{display:none}
+.member-link{background:none;border:0;padding:2px 0;font:inherit;font-size:13px;color:var(--gold);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.member-link[aria-expanded="true"]{text-decoration-thickness:2px;font-weight:600}
+.code-request{margin-top:12px;display:grid;gap:12px;padding:16px;border:1px solid var(--border);border-radius:10px;background:rgba(255,255,255,.03)}
+.code-request .cr-field{display:grid;gap:6px}
+.code-request[hidden],.code-request .cr-field[hidden]{display:none}
+.code-request .form-label{font-size:12px;font-weight:600;color:var(--text-sub)}
+.cr-opt{font-weight:400;color:var(--text-muted)}
+.code-request-intro{font-size:13px;color:var(--text-sub);line-height:1.5;margin:0}
+.code-request .member-block-btn{justify-self:start;padding:10px 20px}
 .code-request-out{font-size:13px;line-height:1.5;min-height:1em}
 .code-request-out.ok{color:#5dd470}
 .code-request-out.err{color:#ff8d98}
