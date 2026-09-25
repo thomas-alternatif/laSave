@@ -35,7 +35,7 @@
 
 
       /* HEADER */
-      .header { background: rgba(245,241,234,0.75) !important; border-bottom-color: rgba(0,0,0,0.08) !important; }
+      .header { background: #fff !important; border-bottom-color: rgba(0,0,0,0.08) !important; }
       .nav-btn { color: #333; }
       .nav-btn:hover, .nav-btn.active { color: #0a0a0a; }
       .nav-search-btn { color: #333; }
