@@ -134,7 +134,7 @@ ${SITE}`;
         </table>
       </td></tr>
       <tr><td align="center" style="padding:18px 34px 30px;">
-        <a href="${SITE}/#partager" style="display:inline-block;background:#c8a96e;color:#111111;text-decoration:none;font-weight:700;font-size:15px;padding:14px 30px;border-radius:99px;">+ Proposer un événement</a>
+        <a href="${SITE}/#partager" style="display:inline-block;background:#c8a96e;color:#ffffff;text-decoration:none;font-weight:700;font-size:15px;padding:14px 30px;border-radius:99px;">+ Proposer un événement</a>
       </td></tr>
       <tr><td style="padding:0 34px 30px;"><p style="margin:0;font-size:13px;line-height:1.55;color:#8d97a3;border-top:1px solid #243041;padding-top:18px;">Ce code est propre à votre structure : partagez-le seulement avec les personnes qui publient en son nom. Vous ne l'avez pas demandé&nbsp;? Ignorez simplement ce message.</p></td></tr>
     </table>
@@ -294,7 +294,7 @@ async function route(req, env, ctx) {
       ctx.waitUntil(sendMail(env, {
         to: MAIL_ADMIN, subject: `Demande de code organisateur : ${nom}`, replyTo: email,
         text: `${nom} (${email}) demande un code organisateur.\n\n${message}\n\nValider : ${SITE}/#admin`,
-        html: `<div style="font-family:Helvetica,Arial,sans-serif;font-size:15px;color:#16191a;line-height:1.6"><p><strong>${escH(nom)}</strong> (${escH(email)}) demande un code organisateur sur laSave.</p>${message ? `<blockquote style="margin:0 0 16px;padding:10px 14px;background:#f6f8f8;border-left:4px solid #FFA823">${escH(message)}</blockquote>` : ''}<p><a href="${SITE}/#admin" style="display:inline-block;background:#c8a96e;color:#111111;text-decoration:none;font-weight:700;padding:10px 18px;border-radius:8px">Valider ou refuser dans l'admin</a></p></div>`,
+        html: `<div style="font-family:Helvetica,Arial,sans-serif;font-size:15px;color:#16191a;line-height:1.6"><p><strong>${escH(nom)}</strong> (${escH(email)}) demande un code organisateur sur laSave.</p>${message ? `<blockquote style="margin:0 0 16px;padding:10px 14px;background:#f6f8f8;border-left:4px solid #FFA823">${escH(message)}</blockquote>` : ''}<p><a href="${SITE}/#admin" style="display:inline-block;background:#c8a96e;color:#ffffff;text-decoration:none;font-weight:700;padding:10px 18px;border-radius:8px">Valider ou refuser dans l'admin</a></p></div>`,
       }).catch(e => console.error('alerte mairie', e)));
     }
     return ok;
