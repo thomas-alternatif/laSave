@@ -547,7 +547,7 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
     const c=$('#featured-container');
     let th='<span class="ns-num" id="ns-num"></span>';
     feats.forEach((_,i)=>th+=`<div class="ns-th${i===slideIdx?' on':''}" data-i="${i}"><img src="${esc(getPhoto(feats[i]))}" alt="" loading="lazy"/></div>`);
-    c.innerHTML=`<div id="ns-bg"></div><div id="ns-prog"></div><div class="ns-top-shadow"></div><div id="ns-content"></div><button class="ns-pause" type="button" data-action="motion" aria-pressed="false">Pause</button><button class="ns-arr ns-prev" type="button" aria-label="Précédent">‹</button><button class="ns-arr ns-next" type="button" aria-label="Suivant">›</button><div class="ns-thumbs">${th}</div>`;
+    c.innerHTML=`<div id="ns-bg"></div><div id="ns-prog"></div><div class="ns-top-shadow"></div><div id="ns-content"></div><button class="ns-pause" type="button" data-action="motion" aria-pressed="false" aria-label="Mettre en pause le diaporama"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg></button><button class="ns-arr ns-prev" type="button" aria-label="Précédent">‹</button><button class="ns-arr ns-next" type="button" aria-label="Suivant">›</button><div class="ns-thumbs">${th}</div>`;
     c.addEventListener('mouseenter',()=>{slideHold=true;clearTimeout(slideTimer);});c.addEventListener('mouseleave',()=>{slideHold=false;startSlideTimer();});
     c.addEventListener('focusin',()=>{slideHold=true;clearTimeout(slideTimer);});c.addEventListener('focusout',e=>{if(!c.contains(e.relatedTarget)){slideHold=false;startSlideTimer();}});
     $('.ns-prev').onclick=()=>goSlide(slideIdx-1);
@@ -570,7 +570,7 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
   function goSlide(i){clearTimeout(slideTimer);showSlide(i);startSlideTimer();}
   let slideHold=false;
   function startSlideTimer(){clearTimeout(slideTimer);if(window.__motionPaused||slideHold)return;slideTimer=setTimeout(()=>goSlide(slideIdx+1),7000);}
-  window.__sliderMotion=p=>{document.querySelectorAll('.ns-pause').forEach(b=>b.textContent=p?'Lecture':'Pause');p?clearTimeout(slideTimer):startSlideTimer();};
+  window.__sliderMotion=p=>{document.querySelectorAll('.ns-pause').forEach(b=>{b.innerHTML=p?'<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>':'<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>';b.setAttribute('aria-label',p?'Relancer le diaporama':'Mettre en pause le diaporama');});p?clearTimeout(slideTimer):startSlideTimer();};
   function startProg(){const p=$('#ns-prog');if(!p)return;p.style.transition='none';p.style.width='0%';requestAnimationFrame(()=>{p.style.transition='width 7s linear';p.style.width='100%';});}
 
 
@@ -1829,7 +1829,7 @@ window.__motionPaused=(()=>{try{return localStorage.getItem('lasave_motion')==='
 function setMotion(paused){
   window.__motionPaused=paused;
   try{localStorage.setItem('lasave_motion',paused?'off':'on');}catch(e){}
-  document.querySelectorAll('[data-action="motion"]').forEach(b=>{b.setAttribute('aria-pressed',String(paused));b.textContent=paused?'Relancer les animations':'Mettre en pause les animations';});
+  document.querySelectorAll('[data-action="motion"]').forEach(b=>{b.setAttribute('aria-pressed',String(paused));b.textContent=paused?'Animations : désactivées':'Animations : activées';});
   document.documentElement.classList.toggle('motion-paused',paused);
   if(typeof window.__sliderMotion==='function')window.__sliderMotion(paused);
 }
