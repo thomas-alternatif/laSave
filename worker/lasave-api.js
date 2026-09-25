@@ -8,6 +8,7 @@
  *   AIRTABLE_TOKEN  — jeton Airtable (lecture + écriture sur la base laSave)
  *   ADMIN_PWD       — mot de passe de l'espace admin
  *   IMGBB_KEY       — clé ImgBB pour l'envoi des affiches
+ *   BREVO_KEY       — clé API Brevo pour l'envoi des e-mails (codes organisateurs)
  */
 
 const BASE = 'appHgiuv0ClNd8qsV';
@@ -23,6 +24,11 @@ const ORGA_PUBLIC = ['Nom','Description courte','Description','Photo','Contact',
 // Champs acceptés depuis le formulaire « Ajouter un événement »
 const EVENT_SUBMIT = ['Titre','Catégorie','Commune','Date','Date de fin','Heure','Lieu','Description','Tarif','Récurrence','Période','Organisation','Contact','Contact privé','Message privé'];
 const ADMIN_STATUTS = ['Publié','Archivé','En attente'];
+
+// E-mails
+const MAIL_FROM = { name: 'laSave · Mairie de Saint-Paul-sur-Save', email: 'agenda@la-save.fr' };
+const MAIL_ADMIN = 'agenda.de.la.save@gmail.com';
+const SITE = 'https://la-save.fr';
 
 /* ── utilitaires ── */
 const pick = (obj, keys) => Object.fromEntries(keys.filter(k => obj[k] !== undefined && obj[k] !== null && obj[k] !== '').map(k => [k, obj[k]]));
@@ -60,6 +66,106 @@ async function listAll(env, table, params = '') {
     offset = d.offset || '';
   } while (offset);
   return out;
+}
+
+/* ── codes organisateurs ── */
+const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // sans 0/O ni 1/I pour éviter les confusions
+function newCode() {
+  const b = crypto.getRandomValues(new Uint8Array(8));
+  const s = [...b].map(x => CODE_CHARS[x % CODE_CHARS.length]).join('');
+  return `SAVE-${s.slice(0, 4)}-${s.slice(4)}`;
+}
+const isEmail = s => /^[^\s@<>"']{1,64}@[^\s@<>"']{1,190}\.[a-z]{2,}$/i.test(s || '');
+const escH = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+async function sendMail(env, { to, toName, subject, html, text, replyTo }) {
+  if (!env.BREVO_KEY) throw Object.assign(new Error("L'envoi d'e-mails n'est pas encore configuré."), { status: 503 });
+  const r = await fetch('https://api.brevo.com/v3/smtp/email', {
+    method: 'POST',
+    headers: { 'api-key': env.BREVO_KEY, 'Content-Type': 'application/json', Accept: 'application/json' },
+    body: JSON.stringify({ sender: MAIL_FROM, to: [{ email: to, name: toName || undefined }], subject, htmlContent: html, textContent: text, replyTo: { email: replyTo || MAIL_ADMIN } }),
+  });
+  if (!r.ok) throw Object.assign(new Error("L'e-mail n'a pas pu être envoyé."), { status: 502 });
+}
+
+function codeMail(nom, code) {
+  const n = escH(nom || 'Bonjour');
+  const text = `Bonjour ${nom || ''},
+
+Voici votre code organisateur laSave : ${code}
+
+Pour proposer un événement :
+1. Rendez-vous sur ${SITE}/#partager
+2. Saisissez votre code dans « Espace organisateur »
+3. Vos informations se remplissent automatiquement, il ne reste qu'à décrire l'événement.
+
+Chaque proposition est relue par la mairie avant publication (sous 48 h).
+Gardez ce code pour vous : il est propre à votre structure.
+
+Mairie de Saint-Paul-sur-Save — Commission culture
+${SITE}`;
+  const html = `<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><title>Votre code organisateur laSave</title></head>
+<body style="margin:0;padding:0;background:#f3f5f5;">
+<div style="display:none;max-height:0;overflow:hidden;opacity:0;">Votre code pour proposer vos événements sur l'agenda culturel de la vallée de la Save.</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f3f5f5;"><tr><td align="center" style="padding:28px 12px;">
+<table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px;background:#ffffff;border-radius:14px;overflow:hidden;font-family:'Segoe UI',Helvetica,Arial,sans-serif;color:#16191a;">
+  <tr><td style="padding:24px 32px 18px;">
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
+      <td style="padding-right:14px;"><img src="${SITE}/images/logo-saint-paul.png" width="56" height="54" alt="Saint-Paul-sur-Save" style="display:block;border:0;"></td>
+      <td><div style="font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:#5b6468;">Mairie de Saint-Paul-sur-Save</div>
+          <div style="font-size:22px;font-weight:700;color:#16191a;line-height:1.2;">la<span style="color:#096c71;">Save</span></div></td>
+    </tr></table>
+  </td></tr>
+  <tr><td style="font-size:0;line-height:0;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
+    <td height="5" style="background:#FFA823;width:33.3%;"></td><td height="5" style="background:#5C96AB;width:33.3%;"></td><td height="5" style="background:#B923FF;width:33.4%;"></td>
+  </tr></table></td></tr>
+  <tr><td style="padding:32px 32px 8px;">
+    <h1 style="margin:0 0 12px;font-size:24px;line-height:1.25;color:#16191a;">Votre code organisateur</h1>
+    <p style="margin:0 0 20px;font-size:16px;line-height:1.6;color:#3b4245;">Bonjour ${n},<br>voici le code qui vous permet de proposer vos événements sur <strong>laSave</strong>, l'agenda culturel de la vallée de la Save.</p>
+  </td></tr>
+  <tr><td align="center" style="padding:4px 32px 24px;">
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="background:#e8f3f3;border:2px dashed #096c71;border-radius:12px;"><tr>
+      <td style="padding:16px 22px;font-family:'Courier New',Courier,monospace;font-size:24px;font-weight:700;letter-spacing:2px;white-space:nowrap;color:#096c71;">${escH(code)}</td>
+    </tr></table>
+  </td></tr>
+  <tr><td style="padding:0 32px 8px;">
+    <p style="margin:0 0 10px;font-size:15px;font-weight:700;color:#16191a;">Comment l'utiliser&nbsp;?</p>
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="font-size:15px;line-height:1.55;color:#3b4245;">
+      <tr><td valign="top" style="padding:0 10px 8px 0;font-weight:700;color:#8a5200;">1.</td><td style="padding-bottom:8px;">Ouvrez la page « Partager » du site laSave.</td></tr>
+      <tr><td valign="top" style="padding:0 10px 8px 0;font-weight:700;color:#8a5200;">2.</td><td style="padding-bottom:8px;">Saisissez ce code dans l'<strong>espace organisateur</strong> : vos informations se remplissent toutes seules.</td></tr>
+      <tr><td valign="top" style="padding:0 10px 8px 0;font-weight:700;color:#8a5200;">3.</td><td style="padding-bottom:8px;">Décrivez votre événement et envoyez-le. La mairie le relit puis le publie sous 48&nbsp;h.</td></tr>
+    </table>
+  </td></tr>
+  <tr><td align="center" style="padding:16px 32px 28px;">
+    <a href="${SITE}/#partager" style="display:inline-block;background:#096c71;color:#ffffff;text-decoration:none;font-weight:700;font-size:16px;padding:14px 26px;border-radius:10px;">Proposer un événement</a>
+  </td></tr>
+  <tr><td style="padding:0 32px 28px;"><p style="margin:0;font-size:13px;line-height:1.5;color:#5b6468;background:#f6f8f8;border-radius:10px;padding:12px 14px;">Ce code est propre à votre structure : ne le partagez qu'avec les personnes qui publient en son nom. Vous ne l'avez pas demandé&nbsp;? Ignorez simplement ce message.</p></td></tr>
+  <tr><td style="background:#16191a;padding:20px 32px;font-size:12px;line-height:1.6;color:#c9d0d2;">
+    Mairie de Saint-Paul-sur-Save — Commission culture<br>9 route de Cox, 31530 Saint-Paul-sur-Save<br>
+    <a href="${SITE}" style="color:#FFA823;text-decoration:none;">la-save.fr</a>
+  </td></tr>
+</table>
+</td></tr></table></body></html>`;
+  return { subject: 'Votre code organisateur laSave', html, text };
+}
+
+async function findOrgaByEmail(env, email) {
+  const f = encodeURIComponent(`LOWER({Email})='${email.toLowerCase().replace(/'/g, "\\'")}'`);
+  const recs = await listAll(env, T_ORGAS, '&filterByFormula=' + f);
+  return recs.find(r => r.fields['Statut code'] !== 'Refusé' && r.fields['Statut code'] !== 'Demandé') || null;
+}
+async function uniqueCode(env) {
+  const all = await listAll(env, T_ORGAS);
+  const taken = new Set(all.map(r => (r.fields.Code || '').trim().toUpperCase()));
+  let c; do { c = newCode(); } while (taken.has(c));
+  return c;
+}
+async function sendCodeTo(env, rec) {
+  let code = (rec.fields.Code || '').trim();
+  if (!code) code = await uniqueCode(env);
+  const m = codeMail(rec.fields.Nom, code);
+  await sendMail(env, { to: rec.fields.Email, toName: rec.fields.Nom, ...m });
+  await at(env, `${T_ORGAS}/${rec.id}`, { method: 'PATCH', body: JSON.stringify({ fields: { Code: code, 'Statut code': 'Envoyé', 'Code envoyé le': new Date().toISOString() } }) });
 }
 
 /* ── limiteur anti-abus : N requêtes max par fenêtre, par adresse IP ── */
@@ -153,9 +259,37 @@ async function route(req, env, ctx) {
     const code = String((await body()).code || '').trim().toUpperCase().slice(0, 40);
     if (!code) return json(req, { error: 'Code manquant' }, 400);
     const recs = await listAll(env, T_ORGAS);
-    const o = recs.find(r => (r.fields.Code || '').trim().toUpperCase() === code);
+    const o = recs.find(r => (r.fields.Code || '').trim().toUpperCase() === code && !['Demandé', 'Refusé'].includes(r.fields['Statut code']));
     if (!o) return json(req, { error: 'Code non reconnu' }, 404);
     return json(req, { id: o.id, ...pick(o.fields, ORGA_PUBLIC) });
+  }
+
+  // Demande de code organisateur (réponse identique dans tous les cas : on ne révèle pas quelles adresses sont connues)
+  if (m === 'POST' && p === '/code/request') {
+    if (await tooMany(req, 'coderq', 4, 3600)) return slowDown(req);
+    const b = await body();
+    const ok = json(req, { ok: true, message: "C'est noté ! Si votre adresse correspond à un organisateur déjà inscrit, votre code arrive dans quelques minutes. Sinon, la mairie étudie votre demande et vous l'envoie après validation." });
+    if (b.website) return ok; // pot de miel anti-robot
+    const email = String(b.email || '').trim().toLowerCase().slice(0, 200);
+    const nom = clip(String(b.nom || '').trim(), 120);
+    if (!isEmail(email)) return json(req, { error: 'Adresse e-mail invalide.' }, 400);
+    if (await tooMany(req, 'coderq-' + email, 3, 86400)) return ok;
+    const known = await findOrgaByEmail(env, email);
+    if (known) { ctx.waitUntil(sendCodeTo(env, known).catch(e => console.error('envoi code', e))); return ok; }
+    if (!nom) return json(req, { error: 'Indiquez le nom de votre structure.' }, 400);
+    // Nouvelle demande (sans doublon) + alerte à la mairie
+    const f = encodeURIComponent(`AND(LOWER({Email})='${email.replace(/'/g, "\\'")}',{Statut code}='Demandé')`);
+    const dup = await listAll(env, T_ORGAS, '&filterByFormula=' + f);
+    if (!dup.length) {
+      const message = clip(String(b.message || '').trim(), 1500);
+      await at(env, T_ORGAS, { method: 'POST', body: JSON.stringify({ fields: { Nom: nom, Email: email, 'Message demande': message || undefined, 'Statut code': 'Demandé', 'Publié': false } }) });
+      ctx.waitUntil(sendMail(env, {
+        to: MAIL_ADMIN, subject: `Demande de code organisateur : ${nom}`, replyTo: email,
+        text: `${nom} (${email}) demande un code organisateur.\n\n${message}\n\nValider : ${SITE}/#admin`,
+        html: `<div style="font-family:Helvetica,Arial,sans-serif;font-size:15px;color:#16191a;line-height:1.6"><p><strong>${escH(nom)}</strong> (${escH(email)}) demande un code organisateur sur laSave.</p>${message ? `<blockquote style="margin:0 0 16px;padding:10px 14px;background:#f6f8f8;border-left:4px solid #FFA823">${escH(message)}</blockquote>` : ''}<p><a href="${SITE}/#admin" style="display:inline-block;background:#096c71;color:#fff;text-decoration:none;font-weight:700;padding:10px 18px;border-radius:8px">Valider ou refuser dans l'admin</a></p></div>`,
+      }).catch(e => console.error('alerte mairie', e)));
+    }
+    return ok;
   }
 
   // Nouvel événement proposé (toujours « En attente »)
@@ -233,6 +367,21 @@ async function route(req, env, ctx) {
       const recs = await listAll(env, T_EVENTS, '&filterByFormula=' + encodeURIComponent(`{Statut}='${statut}'`));
       return json(req, recs); // l'admin voit tous les champs, y compris privés
     }
+    if (m === 'GET' && p === '/admin/code-requests') {
+      const recs = await listAll(env, T_ORGAS, '&filterByFormula=' + encodeURIComponent("{Statut code}='Demandé'"));
+      return json(req, recs.map(r => ({ id: r.id, Nom: r.fields.Nom, Email: r.fields.Email, Message: r.fields['Message demande'] || '' })));
+    }
+    if (m === 'POST' && (mm = p.match(/^\/admin\/orgas\/(rec\w+)\/(send-code|refuse)$/))) {
+      if (!isId(mm[1])) return json(req, { error: 'Requête invalide' }, 400);
+      let rec; try { rec = await at(env, `${T_ORGAS}/${mm[1]}`); } catch { return json(req, { error: 'Organisateur introuvable' }, 404); }
+      if (mm[2] === 'refuse') {
+        await at(env, `${T_ORGAS}/${rec.id}`, { method: 'PATCH', body: JSON.stringify({ fields: { 'Statut code': 'Refusé' } }) });
+        return json(req, { ok: true });
+      }
+      if (!isEmail(rec.fields.Email)) return json(req, { error: "Cet organisateur n'a pas d'adresse e-mail valide." }, 400);
+      await sendCodeTo(env, rec);
+      return json(req, { ok: true });
+    }
     if (m === 'PATCH' && (mm = p.match(/^\/admin\/events\/(rec\w+)$/))) {
       const statut = (await body()).Statut;
       if (!isId(mm[1]) || !ADMIN_STATUTS.includes(statut)) return json(req, { error: 'Requête invalide' }, 400);
@@ -251,6 +400,10 @@ export default {
   async fetch(req, env, ctx) {
     if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors(req) });
     try { return await route(req, env, ctx); }
-    catch (e) { console.error(e); return json(req, { error: 'Le service est momentanément indisponible, réessayez plus tard.' }, 502); }
+    catch (e) {
+      console.error(e);
+      if (e.status === 503 || (e.status === 502 && /e-mail/.test(e.message))) return json(req, { error: e.message }, e.status);
+      return json(req, { error: 'Le service est momentanément indisponible, réessayez plus tard.' }, 502);
+    }
   },
 };
