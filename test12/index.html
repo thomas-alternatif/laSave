@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://lasave-api.partage.workers.dev; base-uri 'self'; form-action 'none'" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="theme-color" content="#050505" />
+  <title>laSave — Sortir dans la vallée de la Save</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,500..900&family=Instrument+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css?v=1" />
+</head>
+<body>
+  <a class="skip" href="#rendez-vous">Aller à l'agenda</a>
+
+  <header class="top" id="top">
+    <a class="top-logo" href="#" aria-label="laSave, accueil"><img src="../test7/logo.png" alt="laSave" width="130" height="32" /></a>
+    <nav class="top-nav" aria-label="Navigation principale">
+      <a href="#rendez-vous">Agenda</a>
+      <a href="#envies">Rubriques</a>
+      <a href="#organisateurs">Organisateurs</a>
+      <a class="top-cta" href="#proposer">Proposer</a>
+    </nav>
+  </header>
+
+  <main>
+    <!-- 1. À la une : grande photo + cartes -->
+    <section class="hero" aria-labelledby="hero-title" aria-roledescription="diaporama">
+      <div class="hero-bg" id="hero-bg" aria-hidden="true"></div>
+      <div class="hero-shade" aria-hidden="true"></div>
+      <div class="hero-text">
+        <p class="kicker" id="hero-kicker"><span class="kicker-line" aria-hidden="true"></span><span id="hero-when">À la une</span></p>
+        <h1 class="hero-title" id="hero-title">Sortir près de chez vous</h1>
+        <p class="hero-desc" id="hero-desc">Concerts, fêtes, marchés, sport et ateliers dans les communes de la vallée de la Save.</p>
+        <div class="hero-actions">
+          <button class="heart big" id="hero-heart" type="button" aria-pressed="false" aria-label="J'y vais"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z"/></svg><span class="heart-n" id="hero-heart-n">0</span></button>
+          <button class="ghost" id="hero-open" type="button">Voir l'événement</button>
+        </div>
+      </div>
+      <div class="hero-rail">
+        <div class="hero-cards" id="hero-cards" role="list"></div>
+        <div class="hero-ctrl">
+          <button class="circle" id="hero-prev" type="button" aria-label="Événement précédent"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg></button>
+          <button class="circle" id="hero-next" type="button" aria-label="Événement suivant"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></button>
+          <span class="hero-line" aria-hidden="true"><i id="hero-progress"></i></span>
+          <span class="hero-num" id="hero-num" aria-live="polite">01</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. Les rendez-vous des prochains jours -->
+    <section class="flow" id="rendez-vous" aria-labelledby="flow-title">
+      <h2 class="serif-title" id="flow-title">Les rendez-vous<br />des prochains jours</h2>
+      <div class="flow-stage" id="flow-stage" role="region" aria-roledescription="carrousel" aria-label="Événements à venir" tabindex="0"></div>
+      <div class="flow-ctrl">
+        <button class="circle sm" id="flow-prev" type="button" aria-label="Événement précédent"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg></button>
+        <span class="flow-count" id="flow-count" aria-live="polite"></span>
+        <button class="circle sm" id="flow-next" type="button" aria-label="Événement suivant"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></button>
+      </div>
+    </section>
+
+    <!-- 3. Les rubriques -->
+    <section class="rows" id="envies" aria-label="Rubriques">
+      <div id="rows"></div>
+    </section>
+
+    <!-- 4. Organisateurs -->
+    <section class="orgs" id="organisateurs" aria-labelledby="orgs-title">
+      <h2 class="orgs-title" id="orgs-title">Celles et ceux qui font vivre la Save</h2>
+      <div class="orgs-row" id="orgs-row"></div>
+    </section>
+
+    <!-- 5. Proposer -->
+    <section class="propose" id="proposer" aria-labelledby="propose-title">
+      <div class="propose-block">
+        <div>
+          <h2 class="propose-title" id="propose-title">Vous organisez<br />quelque chose ?</h2>
+          <p>Ajoutez votre événement à l'agenda : il est relu par la mairie et publié sous 48 h. C'est gratuit.</p>
+        </div>
+        <a class="pill dark" href="../#partager">Proposer un événement</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <img src="../test7/logo.png" alt="laSave" width="110" height="27" />
+    <p>Un service de la mairie de Saint-Paul-sur-Save</p>
+    <p class="foot-links"><a href="../#mentions">Mentions légales</a><a href="../#confidentialite">Confidentialité</a><a href="../#accessibilite">Accessibilité</a><button class="motion-btn" id="motion" type="button" aria-pressed="false">Animations : activées</button></p>
+  </footer>
+
+  <!-- Fiche événement -->
+  <div class="sheet" id="sheet" hidden>
+    <div class="sheet-back" data-close></div>
+    <article class="sheet-card" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
+      <button class="circle sm sheet-x" type="button" data-close aria-label="Fermer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+      <div class="sheet-img" id="sheet-img"></div>
+      <div class="sheet-body">
+        <p class="kicker"><span class="kicker-line" aria-hidden="true"></span><span id="sheet-when"></span></p>
+        <h2 id="sheet-title"></h2>
+        <p class="sheet-where" id="sheet-where"></p>
+        <p class="sheet-desc" id="sheet-desc"></p>
+        <div class="hero-actions">
+          <button class="heart big" id="sheet-heart" type="button" aria-pressed="false" aria-label="J'y vais"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z"/></svg><span class="heart-n" id="sheet-heart-n">0</span></button>
+          <a class="pill" id="sheet-link" href="../">Fiche complète</a>
+        </div>
+      </div>
+    </article>
+  </div>
+
+  <script src="app.js?v=1" defer></script>
+</body>
+</html>
