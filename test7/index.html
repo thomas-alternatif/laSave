@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://lasave-api.partage.workers.dev; base-uri 'self'; form-action 'none'" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="theme-color" content="#050505" />
+  <title>laSave — Sortir près de chez vous</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@125,800&family=Instrument+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css?v=1" />
+</head>
+<body>
+  <a class="skip" href="#arc-title">Aller au contenu</a>
+
+  <header class="top">
+    <a class="top-logo" href="#" aria-label="laSave, accueil"><img src="logo.png" alt="laSave" width="130" height="32" /></a>
+    <nav class="top-nav" aria-label="Navigation principale">
+      <a href="#rendez-vous">Agenda</a>
+      <a href="#organisateurs">Organisateurs</a>
+      <a class="top-cta" href="../#partager">Proposer</a>
+    </nav>
+  </header>
+
+  <main>
+    <!-- 1. L'arc -->
+    <section class="arc" aria-labelledby="arc-title">
+      <div class="arc-stage" id="arc-stage" aria-hidden="true"></div>
+      <div class="arc-center">
+        <h1 id="arc-title">Sortir près de chez vous</h1>
+        <p>Concerts, fêtes, marchés, sport et ateliers<br />dans les communes de la vallée de la Save.</p>
+        <a class="pill" href="#rendez-vous">Voir les rendez-vous</a>
+      </div>
+      <button class="round-btn arc-next" id="arc-next" type="button" aria-label="Faire tourner les photos">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg>
+      </button>
+      <button class="round-btn arc-pause" id="arc-pause" type="button" aria-pressed="false" aria-label="Mettre en pause l'animation">
+        <svg class="i-pause" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
+        <svg class="i-play" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+      </button>
+    </section>
+
+    <!-- 2. Le carrousel -->
+    <section class="flow" id="rendez-vous" aria-labelledby="flow-title">
+      <h2 class="serif-title" id="flow-title">Les rendez-vous<br />des prochains jours</h2>
+      <div class="flow-stage" id="flow-stage" role="region" aria-roledescription="carrousel" aria-label="Événements à venir" tabindex="0"></div>
+      <div class="flow-ctrl">
+        <button class="round-btn sm" id="flow-prev" type="button" aria-label="Événement précédent"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg></button>
+        <span class="flow-count" id="flow-count" aria-live="polite"></span>
+        <button class="round-btn sm" id="flow-next" type="button" aria-label="Événement suivant"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></button>
+      </div>
+    </section>
+
+    <!-- 3. Les organisateurs -->
+    <section class="orgs" id="organisateurs" aria-labelledby="orgs-title">
+      <h2 class="wide-title" id="orgs-title">ORGANISATEURS</h2>
+      <div class="orgs-row" id="orgs-row"></div>
+      <div class="orgs-rule" aria-hidden="true"></div>
+      <p class="orgs-note">Celles et ceux qui font vivre la vallée,<br />avec les yeux et les oreilles grands ouverts</p>
+    </section>
+
+    <!-- 4. Toutes les dates -->
+    <section class="list" aria-labelledby="list-title">
+      <h2 class="serif-title sm" id="list-title">Toutes les dates</h2>
+      <ol class="list-rows" id="list-rows"></ol>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <img src="logo.png" alt="laSave" width="110" height="27" />
+    <p>Un service de la mairie de Saint-Paul-sur-Save</p>
+    <p class="foot-links"><a href="../#mentions">Mentions légales</a><a href="../#confidentialite">Confidentialité</a><a href="../#accessibilite">Accessibilité</a></p>
+  </footer>
+
+  <!-- Fiche événement -->
+  <div class="sheet" id="sheet" hidden>
+    <div class="sheet-back" data-close></div>
+    <article class="sheet-card" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
+      <button class="round-btn sm sheet-x" type="button" data-close aria-label="Fermer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+      <div class="sheet-img" id="sheet-img"></div>
+      <div class="sheet-body">
+        <p class="sheet-when" id="sheet-when"></p>
+        <h2 id="sheet-title"></h2>
+        <p class="sheet-where" id="sheet-where"></p>
+        <p class="sheet-desc" id="sheet-desc"></p>
+        <a class="pill" id="sheet-link" href="../">Voir la fiche complète</a>
+      </div>
+    </article>
+  </div>
+
+  <script src="app.js?v=1" defer></script>
+</body>
+</html>
