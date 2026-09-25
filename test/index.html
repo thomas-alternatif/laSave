@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" class="inst">
 <head>
   <meta charset="UTF-8" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://lasave-api.partage.workers.dev; object-src 'none'; base-uri 'self'; form-action 'self'; frame-src 'none'; worker-src 'none'; manifest-src 'self'" />
@@ -11,16 +11,15 @@
   <meta property="og:url" content="https://la-save.fr" />
   <meta property="og:title" content="laSave — Agenda festif de la vallée de la Save" />
   <meta property="og:description" content="Concerts, fêtes, marchés et spectacles en Haute-Garonne." />
-  <meta name="robots" content="index, follow" />
-  <link rel="canonical" href="https://la-save.fr" />
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230d0d0d'/%3E%3Ctext x='6' y='46' font-size='38' font-family='Georgia,serif' font-weight='400' fill='rgba(255,255,255,0.55)'%3Ela%3C/text%3E%3Ctext x='6' y='46' font-size='38' font-family='Georgia,serif' font-weight='900' fill='%23c8a96e' dx='26'%3ES%3C/text%3E%3C/svg%3E" />
+  <meta name="robots" content="noindex, nofollow" />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230d0d0d'/%3E%3Ctext x='6' y='46' font-size='38' font-family='Georgia,serif' font-weight='400' fill='rgba(255,255,255,0.55)'%3Ela%3C/text%3E%3Ctext x='6' y='46' font-size='38' font-family='Georgia,serif' font-weight='900' fill='%23c8a96e' dx='26'%3ES%3C/text%3E%3C/svg%3E" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Yeseva+One&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=44" />
-  <meta name="theme-color" content="#0d0d0d" media="(prefers-color-scheme: dark)" />
-  <meta name="theme-color" content="#f5f1ea" media="(prefers-color-scheme: light)" />
-  <style>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600&family=Source+Sans+3:wght@400;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../style.css?v=44" />
+  <link rel="stylesheet" href="inst.css?v=1" />
+  <meta name="theme-color" content="#ffffff" />
+    <style>
     /* Écran d'ouverture (inline : visible avant le chargement de style.css) */
     #splash{position:fixed;inset:0;z-index:9000;display:grid;place-items:center;background:#08111e;transition:opacity .5s ease,visibility .5s;}
     #splash.out{opacity:0;visibility:hidden;pointer-events:none;}
@@ -38,10 +37,12 @@
   <noscript><style>#splash{display:none}body{display:grid;place-items:center;min-height:100vh;font-family:sans-serif;padding:2rem;text-align:center}</style><p>laSave nécessite JavaScript pour fonctionner.</p></noscript>
 </head>
 <body>
+  <div style="background:#1f1f1f;color:#fff;font:600 12px/1.4 'Source Sans 3',sans-serif;text-align:center;padding:6px 12px">Version test du nouveau style — <a href="/" style="color:#FFA823">revenir au site actuel</a></div>
   <a class="skip-link" href="#contenu">Aller aux événements</a>
   <div id="splash" role="status" aria-label="Chargement de laSave">
     <div class="splash-inner">
-      <div class="splash-logo">la<span>Save</span></div>
+      <img class="splash-inst-logo" src="../images/logo-saint-paul.webp" alt="" width="120" height="115" />
+      <div class="splash-logo" style="color:#1f1f1f;font-family:Poppins,sans-serif;font-weight:600;font-size:36px">la<span style="color:#096c71">Save</span></div>
       <div class="splash-tag">Agenda festif &amp; culturel</div>
       <div class="splash-bar"><i></i></div>
     </div>
@@ -52,6 +53,8 @@
 
   <header class="header" id="main-header">
     <a class="logo" href="#" data-action="section" data-arg="agenda">
+      <img class="inst-logo" src="../images/logo-saint-paul.webp" alt="" width="52" height="50" />
+      <span class="inst-brand"><span class="inst-commune">Mairie de Saint-Paul-sur-Save</span><span class="inst-site">la<span>Save</span><span class="inst-sub"> · agenda culturel</span></span></span>
       <span class="logo-name">la<span>Save</span></span>
       <span class="logo-tagline">Agenda festif &amp; culturel</span>
     </a>
@@ -515,7 +518,7 @@
     </div>
   </section>
   <script type="application/ld+json" id="jsonld-events">[]</script>
-  <script src="app.js?v=33" defer></script>
-  <script src="boot.js?v=2" defer></script>
+  <script src="../app.js?v=33" defer></script>
+  <script src="../boot.js?v=2" defer></script>
 </body>
 </html>

@@ -47,14 +47,14 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
   const GCAL_SVG='<svg width="16" height="16" viewBox="0 0 16 16"><rect x="1" y="2" width="14" height="13" rx="1.5" fill="white"/><rect x="1" y="2" width="14" height="4" rx="1.5" fill="#4285f4"/><rect x="1" y="4.5" width="14" height="1.5" fill="#4285f4"/><line x1="5.5" y1="2" x2="5.5" y2="5.5" stroke="white" stroke-width="1.2"/><line x1="10.5" y1="2" x2="10.5" y2="5.5" stroke="white" stroke-width="1.2"/><rect x="3" y="7.5" width="2.5" height="2.5" rx="0.3" fill="#34a853"/><rect x="6.75" y="7.5" width="2.5" height="2.5" rx="0.3" fill="#fbbc04"/><rect x="10.5" y="7.5" width="2.5" height="2.5" rx="0.3" fill="#ea4335"/><rect x="3" y="11" width="2.5" height="2" rx="0.3" fill="#ea4335"/><rect x="6.75" y="11" width="2.5" height="2" rx="0.3" fill="#34a853"/></svg>';
 
   const CAT_META={
-    'Concert':             {color:'#F5A623',emoji:'🎸',fallback:'images/cat-concert.webp'},
-    'Festival':            {color:'#5dd470',emoji:'🎪',fallback:'images/cat-festival.webp'},
-    'Marché':              {color:'#4db8f0',emoji:'🛍️',fallback:'images/cat-marche.webp'},
+    'Concert':             {color:'#F5A623',emoji:'🎸',fallback:'/images/cat-concert.webp'},
+    'Festival':            {color:'#5dd470',emoji:'🎪',fallback:'/images/cat-festival.webp'},
+    'Marché':              {color:'#4db8f0',emoji:'🛍️',fallback:'/images/cat-marche.webp'},
     'Exposition':          {color:'#f07850',emoji:'🎨',fallback:null},
     'Spectacle':           {color:'#c060f0',emoji:'🎭',fallback:null},
-    'Sport / Loisir':      {color:'#4dcab8',emoji:'⚽',fallback:'images/cat-sport.webp'},
-    'Guinguette':          {color:'#ffa820',emoji:'🍷',fallback:'images/cat-guinguette.webp'},
-    'Fête & Célébration':  {color:'#ff5080',emoji:'🎉',fallback:'images/cat-fete.webp'},
+    'Sport / Loisir':      {color:'#4dcab8',emoji:'⚽',fallback:'/images/cat-sport.webp'},
+    'Guinguette':          {color:'#ffa820',emoji:'🍷',fallback:'/images/cat-guinguette.webp'},
+    'Fête & Célébration':  {color:'#ff5080',emoji:'🎉',fallback:'/images/cat-fete.webp'},
     'Conférence / Atelier':{color:'#c8a96e',emoji:'🎓',fallback:null},
     'Autre':               {color:'#c8a96e',emoji:'📅',fallback:null}
   };
