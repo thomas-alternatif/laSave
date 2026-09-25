@@ -1,0 +1,126 @@
+/* laSave — test4 : plus de hiérarchie, couleurs neutres (surcouche de style.css) */
+
+/* ── Palette neutre : graphite + doré comme seul accent ── */
+:root {
+  --bg: #121212;
+  --bg-card: #1b1b1b;
+  --bg-card-hover: #202020;
+  --border: rgba(255,255,255,0.08);
+  --border-hover: rgba(255,255,255,0.16);
+  --text: #f2f0ec;
+  --text-sub: #c8c5bf;
+  --text-muted: #8f8b85;
+  --max: 1200px;
+}
+body::before { display: none !important; }
+body { background: var(--bg); }
+.cat-bg.ambient { background: none !important; animation: none !important; }
+.header { background: rgba(18,18,18,0.88); }
+.header.scrolled { border-bottom-color: var(--border); }
+.logo-tagline { color: var(--text-muted); }
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg: #f5f4f1;
+    --bg-card: #ffffff;
+    --bg-card-hover: #ffffff;
+    --border: rgba(0,0,0,0.09);
+    --border-hover: rgba(0,0,0,0.18);
+    --text: #161616;
+    --text-sub: #45433f;
+    --text-muted: #6f6c66;
+  }
+  .header { background: #fff !important; }
+  .card { background: #fff !important; box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important; }
+  .card:hover { box-shadow: 0 10px 30px rgba(0,0,0,0.10) !important; border-color: rgba(0,0,0,0.12) !important; }
+  .footer { background: #fff !important; }
+  .intro-title, .grid-section-title, .ateliers-title { color: var(--text) !important; }
+}
+
+/* ── Bandeau d'accueil : le vrai titre de la page ── */
+.intro {
+  max-width: var(--max); margin: 0 auto;
+  padding: 56px var(--pad) 8px;
+  position: relative; z-index: 1;
+}
+.intro-kicker, .gs-kicker {
+  font-size: 11px; font-weight: 600; letter-spacing: .16em; text-transform: uppercase;
+  color: var(--text-muted); margin: 0 0 10px;
+}
+.intro-title {
+  font-family: 'Playfair Display', Georgia, serif; font-weight: 700;
+  font-size: clamp(36px, 5.4vw, 64px); line-height: 1.04; letter-spacing: -.015em;
+  color: var(--text); margin: 0 0 16px; text-wrap: balance;
+}
+.intro-lede {
+  font-size: clamp(15px, 1.4vw, 18px); line-height: 1.6; color: var(--text-sub);
+  max-width: 56ch; margin: 0 0 24px;
+}
+.intro-stats {
+  display: flex; flex-wrap: wrap; gap: 8px 28px; margin: 0;
+  font-size: 13px; color: var(--text-muted);
+}
+.intro-stats[hidden] { display: none; }
+.intro-stats > span { display: inline-flex; align-items: baseline; gap: 6px; }
+.intro-stats > span + span { padding-left: 28px; border-left: 1px solid var(--border); }
+.intro-stats b {
+  font-family: 'Playfair Display', Georgia, serif; font-size: 22px; font-weight: 700;
+  color: var(--text); font-variant-numeric: tabular-nums;
+}
+
+/* Barre de recherche : alignée sous le titre */
+.toolbar { padding-top: 24px; padding-bottom: 8px; }
+
+/* ── En-têtes de section : sur-titre + titre + compteur ── */
+.slider-wrap { padding-top: 40px; padding-bottom: 0; }
+.block-head, .grid-section-head, .ateliers-head {
+  display: flex; align-items: flex-end; justify-content: space-between; gap: 16px;
+  padding-bottom: 14px; margin-bottom: 20px; border-bottom: 1px solid var(--border);
+}
+.gs-titles { flex: 1; min-width: 0; }
+.grid-section-title, .ateliers-title {
+  font-family: 'Playfair Display', Georgia, serif; font-weight: 700;
+  font-size: clamp(22px, 2.4vw, 30px); line-height: 1.15; color: var(--text); margin: 0;
+  text-wrap: balance;
+}
+.gs-count {
+  font-size: 12px; color: var(--text-muted); white-space: nowrap;
+  font-variant-numeric: tabular-nums; padding-bottom: 4px;
+}
+.grid-section-head .section-nav { padding-bottom: 2px; }
+.grid-section { margin-bottom: 64px; }
+.ateliers-wrap { padding-top: 48px; }
+.grid-wrap { padding-top: 48px; }
+
+/* ── Cartes : date › titre › lieu ── */
+.card-poster-location, .badge-soon { display: none !important; }
+.card-poster-date {
+  margin: 0 0 6px;
+  font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
+  color: rgba(255,255,255,0.88); text-shadow: 0 1px 6px rgba(0,0,0,0.6);
+}
+.card-poster-title { margin-bottom: 8px; }
+.card-poster-cat {
+  display: inline-flex; align-items: center; gap: 6px; min-width: 0;
+  font-size: 12px !important; font-weight: 500 !important; letter-spacing: 0 !important; text-transform: none !important;
+  color: rgba(255,255,255,0.82) !important;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.cp-place { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.cat-dot-mini { width: 6px; height: 6px; border-radius: 50%; flex: none; }
+.card-poster-meta { justify-content: space-between; }
+
+/* Diaporama « À la une » : cadre neutre */
+#featured-container { border-radius: 8px; }
+
+@media (max-width: 700px) {
+  .intro { padding-top: 32px; }
+  .intro-lede { margin-bottom: 18px; }
+  .intro-stats { gap: 6px 18px; }
+  .intro-stats > span + span { padding-left: 0; border-left: 0; }
+  .intro-stats b { font-size: 19px; }
+  .slider-wrap { padding: 28px var(--pad) 0 !important; }
+  .grid-section { margin-bottom: 44px; }
+  .ateliers-wrap, .grid-wrap { padding-top: 36px; }
+  .gs-count { display: none; }
+}
