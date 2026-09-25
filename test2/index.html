@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://lasave-api.partage.workers.dev; object-src 'none'; base-uri 'self'; form-action 'self'; frame-src 'none'" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>laSave — Agenda culturel de la vallée de la Save</title>
+  <meta name="description" content="Concerts, spectacles, fêtes, marchés et ateliers dans la vallée de la Save. L'agenda culturel proposé par la mairie de Saint-Paul-sur-Save." />
+  <meta name="theme-color" content="#ffffff" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css?v=1" />
+</head>
+<body>
+  <a class="skip" href="#agenda">Aller à l'agenda</a>
+  <div class="testbar">Version test du nouveau site · <a href="/">revenir au site actuel</a></div>
+
+  <header class="top" id="top">
+    <div class="wrap top-in">
+      <a class="brand" href="./" aria-label="laSave, accueil">
+        <img src="../images/logo-saint-paul.webp" alt="" width="46" height="44" />
+        <span class="brand-txt">
+          <span class="brand-commune">Mairie de Saint-Paul-sur-Save</span>
+          <span class="brand-site">la<b>Save</b></span>
+        </span>
+      </a>
+      <nav class="nav" aria-label="Navigation principale">
+        <a href="#agenda">Agenda</a>
+        <a href="#organisateurs">Organisateurs</a>
+        <a class="btn btn-primary" href="/#partager">Proposer<span class="hide-s">&nbsp;un événement</span></a>
+      </nav>
+    </div>
+    <div class="stripe" aria-hidden="true"><i></i><i></i><i></i></div>
+  </header>
+
+  <main>
+    <!-- HÉROS -->
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="wrap hero-grid">
+        <div class="hero-copy">
+          <p class="eyebrow"><span class="dot"></span>L'agenda culturel de la vallée</p>
+          <h1 id="hero-title">Sorties, fêtes et spectacles <span class="u">près de chez vous</span></h1>
+          <p class="lead">Concerts, marchés, expositions, ateliers : tout ce qui se passe dans les villages de la Save, au même endroit.</p>
+          <form class="search" role="search" id="search-form">
+            <label for="q" class="sr">Rechercher un événement ou une commune</label>
+            <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+            <input id="q" type="search" placeholder="Un concert, une commune, un organisateur…" autocomplete="off" />
+            <button class="btn btn-primary" type="submit">Rechercher</button>
+          </form>
+          <dl class="stats" aria-label="L'agenda en chiffres">
+            <div><dt>événements à venir</dt><dd data-count="events">—</dd></div>
+            <div><dt>communes</dt><dd data-count="communes">—</dd></div>
+            <div><dt>organisateurs</dt><dd data-count="orgas">—</dd></div>
+          </dl>
+        </div>
+        <div class="hero-feature" id="featured" aria-label="À la une"></div>
+      </div>
+    </section>
+
+    <!-- AGENDA -->
+    <section class="agenda" id="agenda" aria-labelledby="agenda-title" tabindex="-1">
+      <div class="wrap">
+        <div class="section-head">
+          <h2 id="agenda-title">L'agenda</h2>
+          <p class="count" id="count" aria-live="polite"></p>
+        </div>
+        <div class="filters">
+          <div class="chips" role="group" aria-label="Période" id="when">
+            <button type="button" class="chip" aria-pressed="true" data-when="all">Tout</button>
+            <button type="button" class="chip" aria-pressed="false" data-when="week">Cette semaine</button>
+            <button type="button" class="chip" aria-pressed="false" data-when="weekend">Ce week-end</button>
+            <button type="button" class="chip" aria-pressed="false" data-when="month">Ce mois-ci</button>
+          </div>
+          <div class="chips chips-cat" role="group" aria-label="Catégorie" id="cats"></div>
+        </div>
+        <div id="list" class="list"><p class="loading">Chargement de l'agenda…</p></div>
+        <div id="regular" class="regular" hidden>
+          <h3>Rendez-vous réguliers</h3>
+          <div class="reg-grid" id="reg-grid"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ORGANISATEURS -->
+    <section class="orgs" id="organisateurs" aria-labelledby="orgs-title">
+      <div class="wrap">
+        <div class="section-head">
+          <h2 id="orgs-title">Ceux qui font vivre la Save</h2>
+          <p class="count">Associations, compagnies et lieux culturels</p>
+        </div>
+        <ul class="org-grid" id="org-grid"></ul>
+      </div>
+    </section>
+
+    <!-- APPEL À CONTRIBUTION -->
+    <section class="cta" aria-labelledby="cta-title">
+      <div class="wrap cta-in">
+        <div>
+          <h2 id="cta-title">Vous organisez un événement&nbsp;?</h2>
+          <p>Associations, artistes, commerçants : faites-le connaître gratuitement. Votre proposition est relue par la mairie puis publiée sous 48&nbsp;h.</p>
+        </div>
+        <a class="btn btn-light" href="/#partager">Proposer mon événement →</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <div class="wrap foot-grid">
+      <div>
+        <img src="../images/logo-saint-paul.webp" alt="Saint-Paul-sur-Save" width="84" height="81" />
+        <p class="foot-title">Mairie de Saint-Paul-sur-Save</p>
+        <p>9 route de Cox, 31530 Saint-Paul-sur-Save<br />05 61 85 43 77 · <a href="mailto:contact@saintpaulsursave.fr">contact@saintpaulsursave.fr</a></p>
+      </div>
+      <div>
+        <p class="foot-title">L'agenda</p>
+        <ul><li><a href="#agenda">Tous les événements</a></li><li><a href="#organisateurs">Organisateurs</a></li><li><a href="/#partager">Proposer un événement</a></li></ul>
+      </div>
+      <div>
+        <p class="foot-title">Informations</p>
+        <ul><li><a href="/#mentions">Mentions légales</a></li><li><a href="/#confidentialite">Confidentialité</a></li><li><a href="/#accessibilite">Accessibilité : partiellement conforme</a></li></ul>
+      </div>
+    </div>
+    <div class="wrap foot-bottom"><span>laSave · Commission culture de Saint-Paul-sur-Save</span><span class="stripe-mini" aria-hidden="true"><i></i><i></i><i></i></span></div>
+  </footer>
+  <script src="app.js?v=1" defer></script>
+</body>
+</html>

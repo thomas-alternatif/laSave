@@ -1835,3 +1835,15 @@ function setMotion(paused){
 }
 document.addEventListener('DOMContentLoaded',()=>setMotion(window.__motionPaused));
 if(document.readyState!=='loading')setMotion(window.__motionPaused);
+
+/* Liens directs vers une section (utilisés par la version test : /#partager, /#mentions, /#confidentialite, /#accessibilite) */
+(function(){
+  const go=()=>{
+    const h=location.hash.slice(1);
+    const legal={mentions:'mentions',confidentialite:'rgpd',accessibilite:'a11y'};
+    if(h==='partager')showSection('partager',null);
+    else if(legal[h]){showSection('legal',null);openLegalTab(legal[h]);}
+  };
+  window.addEventListener('hashchange',go);
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(go,50));else setTimeout(go,50);
+})();
