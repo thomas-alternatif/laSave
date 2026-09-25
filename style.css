@@ -1367,3 +1367,18 @@ textarea:focus-visible,[role="button"]:focus-visible,[tabindex="0"]:focus-visibl
 }
 #btn-avis.hide{visibility:hidden;transition:transform .25s,opacity .25s,visibility 0s .25s}
 @media (prefers-color-scheme: light){ .story-inner-placeholder,.card-poster-avatar span{filter:brightness(.62) saturate(1.2)} }
+
+/* ── Demande de code organisateur ── */
+.member-link{display:inline-block;margin-top:12px;background:none;border:0;padding:0;font:inherit;font-size:13px;color:var(--gold);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.code-request{margin-top:14px;display:grid;gap:8px;padding:16px;border:1px solid var(--border);border-radius:10px;background:rgba(255,255,255,.03)}
+.code-request .form-label{font-size:12px;font-weight:600;color:var(--text-sub);margin-top:4px}
+.code-request-intro{font-size:13px;color:var(--text-sub);line-height:1.5}
+.code-request .member-block-btn{justify-self:start;padding:10px 20px;margin-top:6px}
+.code-request-out{font-size:13px;line-height:1.5;min-height:1em}
+.code-request-out.ok{color:#5dd470}
+.code-request-out.err{color:#ff8d98}
+.hp-field{position:absolute!important;left:-9999px!important;width:1px;height:1px;opacity:0}
+.admin-badge{display:inline-grid;place-items:center;min-width:18px;height:18px;padding:0 5px;margin-left:4px;border-radius:99px;background:var(--gold);color:#111;font-size:11px;font-weight:700}
+.admin-code-msg{max-width:320px;font-size:12px;color:var(--text-sub)}
+.admin-code-actions{white-space:nowrap}
+@media (prefers-color-scheme: light){.code-request-out.ok{color:#1d7a3a}.code-request-out.err{color:#a8263a}.member-link{color:#7a5d24}}

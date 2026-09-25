@@ -1250,10 +1250,11 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
   let adminCurrentTab='archive';
   window.switchAdminTab=function(tab){
     adminCurrentTab=tab;
-    $$('#admin-tab-archive,#admin-tab-archived').forEach(t=>t.classList.remove('on'));
+    $$('#admin-tab-archive,#admin-tab-archived,#admin-tab-codes').forEach(t=>t.classList.remove('on'));
     $(`#admin-tab-${tab}`).classList.add('on');
     const archiveBtn=$('#btn-archive-all');
     archiveBtn.style.display=tab==='archive'?'inline-flex':'none';
+    if(tab==='codes'){loadCodeRequests();return;}
     loadAdminEvents();
   };
 
@@ -1847,3 +1848,49 @@ if(document.readyState!=='loading')setMotion(window.__motionPaused);
   window.addEventListener('hashchange',go);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(go,50));else setTimeout(go,50);
 })();
+
+/* ═══ Codes organisateurs : demande par e-mail + validation dans l'admin ═══ */
+async function sendCodeRequest(){
+  const email=document.getElementById('cr-email'), nom=document.getElementById('cr-nom'), out=document.getElementById('cr-out'), btn=document.getElementById('cr-send');
+  [email,nom].forEach(el=>el.removeAttribute('aria-invalid'));
+  out.className='code-request-out';
+  if(!/^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(email.value.trim())){email.setAttribute('aria-invalid','true');out.classList.add('err');out.textContent='Indiquez une adresse e-mail valide.';email.focus();return;}
+  if(!nom.value.trim()){nom.setAttribute('aria-invalid','true');out.classList.add('err');out.textContent='Indiquez le nom de votre structure.';nom.focus();return;}
+  btn.disabled=true;btn.textContent='Envoi…';
+  try{
+    const d=await api('/code/request',{method:'POST',body:JSON.stringify({email:email.value.trim(),nom:nom.value.trim(),message:document.getElementById('cr-message').value.trim(),website:document.getElementById('cr-website').value})});
+    out.classList.add('ok');out.textContent=d.message||'Demande envoyée.';
+    btn.textContent='Demande envoyée';
+  }catch(e){out.classList.add('err');out.textContent=e.message||'Envoi impossible, réessayez plus tard.';btn.disabled=false;btn.textContent='Recevoir mon code';}
+}
+async function loadCodeRequests(){
+  const wrap=document.getElementById('admin-table-wrap'),countEl=document.getElementById('admin-count');
+  wrap.innerHTML='<div class="loading">Chargement…</div>';
+  let rows=[];
+  try{rows=await api('/admin/code-requests');}
+  catch(e){wrap.innerHTML='<div class="admin-empty">'+esc(e.message||'Erreur de chargement.')+'</div>';return;}
+  updateCodesBadge(rows.length);
+  countEl.textContent=rows.length+' demande(s) en attente';
+  if(!rows.length){wrap.innerHTML='<div class="admin-empty">Aucune demande de code en attente.</div>';return;}
+  wrap.innerHTML='<table class="admin-table"><thead><tr><th>Structure</th><th>E-mail</th><th>Message</th><th></th></tr></thead><tbody>'+rows.map(r=>
+    `<tr><td><span class="admin-ev-title">${esc(r.Nom||'—')}</span></td><td><a href="mailto:${esc(r.Email||'')}">${esc(r.Email||'—')}</a></td><td class="admin-code-msg">${esc(r.Message||'')}</td>
+     <td class="admin-code-actions"><button type="button" class="btn-republish" data-code-act="send-code" data-id="${esc(r.id)}">Valider et envoyer le code</button> <button type="button" class="admin-logout" data-code-act="refuse" data-id="${esc(r.id)}">Refuser</button></td></tr>`).join('')+'</tbody></table>';
+  wrap.querySelectorAll('[data-code-act]').forEach(b=>b.addEventListener('click',async()=>{
+    const act=b.dataset.codeAct,tr=b.closest('tr');
+    tr.querySelectorAll('button').forEach(x=>x.disabled=true);b.textContent='…';
+    try{await api(`/admin/orgas/${b.dataset.id}/${act}`,{method:'POST'});
+      tr.style.opacity='.4';b.textContent=act==='send-code'?'Code envoyé ✓':'Refusé';
+      showAdminMsg(act==='send-code'?'Code envoyé par e-mail.':'Demande refusée.','ok');
+      const left=wrap.querySelectorAll('tr button:not([disabled])').length/2;updateCodesBadge(left);countEl.textContent=left+' demande(s) en attente';
+    }catch(e){tr.querySelectorAll('button').forEach(x=>x.disabled=false);b.textContent=act==='send-code'?'Valider et envoyer le code':'Refuser';showAdminMsg(e.message||'Erreur.','err');}
+  }));
+}
+function updateCodesBadge(n){const b=document.getElementById('codes-badge');if(b){b.textContent=n;b.hidden=!n;}}
+// Pastille du nombre de demandes dès l'ouverture de l'admin
+(function(){const p=document.getElementById('admin-panel');if(!p)return;new MutationObserver(()=>{if(p.style.display==='block')api('/admin/code-requests').then(r=>updateCodesBadge(r.length)).catch(()=>{});}).observe(p,{attributes:true,attributeFilter:['style']});})();
+document.addEventListener('click',e=>{
+  const t=e.target.closest('[data-action="code-request-toggle"],[data-action="code-request-send"]');if(!t)return;
+  if(t.dataset.action==='code-request-send'){sendCodeRequest();return;}
+  const box=document.getElementById('code-request'),open=box.hidden;
+  box.hidden=!open;t.setAttribute('aria-expanded',String(open));if(open)document.getElementById('cr-email').focus();
+});

@@ -17,7 +17,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Yeseva+One&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=44" />
+  <link rel="stylesheet" href="style.css?v=45" />
   <meta name="theme-color" content="#0d0d0d" media="(prefers-color-scheme: dark)" />
   <meta name="theme-color" content="#f5f1ea" media="(prefers-color-scheme: light)" />
   <style>
@@ -150,6 +150,19 @@
           <button type="button" class="member-block-btn" id="member-code-btn">Valider</button>
         </div>
         <div class="member-block-msg" id="member-msg"></div>
+        <button type="button" class="member-link" data-action="code-request-toggle" aria-expanded="false" aria-controls="code-request">Pas encore de code, ou code oublié&nbsp;? Recevez-le par e-mail</button>
+        <div class="code-request" id="code-request" hidden>
+          <p class="code-request-intro">Déjà inscrit : votre code vous est renvoyé tout de suite. Nouvelle structure : la mairie valide votre demande, puis vous recevez votre code par e-mail.</p>
+          <label class="form-label" for="cr-email">Adresse e-mail de votre structure *</label>
+          <input class="form-input" type="email" id="cr-email" autocomplete="email" required />
+          <label class="form-label" for="cr-nom">Nom de votre structure *</label>
+          <input class="form-input" type="text" id="cr-nom" autocomplete="organization" maxlength="120" required />
+          <label class="form-label" for="cr-message">Présentez-vous en quelques mots (facultatif)</label>
+          <textarea class="form-input" id="cr-message" rows="3" maxlength="1500"></textarea>
+          <input type="text" id="cr-website" class="hp-field" tabindex="-1" autocomplete="off" aria-hidden="true" />
+          <button type="button" class="member-block-btn" id="cr-send" data-action="code-request-send">Recevoir mon code</button>
+          <p class="code-request-out" id="cr-out" role="status" aria-live="polite"></p>
+        </div>
         <div class="member-welcome" id="member-welcome" style="display:none;">
           <div class="member-welcome-avatar" id="member-welcome-avatar"></div>
           <div class="member-welcome-text">
@@ -510,12 +523,13 @@
       <div style="display:flex;gap:0;margin-bottom:1.5rem;border-bottom:1px solid var(--border);">
         <button class="legal-tab on" id="admin-tab-archive" data-action="admin-tab" data-arg="archive" type="button">À archiver</button>
         <button class="legal-tab" id="admin-tab-archived" data-action="admin-tab" data-arg="archived" type="button">Archivés</button>
+        <button class="legal-tab" id="admin-tab-codes" data-action="admin-tab" data-arg="codes" type="button">Demandes de code <span class="admin-badge" id="codes-badge" hidden></span></button>
       </div>
       <div id="admin-table-wrap"></div>
     </div>
   </section>
   <script type="application/ld+json" id="jsonld-events">[]</script>
-  <script src="app.js?v=34" defer></script>
+  <script src="app.js?v=35" defer></script>
   <script src="boot.js?v=2" defer></script>
 </body>
 </html>
