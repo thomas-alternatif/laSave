@@ -643,7 +643,7 @@
       put('Contact privé', '#f-cprive'); put('Message privé', '#f-mprive');
       if (photoUrl) fields.photoUrl = photoUrl;
       if ($('#f-website').value) fields.website = $('#f-website').value;
-      const btn = $('#f-send'); btn.disabled = true; btn.textContent = 'Envoi…';
+      const btn = $('#f-send'), bt = btn.querySelector('.glow-t'); btn.disabled = true; bt.textContent = 'Envoi…';
       try {
         await api('/events', { method: 'POST', body: JSON.stringify(fields) });
         form.hidden = true; $('#code-box').hidden = true;
@@ -652,7 +652,7 @@
       } catch (e2) {
         err(e2.status === 429 ? 'Trop d’envois en peu de temps. Réessayez dans quelques minutes.' : `L'envoi n'a pas abouti (${e2.message}). Réessayez dans un instant.`);
       }
-      btn.disabled = false; btn.textContent = 'Envoyer l’événement';
+      btn.disabled = false; bt.textContent = 'Envoyer l’événement';
     });
     $('#form-again').addEventListener('click', () => {
       form.reset(); photoUrl = ''; $('#drop-img').hidden = true; $('#drop-empty').hidden = false; $('#drop').classList.remove('filled'); say($('#photo-msg'), '');

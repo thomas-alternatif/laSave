@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,500..900&family=Instrument+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=4" />
+  <link rel="stylesheet" href="style.css?v=5" />
 </head>
 <body>
   <a class="skip" href="#contenu">Aller au contenu</a>
@@ -20,7 +20,7 @@
     <nav class="top-nav" aria-label="Navigation principale">
       <a href="#rendez-vous" data-nav="home">Agenda</a>
       <a href="#organisateurs" data-nav="home">Organisateurs</a>
-      <a class="top-cta" href="#partager" data-nav="partager">Partager</a>
+      <a class="top-cta glow dark sm" href="#partager" data-nav="partager"><span class="glow-t">Partager</span></a>
     </nav>
   </header>
 
@@ -37,7 +37,7 @@
           <p class="kicker"><span class="kicker-line" aria-hidden="true"></span><span id="hero-when">À la une</span></p>
           <h1 class="hero-title fit" id="hero-title">Sortir près de chez vous</h1>
           <div class="hero-actions">
-            <button class="ghost" id="hero-open" type="button">Voir l'événement</button>
+            <button class="glow" id="hero-open" type="button"><span class="glow-t">Voir l'événement</span><svg class="glow-i" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
             <button class="heart big" id="hero-heart" type="button" aria-pressed="false" aria-label="J'y vais"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z"/></svg><span class="heart-n">0</span></button>
           </div>
         </div>
@@ -75,7 +75,7 @@
             <h2 class="propose-title" id="propose-title">Vous organisez<br />quelque chose ?</h2>
             <p>Ajoutez votre événement à l'agenda : il est relu par la mairie et publié sous 48 h. C'est gratuit.</p>
           </div>
-          <a class="pill dark" href="#partager">Proposer un événement</a>
+          <a class="glow dark" href="#partager"><span class="glow-t">Proposer un événement</span><svg class="glow-i" width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21.4 2.6a1 1 0 0 0-1.05-.23L3.1 8.76a1 1 0 0 0-.07 1.85l6.9 3.1a.5.5 0 0 0 .5-.06l6.02-4.53-4.53 6.02a.5.5 0 0 0-.06.5l3.1 6.9a1 1 0 0 0 1.85-.07l6.39-17.25a1 1 0 0 0-.23-1.05z"/></svg></a>
         </div>
       </section>
     </div>
@@ -182,7 +182,7 @@
           <label class="consent"><input id="f-consent" type="checkbox" /> <span>J'accepte que ces informations soient utilisées pour publier mon événement sur laSave. <a href="#confidentialite">En savoir plus</a></span></label>
           <p class="form-msg err" id="form-err" role="alert"></p>
           <div class="submit-row">
-            <button class="pill gold" id="f-send" type="submit">Envoyer l'événement</button>
+            <button class="glow" id="f-send" type="submit"><span class="glow-t">Envoyer l'événement</span><svg class="glow-i" width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21.4 2.6a1 1 0 0 0-1.05-.23L3.1 8.76a1 1 0 0 0-.07 1.85l6.9 3.1a.5.5 0 0 0 .5-.06l6.02-4.53-4.53 6.02a.5.5 0 0 0-.06.5l3.1 6.9a1 1 0 0 0 1.85-.07l6.39-17.25a1 1 0 0 0-.23-1.05z"/></svg></button>
             <span class="muted small">Relu et publié sous 48 h par la mairie de Saint-Paul-sur-Save.</span>
           </div>
         </form>
@@ -190,7 +190,7 @@
         <div class="done" id="form-done" hidden tabindex="-1">
           <h2 class="page-title sm">Merci !</h2>
           <p>Votre événement a bien été envoyé. La mairie le relit et le publie sous 48 h.</p>
-          <p><a class="pill" href="#">Retour à l'agenda</a> <button class="link" id="form-again" type="button">Proposer un autre événement</button></p>
+          <p><a class="glow" href="#"><span class="glow-t">Retour à l'agenda</span><svg class="glow-i" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a> <button class="link" id="form-again" type="button">Proposer un autre événement</button></p>
         </div>
       </section>
     </div>
@@ -304,7 +304,7 @@
       <a href="#confidentialite">Confidentialité</a>
       <a href="#accessibilite">Accessibilité : partiellement conforme</a>
     </p>
-    <a class="follow" href="https://linktr.ee/mairiesaintpaulsursave" target="_blank" rel="noopener"><span>Suivez-nous</span><b>Instagram, Facebook et toutes les infos de la mairie</b><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg></a>
+    <a class="glow dark mesh follow" href="https://linktr.ee/mairiesaintpaulsursave" target="_blank" rel="noopener"><span class="glow-t"><small>Suivez-nous</small> Instagram, Facebook et les infos de la mairie</span><svg class="glow-i" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg></a>
     <p class="foot-links">
       <button class="motion-btn" id="avis-open" type="button">Donner votre avis</button>
       <button class="motion-btn" id="motion" type="button" aria-pressed="false">Animations : activées</button>
@@ -368,11 +368,11 @@
       <p class="muted">Qu'est-ce que vous pensez de laSave ?</p>
       <div class="stars" id="stars" role="radiogroup" aria-label="Votre note sur 5"></div>
       <div class="field"><label for="avis-txt">Un commentaire <span class="muted">(facultatif)</span></label><textarea id="avis-txt" rows="3" maxlength="3000"></textarea></div>
-      <button class="pill" id="avis-send" type="button">Envoyer</button>
+      <button class="glow sm" id="avis-send" type="button"><span class="glow-t">Envoyer</span><svg class="glow-i" width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21.4 2.6a1 1 0 0 0-1.05-.23L3.1 8.76a1 1 0 0 0-.07 1.85l6.9 3.1a.5.5 0 0 0 .5-.06l6.02-4.53-4.53 6.02a.5.5 0 0 0-.06.5l3.1 6.9a1 1 0 0 0 1.85-.07l6.39-17.25a1 1 0 0 0-.23-1.05z"/></svg></button>
       <p class="form-msg" id="avis-out" role="status" aria-live="polite"></p>
     </article>
   </div>
 
-  <script src="app.js?v=4" defer></script>
+  <script src="app.js?v=5" defer></script>
 </body>
 </html>

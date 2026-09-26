@@ -747,3 +747,70 @@ html.still .org:hover, html.still .org:focus-visible { animation: none !importan
 #profile.game.in .pro > .x { animation: rise .3s ease .55s both; }
 #profile.game .pro-head { opacity: 0; }
 #profile.game.in .pro-head { opacity: 1; }
+
+/* ════ v17 : boutons principaux « verre dépoli » ════ */
+.glow { --r: 99px; position: relative; isolation: isolate; overflow: hidden; display: inline-flex; align-items: center; justify-content: center; gap: 12px; min-height: 52px; padding: 0 30px; border-radius: var(--r); border: 1.5px solid rgba(255,255,255,.55); text-decoration: none; cursor: pointer; font: 600 15px/1 var(--sans); letter-spacing: .01em; color: #141210; white-space: nowrap;
+  background:
+    radial-gradient(70% 140% at 12% 20%, #FFB547 0%, rgba(255,181,71,0) 62%),
+    radial-gradient(60% 120% at 88% 15%, #F6E7C8 0%, rgba(246,231,200,0) 60%),
+    radial-gradient(55% 130% at 72% 70%, #C8A96E 0%, rgba(200,169,110,0) 70%),
+    radial-gradient(45% 90% at 30% 105%, #ffffff 0%, rgba(255,255,255,0) 70%),
+    #EBD9B4;
+  background-size: 140% 140%; background-position: 0% 50%;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.8), inset 0 -10px 22px rgba(255,255,255,.45), 0 10px 30px rgba(200,169,110,.28);
+  transition: background-position .8s cubic-bezier(.2,.8,.2,1), transform .25s, box-shadow .3s; }
+/* halo blanc flou en bas, comme une lumière derrière du verre */
+.glow::before { content: ''; position: absolute; z-index: -1; left: 25%; right: 25%; bottom: -40%; height: 70%; border-radius: 50%; background: rgba(255,255,255,.85); filter: blur(14px); transition: transform .6s cubic-bezier(.2,.8,.2,1); }
+.glow:hover { background-position: 100% 50%; transform: translateY(-1px); box-shadow: inset 0 1px 0 rgba(255,255,255,.85), inset 0 -10px 22px rgba(255,255,255,.5), 0 14px 38px rgba(200,169,110,.4); }
+.glow:hover::before { transform: translateX(22%); }
+.glow:active { transform: translateY(0) scale(.98); }
+.glow:disabled { opacity: .65; cursor: default; transform: none; }
+.glow-i { flex: none; transition: transform .3s cubic-bezier(.2,.8,.2,1); }
+.glow:hover .glow-i { transform: translateX(3px); }
+.glow.sm { min-height: 40px; padding: 0 20px; font-size: 13px; gap: 8px; }
+.glow:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+
+/* Variante sombre : verre noir, liseré irisé aux couleurs de la charte */
+.glow.dark { color: #fff; border: 1.5px solid transparent;
+  background:
+    radial-gradient(60% 140% at 18% 110%, rgba(255,168,35,.22), rgba(255,168,35,0) 70%),
+    radial-gradient(50% 120% at 85% -10%, rgba(92,150,171,.22), rgba(92,150,171,0) 70%),
+    linear-gradient(#141414, #141414) padding-box,
+    linear-gradient(115deg, #FFA823, #C8A96E 35%, #5C96AB 65%, #C955E0) border-box;
+  background-size: 100% 100%, 100% 100%, 100% 100%, 220% 100%; background-position: 0 0, 0 0, 0 0, 0% 50%;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.12), 0 10px 30px rgba(0,0,0,.35); transition: background-position 1.2s ease, transform .25s, box-shadow .3s; }
+.glow.dark::before { background: rgba(200,169,110,.5); opacity: .55; }
+.glow.dark:hover { background-position: 0 0, 0 0, 0 0, 100% 50%; box-shadow: inset 0 1px 0 rgba(255,255,255,.16), 0 12px 36px rgba(0,0,0,.45), 0 0 24px rgba(200,169,110,.18); }
+/* Variante « mesh » : taches de couleur floues dans le verre (Suivez-nous) */
+.glow.mesh { background:
+    radial-gradient(40% 140% at 12% 60%, rgba(255,168,35,.55), rgba(255,168,35,0) 70%),
+    radial-gradient(38% 150% at 48% 110%, rgba(228,87,46,.45), rgba(228,87,46,0) 70%),
+    radial-gradient(40% 140% at 80% 20%, rgba(92,150,171,.6), rgba(92,150,171,0) 70%),
+    radial-gradient(30% 120% at 95% 90%, rgba(201,85,224,.45), rgba(201,85,224,0) 70%),
+    linear-gradient(#161616, #161616) padding-box,
+    linear-gradient(115deg, #FFA823, #C8A96E 35%, #5C96AB 65%, #C955E0) border-box;
+  background-size: 160% 160%, 160% 160%, 160% 160%, 160% 160%, 100% 100%, 220% 100%;
+  background-position: 0% 50%, 30% 50%, 70% 50%, 100% 50%, 0 0, 0% 50%;
+  transition: background-position 1.4s cubic-bezier(.2,.8,.2,1), transform .25s, box-shadow .3s; }
+.glow.mesh:hover { background-position: 60% 40%, 0% 60%, 20% 40%, 40% 60%, 0 0, 100% 50%; }
+.glow.mesh::before { background: rgba(255,255,255,.6); opacity: .4; }
+
+/* Emplacements */
+.top-cta.glow { padding: 0 18px !important; min-height: 36px; font-size: 11.5px; letter-spacing: .1em; text-transform: uppercase; border-bottom: 1.5px solid transparent !important; }
+.top-cta.glow[aria-current="page"] { color: #fff; box-shadow: 0 0 0 1px rgba(200,169,110,.6), 0 0 22px rgba(200,169,110,.3); }
+.propose-block .glow.dark { min-height: 58px; padding: 0 34px; font-size: 16px; }
+#f-send { min-height: 58px; padding: 0 36px; font-size: 16px; }
+.hero-actions .glow { min-height: 50px; }
+.follow.glow { margin: 14px 0 8px; min-height: 56px; padding: 0 26px; font-weight: 500; font-size: 14px; }
+.follow.glow small { font-size: 11px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: #F2D9A0; margin-right: 10px; }
+.follow.glow:hover svg { transform: translate(2px, -2px); }
+@media (max-width: 720px) {
+  .follow.glow { white-space: normal; text-align: center; padding: 14px 22px; border-radius: 22px; --r: 22px; }
+  .follow.glow small { display: block; margin: 0 0 6px; }
+  .follow.glow .glow-i { display: none; }
+  .propose-block .glow.dark, #f-send { width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) { .glow, .glow::before, .glow-i { transition: none; } }
+.follow.glow .glow-t { font: inherit; letter-spacing: normal; text-transform: none; color: inherit; }
+.follow.glow:hover { border-color: transparent; }
+.top-cta.glow { border: 1.5px solid transparent !important; }
