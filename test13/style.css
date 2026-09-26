@@ -634,3 +634,72 @@ html.still .sheet [role="dialog"], html.still .sheet .sheet-back, html.still .fc
 html.still .sheet.in .pro-avatar .pro-av { animation: none; }
 [hidden] { display: none !important; }
 .nw { white-space: nowrap; }
+
+/* ════ v14 : à la une plein cadre, reflets flous, grands titres ════ */
+.hero { display: block; height: min(100svh, 960px); min-height: 620px; padding: 0; }
+.hero-bg { inset: 0 0 22% 0; transform: none; transition: opacity .6s ease; }
+.hero-ref { position: absolute; left: 0; right: 0; top: 78%; height: 78%; z-index: -2; background: var(--gris-1) center/cover no-repeat; transform: scale(1.08, -1); filter: blur(22px) brightness(.6) saturate(1.1); transition: opacity .6s ease; }
+.hero-ref { -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,.95) 0%, rgba(0,0,0,0) 34%); mask-image: linear-gradient(to top, rgba(0,0,0,.95) 0%, rgba(0,0,0,0) 34%); }
+.hero-ref.fade, .hero-bg.fade { opacity: 0; }
+.hero-shade { background: linear-gradient(0deg, rgba(5,5,5,.96) 0%, rgba(5,5,5,.55) 30%, rgba(5,5,5,0) 58%), linear-gradient(90deg, rgba(5,5,5,.55) 0%, rgba(5,5,5,0) 55%); }
+.hero-text { position: absolute; left: var(--pad); right: var(--pad); bottom: 92px; max-width: none; padding: 0; transition: opacity .35s ease, transform .5s cubic-bezier(.2,.8,.2,1); }
+.hero-text.fade { opacity: 0; transform: translateY(10px); }
+.hero-title { font-size: clamp(64px, 9.4vw, 160px); line-height: .84; max-width: 13ch; margin: 20px 0 34px; text-shadow: 0 4px 40px rgba(0,0,0,.35); }
+.hero-actions { gap: 22px; }
+.hero-arr { position: absolute; top: 40%; z-index: 3; width: 48px !important; height: 48px !important; opacity: 0; transition: opacity .3s, background .2s; background: rgba(5,5,5,.3) !important; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+.hero-arr.prev { left: var(--pad); } .hero-arr.next { right: var(--pad); }
+.hero:hover .hero-arr, .hero-arr:focus-visible { opacity: 1; }
+.hero-foot { position: absolute; left: var(--pad); right: var(--pad); bottom: 36px; display: flex; align-items: center; gap: 22px; }
+.hero-foot .hero-line { margin: 0; background: rgba(255,255,255,.22); }
+.hero-foot .hero-num { font: 500 12.5px/1 var(--sans); letter-spacing: .12em; color: var(--texte-2); opacity: 1; }
+.hero-foot .hero-num b { color: var(--texte); font-weight: 600; }
+
+/* Grands titres */
+.serif-title, .orgs-title { font-size: clamp(48px, 6.8vw, 100px); line-height: .98; }
+.row-block .row-title { font-size: clamp(42px, 6.2vw, 100px); line-height: .86; }
+.propose-title { font-size: clamp(52px, 8vw, 132px); line-height: .86; }
+.page-title { font-size: clamp(56px, 9vw, 132px); }
+.ev-title { font-size: clamp(40px, 4.8vw, 68px); }
+
+/* Rendez-vous : reflet flou */
+.fcard-ref { filter: blur(7px) saturate(1.1); }
+
+/* Organisateurs : la ronde s'arrête sous la souris, invitation à cliquer */
+.org { transition: box-shadow .3s, scale .4s cubic-bezier(.2,.8,.2,1) !important; }
+.org:hover, .org:focus-visible { scale: 1.1; z-index: 5; box-shadow: 0 0 0 3px var(--or), 0 20px 50px rgba(0,0,0,.6); animation: ring 1.6s ease-out infinite !important; }
+@keyframes ring { 0% { box-shadow: 0 0 0 3px var(--or), 0 0 0 3px rgba(200,169,110,.55), 0 20px 50px rgba(0,0,0,.6); } 100% { box-shadow: 0 0 0 3px var(--or), 0 0 0 22px rgba(200,169,110,0), 0 20px 50px rgba(0,0,0,.6); } }
+.org::after { content: ''; position: absolute; inset: 0; border-radius: 50%; background: rgba(5,5,5,.35); opacity: 0; transition: opacity .3s; pointer-events: none; }
+.org:hover::after, .org:focus-visible::after { opacity: 1; }
+.org-cta { position: absolute; left: 50%; top: 50%; z-index: 2; transform: translate(-50%, -30%); opacity: 0; transition: opacity .25s, transform .35s cubic-bezier(.2,.8,.2,1); white-space: nowrap; background: var(--or); color: #fff; border-radius: 99px; padding: .45em 1em; font: 600 clamp(9px, calc(var(--sz, 110px) * .075), 13px)/1 var(--sans); pointer-events: none; }
+.org:hover .org-cta, .org:focus-visible .org-cta { opacity: 1; transform: translate(-50%, -50%); }
+.org-name { z-index: 2; }
+.org:hover .org-name, .org:focus-visible .org-name { opacity: 1; transform: translate(-50%, 0); }
+
+/* Suivez-nous */
+.follow { display: inline-flex; align-items: center; gap: 12px; margin: 10px 0 6px; padding: 12px 18px 12px 20px; border: 1px solid var(--ligne); border-radius: 99px; text-decoration: none; color: var(--texte); transition: border-color .2s, background .2s; max-width: 100%; }
+.follow span { font-size: 11px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--or); flex: none; }
+.follow b { font-weight: 500; font-size: 13.5px; }
+.follow svg { flex: none; color: var(--or); transition: transform .25s; }
+.follow:hover { border-color: var(--or); background: rgba(200,169,110,.07); }
+.follow:hover svg { transform: translate(2px, -2px); }
+
+@media (max-width: 720px) {
+  .hero { height: 90svh; min-height: 560px; }
+  .hero-bg { inset: 0 0 26% 0; }
+  .hero-ref { top: 74%; height: 74%; }
+  .hero-arr { display: none; }
+  .hero-text { bottom: 76px; }
+  .hero-title { font-size: clamp(46px, 14.5vw, 76px); margin: 14px 0 24px; }
+  .hero-foot { bottom: 30px; }
+  .follow { flex-wrap: wrap; justify-content: center; border-radius: 18px; text-align: center; }
+}
+@media (prefers-reduced-motion: reduce) { .org:hover, .org:focus-visible { animation: none !important; } .hero-text { transition: none; } }
+html.still .org:hover, html.still .org:focus-visible { animation: none !important; }
+.hero-shade { background: linear-gradient(0deg, rgba(5,5,5,.8) 0%, rgba(5,5,5,.3) 26%, rgba(5,5,5,0) 50%), linear-gradient(90deg, rgba(5,5,5,.55) 0%, rgba(5,5,5,0) 55%); }
+.hero-ref { filter: blur(20px) brightness(.85) saturate(1.15); }
+@media (max-width: 720px) {
+  .serif-title, .orgs-title { font-size: clamp(38px, 10.5vw, 50px); }
+  .follow svg { display: none; }
+}
+.hero-bg { -webkit-mask-image: linear-gradient(to bottom, #000 88%, rgba(0,0,0,.35) 100%); mask-image: linear-gradient(to bottom, #000 88%, rgba(0,0,0,.35) 100%); }
+.hero-ref { filter: blur(18px) brightness(.95) saturate(1.2); -webkit-mask-image: linear-gradient(to top, #000 0%, rgba(0,0,0,.6) 12%, rgba(0,0,0,0) 36%); mask-image: linear-gradient(to top, #000 0%, rgba(0,0,0,.6) 12%, rgba(0,0,0,0) 36%); }

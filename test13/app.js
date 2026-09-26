@@ -88,7 +88,7 @@
     let s = parseFloat(getComputedStyle(node).fontSize), guard = 40;
     while (node.scrollWidth > node.clientWidth + 1 && s > min && guard--) { s = Math.max(min, s * 0.94); node.style.fontSize = s.toFixed(1) + 'px'; }
   }
-  const fitAll = () => $$('.fit, .fcard-cap strong, .hcard-t strong, .poster-t, .row-title').forEach(n => fit(n, 12));
+  const fitAll = () => $$('.fit, .fcard-cap strong, .poster-t, .row-title, .propose-title, .page-title').forEach(n => fit(n, 12));
   let fitT = 0;
   window.addEventListener('resize', () => { clearTimeout(fitT); fitT = setTimeout(fitAll, 120); });
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitAll);
@@ -296,34 +296,24 @@
   function buildHero(events) {
     let feats = events.filter(e => e['À la une'] && photoOf(e));
     if (feats.length < 4) feats = feats.concat(events.filter(e => !feats.includes(e) && photoOf(e))).slice(0, 6);
-    if (!feats.length) { $('.hero-rail').hidden = true; $('#hero-open').hidden = true; $('#hero-heart').hidden = true; return; }
-    const cards = $('#hero-cards'), hero = $('.hero');
+    const hero = $('.hero');
+    if (!feats.length) { $$('.hero-arr, .hero-foot, #hero-open, #hero-heart').forEach(n => { n.hidden = true; }); return; }
+    if (feats.length < 2) $$('.hero-arr, .hero-foot').forEach(n => { n.hidden = true; });
+    $('#hero-total').textContent = String(feats.length).padStart(2, '0');
     let cur = 0, paused = motion.still, t0 = 0, raf = 0, hold = false;
-    const items = feats.map((e, i) => {
-      const c = el('button', 'hcard'); c.type = 'button'; c.setAttribute('role', 'listitem');
-      c.setAttribute('aria-label', `${e.Titre || 'Événement'}, ${whenOf(e)}`);
-      const p = photoOf(e); if (p) c.appendChild(img(p));
-      const t = el('span', 'hcard-t');
-      t.appendChild(el('small', null, [whenOf(e), e.Commune].filter(Boolean).join(' · ')));
-      t.appendChild(tel('strong', null, e.Titre || 'Événement'));
-      c.appendChild(t);
-      c.addEventListener('click', () => { if (i === cur) openEvent(e); else { show(i); restart(); } });
-      cards.appendChild(c);
-      return c;
-    });
     function show(i) {
       cur = (i + feats.length) % feats.length;
-      const e = feats[cur], b = $('#hero-bg');
-      b.classList.add('fade');
-      setTimeout(() => { bg(b, photoOf(e)); b.classList.remove('fade'); }, reduce ? 0 : 250);
-      $('#hero-when').textContent = [whenOf(e), e.Commune].filter(Boolean).join(' · ');
-      title($('#hero-title'), e.Titre || 'Événement');
-      fit($('#hero-title'), 26);
+      const e = feats[cur], b = $('#hero-bg'), r = $('#hero-ref'), tx = $('.hero-text');
+      b.classList.add('fade'); r.classList.add('fade'); tx.classList.add('fade');
+      setTimeout(() => {
+        bg(b, photoOf(e)); bg(r, photoOf(e));
+        $('#hero-when').textContent = [whenOf(e), e.Commune].filter(Boolean).join(' · ');
+        title($('#hero-title'), e.Titre || 'Événement');
+        fit($('#hero-title'), 30);
+        b.classList.remove('fade'); r.classList.remove('fade'); tx.classList.remove('fade');
+      }, reduce ? 0 : 280);
       $('#hero-num').textContent = String(cur + 1).padStart(2, '0');
       bindHeart('#hero-heart', e);
-      items.forEach((c, k) => c.classList.toggle('on', k === cur));
-      const c = items[cur];
-      cards.scrollTo({ left: c.offsetLeft - cards.offsetLeft, behavior: reduce ? 'auto' : 'smooth' });
     }
     function progress(ts) {
       if (!t0) t0 = ts;
@@ -332,13 +322,16 @@
       if (k >= 1) { t0 = 0; show(cur + 1); }
       raf = requestAnimationFrame(progress);
     }
-    function restart() { cancelAnimationFrame(raf); t0 = 0; $('#hero-progress').style.width = '0%'; if (!paused && !hold) raf = requestAnimationFrame(progress); }
+    function restart() { cancelAnimationFrame(raf); t0 = 0; $('#hero-progress').style.width = '0%'; if (!paused && !hold && feats.length > 1) raf = requestAnimationFrame(progress); }
     $('#hero-open').addEventListener('click', () => openEvent(feats[cur]));
     $('#hero-prev').addEventListener('click', () => { show(cur - 1); restart(); });
     $('#hero-next').addEventListener('click', () => { show(cur + 1); restart(); });
     onMotion(p => { paused = p; restart(); });
     hero.addEventListener('focusin', ev => { if (keyFocus(ev.target)) { hold = true; restart(); } });
     hero.addEventListener('focusout', ev => { if (!hero.contains(ev.relatedTarget)) { hold = false; restart(); } });
+    let sx = null;
+    hero.addEventListener('pointerdown', ev => { if (ev.pointerType !== 'mouse') sx = ev.clientX; });
+    hero.addEventListener('pointerup', ev => { if (sx == null) return; const d = ev.clientX - sx; sx = null; if (Math.abs(d) > 50) { show(cur + (d < 0 ? 1 : -1)); restart(); } });
     show(0);
   }
 
@@ -456,6 +449,7 @@
       const ph = attUrl(o.Photo && o.Photo[0]);
       if (ph) b.appendChild(img(ph)); else { b.appendChild(el('span', 'org-ini', initials(o.Nom))); b.style.background = tintOf(o.Nom); }
       b.appendChild(el('span', 'org-name', o.Nom));
+      b.appendChild(el('span', 'org-cta', 'Voir le profil'));
       b.addEventListener('click', () => openProfile(o._dup ? ORGAS.find(x => x.id === o.id) || o : o));
       row.appendChild(b); return b;
     };
@@ -492,6 +486,9 @@
       layout();
       requestAnimationFrame(frame);
     }
+    // Survol d'une photo : la ronde s'arrête pour qu'on puisse cliquer
+    row.addEventListener('pointerover', ev => { if (ev.pointerType === 'mouse' && ev.target.closest('.org')) hold = true; });
+    row.addEventListener('pointerout', ev => { if (ev.pointerType === 'mouse' && !(ev.relatedTarget && ev.relatedTarget.closest && ev.relatedTarget.closest('.org'))) hold = false; });
     row.addEventListener('focusin', ev => { if (!keyFocus(ev.target)) return; hold = true; const i = slots.findIndex(sl => sl.includes(ev.target)); if (i >= 0) off = i; });
     row.addEventListener('focusout', () => { hold = false; });
     onMotion(p => { paused = p; });

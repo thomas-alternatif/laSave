@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,500..900&family=Instrument+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=1" />
+  <link rel="stylesheet" href="style.css?v=2" />
 </head>
 <body>
   <a class="skip" href="#contenu">Aller au contenu</a>
@@ -29,23 +29,21 @@
     <div class="view" id="view-home">
       <section class="hero" aria-labelledby="hero-title" aria-roledescription="diaporama">
         <div class="hero-bg" id="hero-bg" aria-hidden="true"></div>
+        <div class="hero-ref" id="hero-ref" aria-hidden="true"></div>
         <div class="hero-shade" aria-hidden="true"></div>
+        <button class="circle hero-arr prev" id="hero-prev" type="button" aria-label="Événement précédent"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg></button>
+        <button class="circle hero-arr next" id="hero-next" type="button" aria-label="Événement suivant"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></button>
         <div class="hero-text">
           <p class="kicker"><span class="kicker-line" aria-hidden="true"></span><span id="hero-when">À la une</span></p>
           <h1 class="hero-title fit" id="hero-title">Sortir près de chez vous</h1>
           <div class="hero-actions">
-            <button class="heart big" id="hero-heart" type="button" aria-pressed="false" aria-label="J'y vais"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z"/></svg><span class="heart-n">0</span></button>
             <button class="ghost" id="hero-open" type="button">Voir l'événement</button>
+            <button class="heart big" id="hero-heart" type="button" aria-pressed="false" aria-label="J'y vais"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z"/></svg><span class="heart-n">0</span></button>
           </div>
         </div>
-        <div class="hero-rail">
-          <div class="hero-cards" id="hero-cards" role="list"></div>
-          <div class="hero-ctrl">
-            <button class="circle" id="hero-prev" type="button" aria-label="Événement précédent"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg></button>
-            <button class="circle" id="hero-next" type="button" aria-label="Événement suivant"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></button>
-            <span class="hero-line" aria-hidden="true"><i id="hero-progress"></i></span>
-            <span class="hero-num" id="hero-num" aria-live="polite">01</span>
-          </div>
+        <div class="hero-foot">
+          <span class="hero-line" aria-hidden="true"><i id="hero-progress"></i></span>
+          <span class="hero-num" aria-live="polite"><b id="hero-num">01</b> / <span id="hero-total">01</span></span>
         </div>
       </section>
 
@@ -301,6 +299,7 @@
       <a href="#confidentialite">Confidentialité</a>
       <a href="#accessibilite">Accessibilité : partiellement conforme</a>
     </p>
+    <a class="follow" href="https://linktr.ee/mairiesaintpaulsursave" target="_blank" rel="noopener"><span>Suivez-nous</span><b>Instagram, Facebook et toutes les infos de la mairie</b><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg></a>
     <p class="foot-links">
       <button class="motion-btn" id="avis-open" type="button">Donner votre avis</button>
       <button class="motion-btn" id="motion" type="button" aria-pressed="false">Animations : activées</button>
@@ -369,6 +368,6 @@
     </article>
   </div>
 
-  <script src="app.js?v=1" defer></script>
+  <script src="app.js?v=2" defer></script>
 </body>
 </html>
