@@ -713,9 +713,9 @@
       const m = h.match(/^event-(rec\w+)$/);
       if (m) { const e = ALL.find(x => x.id === m[1]); if (e) openEvent(e); else pendingEvent = m[1]; }
       else if (h && HOME_ANCHORS.includes(h)) { const t = document.getElementById(h); if (t) requestAnimationFrame(() => t.scrollIntoView({ behavior: changed || reduce ? 'auto' : 'smooth' })); }
-      else if (changed || !h) window.scrollTo(0, 0);
+      else if (changed || !h) window.scrollTo({ top: 0, behavior: 'instant' });
     } else {
-      window.scrollTo(0, 0);
+      window.scrollTo({ top: 0, behavior: 'instant' });
       if (changed) $('#contenu').focus({ preventScroll: true });
       fitAll();
     }
@@ -746,7 +746,7 @@
     setTimeout(() => {
       intro.classList.add('done');
       setTimeout(() => {
-        if ($('#view-home').hidden === false && !/^#event-/.test(location.hash) && !HOME_ANCHORS.includes(location.hash.slice(1))) window.scrollTo(0, 0);
+        if ($('#view-home').hidden === false && !/^#event-/.test(location.hash) && !HOME_ANCHORS.includes(location.hash.slice(1))) window.scrollTo({ top: 0, behavior: 'instant' });
         intro.classList.add('out'); document.body.classList.remove('intro-on');
         setTimeout(() => intro.remove(), quick ? 350 : 1300);
       }, quick ? 0 : 380);
@@ -754,10 +754,30 @@
   }
   setTimeout(endIntro, 4500); // au pire, on n'attend pas plus
 
+  /* ── Thème clair / sombre ── */
+  function bindTheme() {
+    const root = document.documentElement, meta = document.querySelector('meta[name="theme-color"]');
+    const paint = () => {
+      const light = root.getAttribute('data-theme') === 'light';
+      $('#theme-foot').textContent = light ? 'Thème : clair' : 'Thème : sombre';
+      $('#theme-top').setAttribute('aria-label', light ? 'Passer en mode sombre' : 'Passer en mode clair');
+      if (meta) meta.content = light ? '#F4F1EA' : '#050505';
+    };
+    const flip = () => {
+      const light = root.getAttribute('data-theme') !== 'light';
+      if (light) root.setAttribute('data-theme', 'light'); else root.removeAttribute('data-theme');
+      try { localStorage.setItem('lasave_theme', light ? 'light' : 'dark'); } catch (_) {}
+      paint();
+    };
+    $('#theme-top').addEventListener('click', flip); $('#theme-foot').addEventListener('click', flip);
+    paint();
+  }
+  bindTheme();
+
   /* ── Démarrage : toujours ouvrir sur « À la une » ── */
   try { if ('scrollRestoration' in history) history.scrollRestoration = 'manual'; } catch (_) {}
   { const h0 = location.hash.slice(1); if (HOME_ANCHORS.includes(h0)) history.replaceState(null, '', location.pathname + location.search); }
-  window.scrollTo(0, 0);
+  window.scrollTo({ top: 0, behavior: 'instant' });
   setupForm();
   setupAvis();
   bindMotion();

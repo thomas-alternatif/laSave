@@ -10,21 +10,23 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,500..900&family=Instrument+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=8" />
+  <script src="theme.js?v=1"></script>
+  <link rel="stylesheet" href="style.css?v=9" />
 </head>
 <body class="intro-on">
   <div class="intro" id="intro" aria-hidden="true">
-    <img class="intro-logo" src="../test7/logo.png" alt="" width="320" height="79" />
+    <img class="intro-logo lg-d" src="../test7/logo.png" alt="" width="320" height="79" /><img class="intro-logo lg-l" src="logo-clair.png" alt="" width="320" height="79" />
     <span class="intro-line"><i id="intro-bar"></i></span>
     <p class="intro-tag">Sortir dans la vallée de la Save</p>
   </div>
   <a class="skip" href="#contenu">Aller au contenu</a>
 
   <header class="top" id="top">
-    <a class="top-logo" href="#" data-route="home" aria-label="laSave, accueil"><img src="../test7/logo.png" alt="laSave" width="130" height="32" /></a>
+    <a class="top-logo" href="#" data-route="home" aria-label="laSave, accueil"><img class="lg-d" src="../test7/logo.png" alt="laSave" width="130" height="32" /><img class="lg-l" src="logo-clair.png" alt="laSave" width="130" height="32" /></a>
     <nav class="top-nav" aria-label="Navigation principale">
       <a href="#rendez-vous" data-nav="home">Agenda</a>
       <a href="#organisateurs" data-nav="home">Organisateurs</a>
+      <button class="theme-btn" id="theme-top" type="button" aria-label="Passer en mode clair"><svg class="i-sun" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg><svg class="i-moon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>
       <a class="top-cta glow dark sm" href="#partager" data-nav="partager"><span class="glow-t">Partager</span></a>
     </nav>
   </header>
@@ -301,7 +303,7 @@
   </main>
 
   <footer class="foot">
-    <img src="../test7/logo.png" alt="laSave" width="110" height="27" />
+    <img class="lg-d" src="../test7/logo.png" alt="laSave" width="110" height="27" /><img class="lg-l" src="logo-clair.png" alt="laSave" width="110" height="27" />
     <p>Un service de la mairie de Saint-Paul-sur-Save</p>
     <p class="foot-links">
       <a href="#partager">Proposer un événement</a>
@@ -312,6 +314,7 @@
     <a class="glow dark mesh follow" href="https://linktr.ee/mairiesaintpaulsursave" target="_blank" rel="noopener"><span class="glow-t"><small>Suivez-nous</small> Instagram, Facebook et les infos de la mairie</span><svg class="glow-i" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg></a>
     <p class="foot-links">
       <button class="motion-btn" id="avis-open" type="button">Donner votre avis</button>
+      <button class="motion-btn" id="theme-foot" type="button">Thème : sombre</button>
       <button class="motion-btn" id="motion" type="button" aria-pressed="false">Animations : activées</button>
     </p>
   </footer>
@@ -378,6 +381,6 @@
     </article>
   </div>
 
-  <script src="app.js?v=7" defer></script>
+  <script src="app.js?v=8" defer></script>
 </body>
 </html>
