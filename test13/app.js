@@ -449,8 +449,8 @@
       const ph = attUrl(o.Photo && o.Photo[0]);
       if (ph) b.appendChild(img(ph)); else { b.appendChild(el('span', 'org-ini', initials(o.Nom))); b.style.background = tintOf(o.Nom); }
       b.appendChild(el('span', 'org-name', o.Nom));
-      b.appendChild(el('span', 'org-cta', 'Voir le profil'));
-      b.addEventListener('click', () => openProfile(o._dup ? ORGAS.find(x => x.id === o.id) || o : o));
+      b._nom = o.Nom;
+      b.addEventListener('click', () => pick(b, o._dup ? ORGAS.find(x => x.id === o.id) || o : o));
       row.appendChild(b); return b;
     };
     while (k < list.length) {
@@ -458,6 +458,32 @@
       else { slots.push([bubble(list[k])]); k++; }
     }
     const N = slots.length;
+    const sel = el('div', 'org-sel'); sel.setAttribute('aria-hidden', 'true');
+    const selName = el('span', 'org-sel-name'), selGo = el('span', 'org-sel-go', '▶ Voir le profil');
+    sel.appendChild(selName); sel.appendChild(selGo); row.appendChild(sel);
+    let target = null;
+    const place = () => {
+      if (!target) return;
+      const s = target._s * 1.12 + 22, cx = target._x + target._s / 2, cy = target._y + target._s / 2;
+      sel.style.width = sel.style.height = s.toFixed(1) + 'px';
+      sel.style.transform = `translate(${(cx - s / 2).toFixed(1)}px, ${(cy - s / 2).toFixed(1)}px)`;
+    };
+    const aim = b => { if (target === b) return; target = b; selName.textContent = b._nom; row.classList.add('aiming'); sel.classList.remove('on'); place(); void sel.offsetWidth; sel.classList.add('on'); };
+    const unaim = () => { target = null; sel.classList.remove('on'); row.classList.remove('aiming'); };
+    // Clic : explosion de pixels puis ouverture du profil
+    const COLORS = ['#C8A96E', '#FFA823', '#E4572E', '#5C96AB', '#C955E0', '#ffffff'];
+    function pick(b, o) {
+      if (motion.still) { openProfile(o); return; }
+      const cx = b._x + b._s / 2, cy = b._y + b._s / 2;
+      for (let i = 0; i < 18; i++) {
+        const px = el('i', 'px'), a = (i / 18) * Math.PI * 2 + Math.random() * .3, d = b._s * (.7 + Math.random() * .6);
+        px.style.left = cx + 'px'; px.style.top = cy + 'px'; px.style.background = COLORS[i % COLORS.length];
+        px.style.setProperty('--dx', (Math.cos(a) * d).toFixed(0) + 'px'); px.style.setProperty('--dy', (Math.sin(a) * d).toFixed(0) + 'px');
+        row.appendChild(px); setTimeout(() => px.remove(), 700);
+      }
+      b.classList.add('hit'); sel.classList.add('hit');
+      setTimeout(() => { b.classList.remove('hit'); sel.classList.remove('hit'); openProfile(o); }, 380);
+    }
     const erf = x => { const t = 1 / (1 + .3275911 * Math.abs(x)); const y = 1 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - .284496736) * t + .254829592) * t * Math.exp(-x * x); return x < 0 ? -y : y; };
     let off = 0, last = 0, hold = false, paused = motion.still;
     function layout() {
@@ -473,24 +499,25 @@
         if (sl.length === 1) {
           const b = sl[0]; b.style.setProperty('--sz', s.toFixed(1) + 'px');
           b.style.transform = `translate(${(x - s / 2).toFixed(1)}px, ${((H - s) / 2).toFixed(1)}px)`;
+          b._x = x - s / 2; b._y = (H - s) / 2; b._s = s;
           b.classList.toggle('big', Math.abs(u) < .5);
         } else {
           const t = s * .47;
-          sl.forEach((b, j) => { b.style.setProperty('--sz', t.toFixed(1) + 'px'); b.style.transform = `translate(${(x - t / 2).toFixed(1)}px, ${(H / 2 + (j ? s * .03 : -s * .03 - t)).toFixed(1)}px)`; b.classList.remove('big'); });
+          sl.forEach((b, j) => { const y = H / 2 + (j ? s * .03 : -s * .03 - t); b.style.setProperty('--sz', t.toFixed(1) + 'px'); b.style.transform = `translate(${(x - t / 2).toFixed(1)}px, ${y.toFixed(1)}px)`; b._x = x - t / 2; b._y = y; b._s = t; b.classList.remove('big'); });
         }
       });
     }
     function frame(ts) {
       const dt = last ? Math.min(50, ts - last) : 16; last = ts;
       if (!paused && !hold && !openDlg) off += dt * 0.00028;
-      layout();
+      layout(); place();
       requestAnimationFrame(frame);
     }
     // Survol d'une photo : la ronde s'arrête pour qu'on puisse cliquer
-    row.addEventListener('pointerover', ev => { if (ev.pointerType === 'mouse' && ev.target.closest('.org')) hold = true; });
-    row.addEventListener('pointerout', ev => { if (ev.pointerType === 'mouse' && !(ev.relatedTarget && ev.relatedTarget.closest && ev.relatedTarget.closest('.org'))) hold = false; });
-    row.addEventListener('focusin', ev => { if (!keyFocus(ev.target)) return; hold = true; const i = slots.findIndex(sl => sl.includes(ev.target)); if (i >= 0) off = i; });
-    row.addEventListener('focusout', () => { hold = false; });
+    row.addEventListener('pointerover', ev => { const b = ev.target.closest('.org'); if (ev.pointerType === 'mouse' && b) { hold = true; aim(b); } });
+    row.addEventListener('pointerout', ev => { if (ev.pointerType !== 'mouse') return; const nb = ev.relatedTarget && ev.relatedTarget.closest && ev.relatedTarget.closest('.org'); if (!nb) { hold = false; unaim(); } });
+    row.addEventListener('focusin', ev => { if (!keyFocus(ev.target)) return; hold = true; const i = slots.findIndex(sl => sl.includes(ev.target)); if (i >= 0) off = i; aim(ev.target); });
+    row.addEventListener('focusout', ev => { if (!row.contains(ev.relatedTarget)) { hold = false; unaim(); } });
     onMotion(p => { paused = p; });
     requestAnimationFrame(frame);
   }
