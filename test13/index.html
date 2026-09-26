@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://lasave-api.partage.workers.dev; base-uri 'self'; form-action 'none'" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="theme-color" content="#050505" />
+  <title>laSave — Sortir dans la vallée de la Save</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,500..900&family=Instrument+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css?v=1" />
+</head>
+<body>
+  <a class="skip" href="#contenu">Aller au contenu</a>
+
+  <header class="top" id="top">
+    <a class="top-logo" href="#" data-route="home" aria-label="laSave, accueil"><img src="../test7/logo.png" alt="laSave" width="130" height="32" /></a>
+    <nav class="top-nav" aria-label="Navigation principale">
+      <a href="#rendez-vous" data-nav="home">Agenda</a>
+      <a href="#organisateurs" data-nav="home">Organisateurs</a>
+      <a class="top-cta" href="#partager" data-nav="partager">Partager</a>
+    </nav>
+  </header>
+
+  <main id="contenu" tabindex="-1">
+    <!-- ════════ ACCUEIL ════════ -->
+    <div class="view" id="view-home">
+      <section class="hero" aria-labelledby="hero-title" aria-roledescription="diaporama">
+        <div class="hero-bg" id="hero-bg" aria-hidden="true"></div>
+        <div class="hero-shade" aria-hidden="true"></div>
+        <div class="hero-text">
+          <p class="kicker"><span class="kicker-line" aria-hidden="true"></span><span id="hero-when">À la une</span></p>
+          <h1 class="hero-title fit" id="hero-title">Sortir près de chez vous</h1>
+          <div class="hero-actions">
+            <button class="heart big" id="hero-heart" type="button" aria-pressed="false" aria-label="J'y vais"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z"/></svg><span class="heart-n">0</span></button>
+            <button class="ghost" id="hero-open" type="button">Voir l'événement</button>
+          </div>
+        </div>
+        <div class="hero-rail">
+          <div class="hero-cards" id="hero-cards" role="list"></div>
+          <div class="hero-ctrl">
+            <button class="circle" id="hero-prev" type="button" aria-label="Événement précédent"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg></button>
+            <button class="circle" id="hero-next" type="button" aria-label="Événement suivant"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></button>
+            <span class="hero-line" aria-hidden="true"><i id="hero-progress"></i></span>
+            <span class="hero-num" id="hero-num" aria-live="polite">01</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="flow" id="rendez-vous" aria-labelledby="flow-title">
+        <h2 class="serif-title" id="flow-title">Les rendez-vous<br />des prochains jours</h2>
+        <div class="flow-stage" id="flow-stage" role="region" aria-roledescription="carrousel" aria-label="Événements des 30 prochains jours" tabindex="0"></div>
+        <div class="flow-ctrl">
+          <button class="circle sm" id="flow-prev" type="button" aria-label="Événement précédent"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg></button>
+          <span class="flow-count" id="flow-count" aria-live="polite"></span>
+          <button class="circle sm" id="flow-next" type="button" aria-label="Événement suivant"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></button>
+        </div>
+      </section>
+
+      <section class="rows" id="envies" aria-label="Rubriques"><div id="rows"></div></section>
+
+      <section class="orgs" id="organisateurs" aria-labelledby="orgs-title">
+        <h2 class="orgs-title" id="orgs-title">Celles et ceux qui font vivre la Save</h2>
+        <div class="orgs-row" id="orgs-row"></div>
+      </section>
+
+      <section class="propose" aria-labelledby="propose-title">
+        <div class="propose-block">
+          <div>
+            <h2 class="propose-title" id="propose-title">Vous organisez<br />quelque chose ?</h2>
+            <p>Ajoutez votre événement à l'agenda : il est relu par la mairie et publié sous 48 h. C'est gratuit.</p>
+          </div>
+          <a class="pill dark" href="#partager">Proposer un événement</a>
+        </div>
+      </section>
+    </div>
+
+    <!-- ════════ PARTAGER ════════ -->
+    <div class="view" id="view-partager" hidden>
+      <section class="page">
+        <header class="page-head">
+          <p class="kicker"><span class="kicker-line" aria-hidden="true"></span>Participez</p>
+          <h1 class="page-title">Ajoutez votre événement</h1>
+          <p class="page-lede">Remplissez le formulaire : la mairie relit chaque proposition et la publie sous 48 h. C'est gratuit.</p>
+        </header>
+
+        <div class="code-box" id="code-box">
+          <div class="code-row">
+            <div>
+              <p class="code-title">Vous avez un code organisateur ? <span class="muted">(optionnel)</span></p>
+              <p class="muted small">Vos informations se rempliront toutes seules. Sans code, remplissez simplement le formulaire.</p>
+            </div>
+            <div class="code-input">
+              <label class="sr" for="f-code">Code organisateur</label>
+              <input id="f-code" type="text" placeholder="Code organisateur" autocomplete="off" />
+              <button class="pill" id="code-ok" type="button">Valider</button>
+            </div>
+          </div>
+          <p class="form-msg" id="code-msg" role="status" aria-live="polite"></p>
+          <p class="code-links"><button class="link" type="button" data-cr="forgot">Code oublié ?</button> · <button class="link" type="button" data-cr="new">Obtenir un code</button></p>
+          <div class="code-req" id="code-req" hidden>
+            <p class="small muted" id="cr-intro"></p>
+            <div class="field" id="cr-nom-f"><label for="cr-nom">Nom de votre structure</label><input id="cr-nom" type="text" maxlength="120" autocomplete="organization" /></div>
+            <div class="field"><label for="cr-email">Votre adresse e-mail</label><input id="cr-email" type="email" autocomplete="email" /></div>
+            <div class="field" id="cr-msg-f"><label for="cr-message">Un mot pour la mairie <span class="muted">(facultatif)</span></label><textarea id="cr-message" rows="2" maxlength="1500"></textarea></div>
+            <input type="text" id="cr-website" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
+            <button class="pill" id="cr-send" type="button">Envoyer</button>
+            <p class="form-msg" id="cr-out" role="status" aria-live="polite"></p>
+          </div>
+        </div>
+
+        <form id="ev-form" class="ev-form" novalidate>
+          <fieldset>
+            <legend><span class="step">1</span>L'essentiel</legend>
+            <div class="field"><label for="f-titre">Nom de l'événement *</label><input id="f-titre" type="text" required maxlength="140" placeholder="Concert de jazz, fête du village…" /></div>
+            <div class="grid-2">
+              <div class="field"><label for="f-cat">Catégorie *</label>
+                <select id="f-cat" required>
+                  <option value="">Choisir</option>
+                  <option>Concert</option><option>Festival</option><option>Spectacle</option><option>Guinguette</option>
+                  <option>Fête &amp; Célébration</option><option>Marché</option><option>Exposition</option>
+                  <option>Sport / Loisir</option><option>Conférence / Atelier</option><option>Autre</option>
+                </select>
+              </div>
+              <div class="field"><label for="f-commune">Commune *</label><input id="f-commune" type="text" required list="communes-list" autocomplete="off" placeholder="Saint-Paul-sur-Save" /><datalist id="communes-list"></datalist></div>
+            </div>
+            <div class="grid-3">
+              <div class="field"><label for="f-date">Date</label><input id="f-date" type="date" /></div>
+              <div class="field"><label for="f-date-fin">Date de fin</label><input id="f-date-fin" type="date" /></div>
+              <div class="field"><label for="f-heure">Heure</label><input id="f-heure" type="time" /></div>
+            </div>
+            <div class="field"><label for="f-lieu">Lieu</label><input id="f-lieu" type="text" maxlength="140" placeholder="Salle des fêtes, place de la mairie…" /></div>
+            <div class="field">
+              <span class="label">Affiche <span class="muted">(recommandée)</span></span>
+              <label class="drop" id="drop" for="f-photo">
+                <input id="f-photo" type="file" accept="image/jpeg,image/png,image/webp" class="sr" />
+                <span class="drop-empty" id="drop-empty"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/></svg><b>Ajouter l'affiche</b><small>JPG, PNG ou WebP · 5 Mo maximum</small></span>
+                <img id="drop-img" alt="" hidden />
+              </label>
+              <p class="form-msg" id="photo-msg" role="status" aria-live="polite"></p>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend><span class="step">2</span>Les détails</legend>
+            <div class="field"><label for="f-desc">Description</label><textarea id="f-desc" rows="5" maxlength="5000" placeholder="Décrivez l'événement en quelques lignes…"></textarea></div>
+            <div class="grid-2">
+              <div class="field"><label for="f-tarif">Tarif</label>
+                <div class="quick" role="group" aria-label="Tarifs courants"><button type="button" data-tarif="Gratuit">Gratuit</button><button type="button" data-tarif="Entrée libre">Entrée libre</button><button type="button" data-tarif="Sur réservation">Sur réservation</button><button type="button" data-tarif="Participation libre">Chapeau</button></div>
+                <input id="f-tarif" type="text" maxlength="100" placeholder="5 €, gratuit pour les enfants…" />
+              </div>
+              <div class="field"><label for="f-rec">Récurrence</label>
+                <select id="f-rec"><option value="Aucune">Aucune (une seule fois)</option><option value="Hebdomadaire">Chaque semaine</option><option value="Mensuelle">Chaque mois</option><option value="Annuelle">Chaque année</option></select>
+                <div class="field" id="f-periode-f" hidden><label for="f-periode">Précisez</label><input id="f-periode" type="text" placeholder="Chaque samedi soir de juin à août" /></div>
+              </div>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend><span class="step">3</span>Le contact</legend>
+            <div class="field"><label for="f-org">Organisateur ou association</label><input id="f-org" type="text" maxlength="140" placeholder="Association Les Amis de…" /></div>
+            <div class="grid-3">
+              <div class="field"><label for="f-ig">Instagram</label><input id="f-ig" type="text" placeholder="@compte" /></div>
+              <div class="field"><label for="f-fb">Facebook</label><input id="f-fb" type="text" placeholder="page ou lien" /></div>
+              <div class="field"><label for="f-site">Site web</label><input id="f-site" type="text" placeholder="www.exemple.fr" /></div>
+            </div>
+            <div class="private">
+              <p class="small"><b>Informations privées</b> <span class="muted">· non publiées, lues seulement par la mairie</span></p>
+              <div class="grid-2">
+                <div class="field"><label for="f-cprive">Votre contact</label><input id="f-cprive" type="text" placeholder="e-mail ou téléphone" /></div>
+                <div class="field"><label for="f-mprive">Message à la mairie</label><textarea id="f-mprive" rows="2" placeholder="Une question, une précision…"></textarea></div>
+              </div>
+            </div>
+          </fieldset>
+
+          <input type="text" id="f-website" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
+          <label class="consent"><input id="f-consent" type="checkbox" /> <span>J'accepte que ces informations soient utilisées pour publier mon événement sur laSave. <a href="#confidentialite">En savoir plus</a></span></label>
+          <p class="form-msg err" id="form-err" role="alert"></p>
+          <div class="submit-row">
+            <button class="pill gold" id="f-send" type="submit">Envoyer l'événement</button>
+            <span class="muted small">Relu et publié sous 48 h par la mairie de Saint-Paul-sur-Save.</span>
+          </div>
+        </form>
+
+        <div class="done" id="form-done" hidden tabindex="-1">
+          <h2 class="page-title sm">Merci !</h2>
+          <p>Votre événement a bien été envoyé. La mairie le relit et le publie sous 48 h.</p>
+          <p><a class="pill" href="#">Retour à l'agenda</a> <button class="link" id="form-again" type="button">Proposer un autre événement</button></p>
+        </div>
+      </section>
+    </div>
+
+    <!-- ════════ PAGES LÉGALES ════════ -->
+    <div class="view" id="view-legal" hidden>
+      <section class="page">
+        <header class="page-head">
+          <p class="kicker"><span class="kicker-line" aria-hidden="true"></span>Informations</p>
+          <h1 class="page-title" id="legal-title">Mentions légales</h1>
+        </header>
+        <nav class="tabs" aria-label="Pages d'information">
+          <a href="#mentions" data-tab="mentions">Mentions légales</a>
+          <a href="#confidentialite" data-tab="confidentialite">Confidentialité</a>
+          <a href="#cookies" data-tab="cookies">Cookies</a>
+          <a href="#accessibilite" data-tab="accessibilite">Accessibilité</a>
+        </nav>
+
+        <article class="prose" id="tab-mentions">
+          <h2>Éditeur du site</h2>
+          <p><strong>Mairie de Saint-Paul-sur-Save</strong><br />9 route de Cox, 31530 Saint-Paul-sur-Save<br />Tél. : 05 61 85 43 77 · Fax : 05 61 85 52 73<br />E-mail : <a href="mailto:contact@saintpaulsursave.fr">contact@saintpaulsursave.fr</a><br />Statut : commune · SIRET : 21310507500013</p>
+          <h2>Directrice de la publication</h2>
+          <p>Marie-France URBAN, maire de Saint-Paul-sur-Save.</p>
+          <h2>Hébergement</h2>
+          <p><strong>GitHub, Inc.</strong>, 88 Colin P. Kelly Jr Street, San Francisco, CA 94107, États-Unis · <a href="https://github.com" target="_blank" rel="noopener">github.com</a></p>
+          <h2>Propriété intellectuelle</h2>
+          <p>Le contenu de ce site est la propriété de la mairie de Saint-Paul-sur-Save ou de ses partenaires. Les descriptions d'événements sont fournies par leurs organisateurs. Toute reproduction sans autorisation est interdite.</p>
+          <h2>Contact</h2>
+          <p><a href="mailto:agenda.de.la.save@gmail.com">agenda.de.la.save@gmail.com</a></p>
+        </article>
+
+        <article class="prose" id="tab-confidentialite" hidden>
+          <h2>Politique de confidentialité</h2>
+          <p>La mairie de Saint-Paul-sur-Save traite vos données conformément au RGPD.</p>
+          <h3>Données collectées via le formulaire</h3>
+          <p>Titre, description, date, lieu, commune, organisateur, contact public. En privé (non publiés) : votre contact et votre message à la mairie.</p>
+          <h3>Finalité et base légale</h3>
+          <p>Publication d'événements. Base : mission d'intérêt public et consentement.</p>
+          <h3>Destinataires</h3>
+          <p>Modérateurs habilités. Données stockées via Airtable (sous-traitant). Aucune cession à des tiers.</p>
+          <h3>Durée de conservation</h3>
+          <ul><li>Événements publiés : durée d'utilité du site</li><li>Propositions refusées : 6 mois</li><li>Données privées : suppression après traitement</li></ul>
+          <h3>Vos droits</h3>
+          <p>Accès, rectification, effacement, opposition. Contact : <a href="mailto:contact@saintpaulsursave.fr">contact@saintpaulsursave.fr</a></p>
+          <h3>DPO et recours</h3>
+          <p>DPO mutualisé CDG31, 590 rue Buissonnière, 31676 Labège Cedex · <a href="https://www.cdg31.fr" target="_blank" rel="noopener">cdg31.fr</a><br />CNIL · <a href="https://www.cnil.fr" target="_blank" rel="noopener">cnil.fr</a></p>
+        </article>
+
+        <article class="prose" id="tab-cookies" hidden>
+          <h2>Cookies et traceurs</h2>
+          <p>laSave n'utilise <strong>aucun cookie</strong> de suivi, de publicité ou de profilage.</p>
+          <p>Un stockage technique local (<code>localStorage</code>) mémorise vos « J'y vais » et votre préférence d'animations. Ces données restent sur votre appareil et ne sont jamais transmises.</p>
+          <p>Les données du site transitent par une interface hébergée par Cloudflare, qui traite votre adresse IP uniquement pour limiter les abus (envois répétés). Cette information est conservée au maximum une heure.</p>
+          <p>Les polices sont chargées depuis Google Fonts, ce qui peut impliquer un transfert d'adresse IP vers les États-Unis.</p>
+        </article>
+
+        <article class="prose" id="tab-accessibilite" hidden>
+          <h2>Déclaration d'accessibilité</h2>
+          <p>La mairie de Saint-Paul-sur-Save s'engage à rendre ses services numériques accessibles, conformément à l'article 47 de la loi n° 2005-102 du 11 février 2005. Cette déclaration s'applique au site <strong>la-save.fr</strong>.</p>
+          <h3>État de conformité</h3>
+          <p>Le site la-save.fr est <strong>partiellement conforme</strong> avec le référentiel général d'amélioration de l'accessibilité (RGAA), version 4.1.2, d'après une vérification interne. Un audit complet est programmé pour établir le taux de conformité précis.</p>
+          <h3>Améliorations déjà réalisées</h3>
+          <ul>
+            <li>Lien d'accès direct au contenu en début de page et titre de niveau 1 sur chaque page.</li>
+            <li>Navigation complète au clavier, focus visible, fenêtres qui gardent et restituent le focus, fermeture par la touche Échap.</li>
+            <li>Bouton « J'y vais » dont l'état est annoncé par les lecteurs d'écran.</li>
+            <li>Erreurs du formulaire affichées et annoncées vocalement.</li>
+            <li>Interrupteur pour arrêter toutes les animations, et respect du réglage « réduire les animations » de l'appareil.</li>
+            <li>Contrastes des textes vérifiés.</li>
+          </ul>
+          <h3>Contenus non accessibles connus</h3>
+          <ul>
+            <li>Les affiches d'événements sont des images fournies par les organisateurs : leurs informations sont reprises dans le texte de la fiche, mais pas toujours intégralement.</li>
+            <li>Les descriptions sont rédigées par les organisateurs et peuvent contenir des abréviations ou des mises en forme non structurées.</li>
+          </ul>
+          <h3>Établissement de cette déclaration</h3>
+          <p>Déclaration établie le 25 septembre 2026, sur la base d'une vérification interne (outil automatique axe-core et tests de navigation au clavier), réalisée avec Chrome et Safari sur ordinateur et mobile.</p>
+          <h3>Retour d'information et contact</h3>
+          <p>Si vous n'arrivez pas à accéder à un contenu ou à un service, contactez-nous pour être orienté vers une alternative accessible : <a href="mailto:agenda.de.la.save@gmail.com">agenda.de.la.save@gmail.com</a> ou mairie de Saint-Paul-sur-Save, 9 route de Cox, 31530 Saint-Paul-sur-Save.</p>
+          <h3>Voies de recours</h3>
+          <p>Si vous avez signalé un défaut d'accessibilité sans obtenir de réponse satisfaisante, vous pouvez :</p>
+          <ul>
+            <li>écrire un message au <a href="https://formulaire.defenseurdesdroits.fr/" target="_blank" rel="noopener">Défenseur des droits</a> ;</li>
+            <li>contacter <a href="https://www.defenseurdesdroits.fr/carte-des-delegues" target="_blank" rel="noopener">le délégué du Défenseur des droits dans votre région</a> ;</li>
+            <li>envoyer un courrier gratuit, sans timbre : Défenseur des droits, Libre réponse 71120, 75342 Paris CEDEX 07.</li>
+          </ul>
+          <h2>Schéma pluriannuel 2026-2028</h2>
+          <p>Le site la-save.fr est le seul service numérique concerné. Son suivi est assuré par le conseiller municipal délégué à la culture et à la communication.</p>
+          <ul>
+            <li><strong>2026</strong> : corrections techniques prioritaires (réalisées), audit RGAA sur un échantillon de pages, publication du taux de conformité.</li>
+            <li><strong>2027</strong> : correction des non-conformités relevées, consignes d'accessibilité pour les organisateurs.</li>
+            <li><strong>2028</strong> : nouvel audit, mise à jour de la déclaration, prise en compte du RGAA 5.</li>
+          </ul>
+          <h3>Plan d'action 2026</h3>
+          <ul>
+            <li>Septembre 2026 : corrections clavier, focus, contrastes, animations et formulaires. <em>Fait.</em></li>
+            <li>4e trimestre 2026 : audit RGAA 4.1.2 sur l'accueil, une fiche d'événement, le formulaire de proposition, la page « Votre avis » et les mentions légales.</li>
+            <li>Après l'audit : mise à jour de l'état de conformité et de cette déclaration.</li>
+          </ul>
+        </article>
+      </section>
+    </div>
+  </main>
+
+  <footer class="foot">
+    <img src="../test7/logo.png" alt="laSave" width="110" height="27" />
+    <p>Un service de la mairie de Saint-Paul-sur-Save</p>
+    <p class="foot-links">
+      <a href="#partager">Proposer un événement</a>
+      <a href="#mentions">Mentions légales</a>
+      <a href="#confidentialite">Confidentialité</a>
+      <a href="#accessibilite">Accessibilité : partiellement conforme</a>
+    </p>
+    <p class="foot-links">
+      <button class="motion-btn" id="avis-open" type="button">Donner votre avis</button>
+      <button class="motion-btn" id="motion" type="button" aria-pressed="false">Animations : activées</button>
+    </p>
+  </footer>
+
+  <!-- ════════ FICHE ÉVÉNEMENT ════════ -->
+  <div class="sheet" id="sheet" hidden>
+    <div class="sheet-back" data-close></div>
+    <article class="ev" role="dialog" aria-modal="true" aria-labelledby="ev-title">
+      <button class="circle sm x" type="button" data-close aria-label="Fermer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+      <div class="ev-media" id="ev-media"><div class="ev-blur" id="ev-blur"></div><img id="ev-img" alt="" /></div>
+      <div class="ev-body">
+        <p class="ev-cat" id="ev-cat"></p>
+        <h2 class="ev-title fit" id="ev-title"></h2>
+        <ul class="ev-facts" id="ev-facts"></ul>
+        <button class="ev-org" id="ev-org" type="button" hidden></button>
+        <p class="ev-desc" id="ev-desc"></p>
+        <div class="ev-actions">
+          <button class="heart big" id="ev-heart" type="button" aria-pressed="false" aria-label="J'y vais"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z"/></svg><span class="heart-n">0</span><span class="heart-lbl">J'y vais</span></button>
+          <div class="menu">
+            <button class="ghost" id="ev-cal" type="button" aria-expanded="false" aria-controls="ev-cal-menu">Ajouter à mon agenda</button>
+            <div class="menu-list" id="ev-cal-menu" hidden>
+              <a id="cal-google" target="_blank" rel="noopener">Google Agenda</a>
+              <button id="cal-ics" type="button">Apple / Outlook (.ics)</button>
+            </div>
+          </div>
+          <button class="ghost" id="ev-share" type="button">Partager</button>
+        </div>
+        <p class="form-msg" id="ev-msg" role="status" aria-live="polite"></p>
+      </div>
+    </article>
+  </div>
+
+  <!-- ════════ PROFIL ORGANISATEUR ════════ -->
+  <div class="sheet" id="profile" hidden>
+    <div class="sheet-back" data-close></div>
+    <article class="pro" role="dialog" aria-modal="true" aria-labelledby="pro-name">
+      <button class="circle sm x" type="button" data-close aria-label="Fermer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+      <header class="pro-head">
+        <div class="pro-avatar" id="pro-avatar"></div>
+        <div>
+          <p class="pro-kicker">Organisateur</p>
+          <h2 class="pro-name fit" id="pro-name"></h2>
+          <p class="pro-short" id="pro-short"></p>
+        </div>
+      </header>
+      <p class="pro-desc" id="pro-desc"></p>
+      <ul class="pro-links" id="pro-links"></ul>
+      <h3 class="pro-sub" id="pro-sub">Prochains rendez-vous</h3>
+      <div class="pro-events" id="pro-events"></div>
+    </article>
+  </div>
+
+  <!-- ════════ AVIS ════════ -->
+  <div class="sheet" id="avis" hidden>
+    <div class="sheet-back" data-close></div>
+    <article class="avis" role="dialog" aria-modal="true" aria-labelledby="avis-title">
+      <button class="circle sm x" type="button" data-close aria-label="Fermer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+      <h2 class="serif-title sm" id="avis-title">Votre avis</h2>
+      <p class="muted">Qu'est-ce que vous pensez de laSave ?</p>
+      <div class="stars" id="stars" role="radiogroup" aria-label="Votre note sur 5"></div>
+      <div class="field"><label for="avis-txt">Un commentaire <span class="muted">(facultatif)</span></label><textarea id="avis-txt" rows="3" maxlength="3000"></textarea></div>
+      <button class="pill" id="avis-send" type="button">Envoyer</button>
+      <p class="form-msg" id="avis-out" role="status" aria-live="polite"></p>
+    </article>
+  </div>
+
+  <script src="app.js?v=1" defer></script>
+</body>
+</html>
