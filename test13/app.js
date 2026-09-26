@@ -258,7 +258,7 @@
       return { k: 'web', label: 'Site web', sub: href.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, ''), href };
     }).filter(l => l && /^(https:|mailto:|tel:)/.test(l.href));
   }
-  function openProfile(o) {
+  function openProfile(o, from) {
     const av = $('#pro-avatar'); av.replaceChildren(avatar(o, 'pro-av'));
     title($('#pro-name'), o.Nom);
     const short = o['Description courte'] || '', long = o.Description || '';
@@ -283,7 +283,19 @@
       b.addEventListener('click', () => openEvent(e));
       box.appendChild(b);
     });
-    openDialog($('#profile'));
+    const d = $('#profile'), card = d.querySelector('.pro');
+    const game = !motion.still && !reduce;
+    d.classList.toggle('game', game);
+    [...card.children].filter(n => !n.classList.contains('x')).forEach((n, i) => n.style.setProperty('--d', (0.42 + i * 0.07).toFixed(2) + 's'));
+    [...ul.children, ...box.children].forEach((n, i) => n.style.setProperty('--d', (0.62 + i * 0.05).toFixed(2) + 's'));
+    openDialog(d);
+    if (game) {
+      const r = card.getBoundingClientRect();
+      const f = from && from.getBoundingClientRect ? from.getBoundingClientRect() : null;
+      card.style.setProperty('--ox', (f ? f.left + f.width / 2 - (r.left + r.width / 2) : 0).toFixed(0) + 'px');
+      card.style.setProperty('--oy', (f ? f.top + f.height / 2 - (r.top + r.height / 2) : 0).toFixed(0) + 'px');
+      card.style.setProperty('--os', (f ? Math.max(.08, f.width / r.width) : .2).toFixed(3));
+    }
     fit($('#pro-name'), 22);
   }
 
@@ -447,10 +459,9 @@
       const b = el('button', 'org'); b.type = 'button';
       if (o._dup) { b.tabIndex = -1; b.setAttribute('aria-hidden', 'true'); } else b.setAttribute('aria-label', `${o.Nom}, voir le profil`);
       const ph = attUrl(o.Photo && o.Photo[0]);
-      if (ph) b.appendChild(img(ph)); else { b.appendChild(el('span', 'org-ini', initials(o.Nom))); b.style.background = tintOf(o.Nom); }
+      if (ph) { const i = img(ph); i.draggable = false; b.appendChild(i); } else { b.appendChild(el('span', 'org-ini', initials(o.Nom))); b.style.background = tintOf(o.Nom); }
       b.appendChild(el('span', 'org-name', o.Nom));
-      b._nom = o.Nom;
-      b.addEventListener('click', () => pick(b, o._dup ? ORGAS.find(x => x.id === o.id) || o : o));
+      b.addEventListener('click', () => openProfile(o._dup ? ORGAS.find(x => x.id === o.id) || o : o, b));
       row.appendChild(b); return b;
     };
     while (k < list.length) {
@@ -458,39 +469,14 @@
       else { slots.push([bubble(list[k])]); k++; }
     }
     const N = slots.length;
-    const sel = el('div', 'org-sel'); sel.setAttribute('aria-hidden', 'true');
-    const selName = el('span', 'org-sel-name'), selGo = el('span', 'org-sel-go', '▶ Voir le profil');
-    sel.appendChild(selName); sel.appendChild(selGo); row.appendChild(sel);
-    let target = null;
-    const place = () => {
-      if (!target) return;
-      const s = target._s * 1.12 + 22, cx = target._x + target._s / 2, cy = target._y + target._s / 2;
-      sel.style.width = sel.style.height = s.toFixed(1) + 'px';
-      sel.style.transform = `translate(${(cx - s / 2).toFixed(1)}px, ${(cy - s / 2).toFixed(1)}px)`;
-    };
-    const aim = b => { if (target === b) return; target = b; selName.textContent = b._nom; row.classList.add('aiming'); sel.classList.remove('on'); place(); void sel.offsetWidth; sel.classList.add('on'); };
-    const unaim = () => { target = null; sel.classList.remove('on'); row.classList.remove('aiming'); };
-    // Clic : explosion de pixels puis ouverture du profil
-    const COLORS = ['#C8A96E', '#FFA823', '#E4572E', '#5C96AB', '#C955E0', '#ffffff'];
-    function pick(b, o) {
-      if (motion.still) { openProfile(o); return; }
-      const cx = b._x + b._s / 2, cy = b._y + b._s / 2;
-      for (let i = 0; i < 18; i++) {
-        const px = el('i', 'px'), a = (i / 18) * Math.PI * 2 + Math.random() * .3, d = b._s * (.7 + Math.random() * .6);
-        px.style.left = cx + 'px'; px.style.top = cy + 'px'; px.style.background = COLORS[i % COLORS.length];
-        px.style.setProperty('--dx', (Math.cos(a) * d).toFixed(0) + 'px'); px.style.setProperty('--dy', (Math.sin(a) * d).toFixed(0) + 'px');
-        row.appendChild(px); setTimeout(() => px.remove(), 700);
-      }
-      b.classList.add('hit'); sel.classList.add('hit');
-      setTimeout(() => { b.classList.remove('hit'); sel.classList.remove('hit'); openProfile(o); }, 380);
-    }
     const erf = x => { const t = 1 / (1 + .3275911 * Math.abs(x)); const y = 1 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - .284496736) * t + .254829592) * t * Math.exp(-x * x); return x < 0 ? -y : y; };
-    let off = 0, last = 0, hold = false, paused = motion.still;
+    let off = 0, last = 0, hold = false, paused = motion.still, vel = 0, goal = null, drag = null, moved = false;
+    const unit = () => row.clientWidth < 720 ? 110 : 165; // pixels pour passer d'une bulle à la suivante
     function layout() {
       const W = row.clientWidth, H = row.clientHeight;
       if (!W) return;
       const mob = W < 720;
-      const Smax = mob ? 170 : 250, Smin = mob ? 56 : 82, sig = mob ? 1.35 : 1.9, gap = mob ? 10 : 16;
+      const Smax = mob ? 170 : 250, Smin = mob ? 64 : 92, sig = mob ? 1.35 : 1.9, gap = mob ? 12 : 18;
       const X = u => (Smin + gap) * u + (Smax - Smin) * sig * Math.sqrt(Math.PI) / 2 * erf(u / sig);
       slots.forEach((sl, i) => {
         let u = ((i - off) % N + N) % N; if (u > N / 2) u -= N;
@@ -499,25 +485,50 @@
         if (sl.length === 1) {
           const b = sl[0]; b.style.setProperty('--sz', s.toFixed(1) + 'px');
           b.style.transform = `translate(${(x - s / 2).toFixed(1)}px, ${((H - s) / 2).toFixed(1)}px)`;
-          b._x = x - s / 2; b._y = (H - s) / 2; b._s = s;
           b.classList.toggle('big', Math.abs(u) < .5);
         } else {
           const t = s * .47;
-          sl.forEach((b, j) => { const y = H / 2 + (j ? s * .03 : -s * .03 - t); b.style.setProperty('--sz', t.toFixed(1) + 'px'); b.style.transform = `translate(${(x - t / 2).toFixed(1)}px, ${y.toFixed(1)}px)`; b._x = x - t / 2; b._y = y; b._s = t; b.classList.remove('big'); });
+          sl.forEach((b, j) => { const y = H / 2 + (j ? s * .04 : -s * .04 - t); b.style.setProperty('--sz', t.toFixed(1) + 'px'); b.style.transform = `translate(${(x - t / 2).toFixed(1)}px, ${y.toFixed(1)}px)`; b.classList.remove('big'); });
         }
       });
     }
     function frame(ts) {
       const dt = last ? Math.min(50, ts - last) : 16; last = ts;
-      if (!paused && !hold && !openDlg) off += dt * 0.00028;
-      layout(); place();
+      if (goal != null) { off += (goal - off) * Math.min(1, dt * .012); if (Math.abs(goal - off) < .002) { off = goal; goal = null; } }
+      else if (!drag && Math.abs(vel) > 1e-5) { off += vel * dt; vel *= Math.pow(.93, dt / 16); }
+      else if (!paused && !hold && !drag && !openDlg) off += dt * 0.00028;
+      layout();
       requestAnimationFrame(frame);
     }
-    // Survol d'une photo : la ronde s'arrête pour qu'on puisse cliquer
-    row.addEventListener('pointerover', ev => { const b = ev.target.closest('.org'); if (ev.pointerType === 'mouse' && b) { hold = true; aim(b); } });
-    row.addEventListener('pointerout', ev => { if (ev.pointerType !== 'mouse') return; const nb = ev.relatedTarget && ev.relatedTarget.closest && ev.relatedTarget.closest('.org'); if (!nb) { hold = false; unaim(); } });
-    row.addEventListener('focusin', ev => { if (!keyFocus(ev.target)) return; hold = true; const i = slots.findIndex(sl => sl.includes(ev.target)); if (i >= 0) off = i; aim(ev.target); });
-    row.addEventListener('focusout', ev => { if (!row.contains(ev.relatedTarget)) { hold = false; unaim(); } });
+    // Souris sur la ronde : elle s'arrête, pour viser tranquillement même les petites photos
+    row.addEventListener('pointerenter', ev => { if (ev.pointerType === 'mouse') hold = true; });
+    row.addEventListener('pointerleave', ev => { if (ev.pointerType === 'mouse') hold = false; });
+    // Glisser (souris ou doigt) pour faire défiler, avec un peu d'élan au lâcher
+    row.addEventListener('pointerdown', ev => { if (ev.button) return; drag = { x: ev.clientX, off, lx: ev.clientX, t: performance.now() }; moved = false; vel = 0; goal = null; });
+    window.addEventListener('pointermove', ev => {
+      if (!drag) return;
+      const dx = ev.clientX - drag.x;
+      if (!moved && Math.abs(dx) > 6) { moved = true; row.classList.add('dragging'); }
+      if (!moved) return;
+      const now = performance.now();
+      off = drag.off - dx / unit();
+      vel = -(ev.clientX - drag.lx) / unit() / Math.max(8, now - drag.t);
+      drag.lx = ev.clientX; drag.t = now;
+    });
+    const endDrag = () => { if (!drag) return; drag = null; row.classList.remove('dragging'); if (Math.abs(vel) > .004) vel = Math.sign(vel) * .004; };
+    window.addEventListener('pointerup', endDrag); window.addEventListener('pointercancel', endDrag);
+    row.addEventListener('click', ev => { if (moved) { ev.stopPropagation(); ev.preventDefault(); moved = false; } }, true);
+    // Molette : horizontale (pavé tactile) ou Maj + molette
+    row.addEventListener('wheel', ev => {
+      const d = Math.abs(ev.deltaX) > Math.abs(ev.deltaY) ? ev.deltaX : (ev.shiftKey ? ev.deltaY : 0);
+      if (!d) return;
+      ev.preventDefault(); goal = null; vel = 0; off += d / unit();
+    }, { passive: false });
+    // Flèches discrètes
+    $('#orgs-prev').addEventListener('click', () => { vel = 0; goal = Math.round(goal ?? off) - 1; });
+    $('#orgs-next').addEventListener('click', () => { vel = 0; goal = Math.round(goal ?? off) + 1; });
+    row.addEventListener('focusin', ev => { if (!keyFocus(ev.target)) return; hold = true; const i = slots.findIndex(sl => sl.includes(ev.target)); if (i >= 0) goal = i; });
+    row.addEventListener('focusout', ev => { if (!row.contains(ev.relatedTarget)) hold = false; });
     onMotion(p => { paused = p; });
     requestAnimationFrame(frame);
   }

@@ -704,68 +704,46 @@ html.still .org:hover, html.still .org:focus-visible { animation: none !importan
 .hero-bg { -webkit-mask-image: linear-gradient(to bottom, #000 88%, rgba(0,0,0,.35) 100%); mask-image: linear-gradient(to bottom, #000 88%, rgba(0,0,0,.35) 100%); }
 .hero-ref { filter: blur(18px) brightness(.95) saturate(1.2); -webkit-mask-image: linear-gradient(to top, #000 0%, rgba(0,0,0,.6) 12%, rgba(0,0,0,0) 36%); mask-image: linear-gradient(to top, #000 0%, rgba(0,0,0,.6) 12%, rgba(0,0,0,0) 36%); }
 
-/* ════ v15 : organisateurs façon « choix du joueur » (arcade) ════ */
-:root { --pixel: 'Press Start 2P', 'Courier New', monospace; }
-.orgs-row { height: 400px !important; }
-.org-cta { display: none; }
-.org:hover, .org:focus-visible { scale: 1.12; animation: none !important; box-shadow: 0 0 0 3px var(--or), 0 0 34px rgba(200,169,110,.45); transition: box-shadow .2s, scale .45s cubic-bezier(.3,1.8,.4,1) !important; }
-.org:hover .org-name, .org:focus-visible .org-name { opacity: 0; }
-.org:focus-visible { outline: none; }
-/* Les autres s'assombrissent : on ne voit que le joueur choisi */
-.orgs-row.aiming .org:not(:hover):not(:focus-visible) { filter: brightness(.45) saturate(.6); }
-.org { transition: box-shadow .2s, scale .45s cubic-bezier(.3,1.8,.4,1), filter .3s !important; }
-/* Viseur : 4 coins dorés qui clignotent */
-.org-sel { position: absolute; left: 0; top: 0; z-index: 6; pointer-events: none; opacity: 0;
-  --l: 22px; --t: 3px; --k: var(--or);
-  background:
-    linear-gradient(var(--k), var(--k)) top left / var(--l) var(--t) no-repeat,
-    linear-gradient(var(--k), var(--k)) top left / var(--t) var(--l) no-repeat,
-    linear-gradient(var(--k), var(--k)) top right / var(--l) var(--t) no-repeat,
-    linear-gradient(var(--k), var(--k)) top right / var(--t) var(--l) no-repeat,
-    linear-gradient(var(--k), var(--k)) bottom left / var(--l) var(--t) no-repeat,
-    linear-gradient(var(--k), var(--k)) bottom left / var(--t) var(--l) no-repeat,
-    linear-gradient(var(--k), var(--k)) bottom right / var(--l) var(--t) no-repeat,
-    linear-gradient(var(--k), var(--k)) bottom right / var(--t) var(--l) no-repeat; }
-.org-sel.on { opacity: 1; animation: sel-in .28s steps(4) both, sel-pulse .9s steps(2) .28s infinite; }
-@keyframes sel-in { from { scale: 1.6; opacity: 0; } to { scale: 1; opacity: 1; } }
-@keyframes sel-pulse { 0% { scale: 1; } 100% { scale: 1.06; } }
-.org-sel-name, .org-sel-go { position: absolute; left: 50%; translate: -50% 0; white-space: nowrap; font: 400 10px/1.4 var(--pixel); letter-spacing: .04em; text-transform: uppercase; }
-.org-sel-name { bottom: calc(100% + 10px); color: #fff; background: var(--noir); padding: 6px 9px 5px; border: 2px solid var(--or); box-shadow: 3px 3px 0 var(--or); max-width: 320px; overflow: hidden; text-overflow: ellipsis; }
-.org-sel-go { top: calc(100% + 12px); color: var(--or); animation: blink 1s steps(2, start) infinite; }
-@keyframes blink { to { visibility: hidden; } }
-/* Clic : flash + pixels qui explosent */
-.org.hit { animation: hit .38s steps(3) !important; }
-@keyframes hit { 0% { filter: brightness(2.4); scale: 1.2; } 50% { filter: brightness(1); scale: 1.05; } 100% { filter: brightness(1.6); scale: 1.14; } }
-.org-sel.hit { --k: #fff; }
-.px { position: absolute; z-index: 7; width: 8px; height: 8px; margin: -4px 0 0 -4px; pointer-events: none; animation: px .65s cubic-bezier(.15,.7,.3,1) forwards; }
-@keyframes px { 0% { transform: translate(0, 0) scale(1.4); opacity: 1; } 80% { opacity: 1; } 100% { transform: translate(var(--dx), var(--dy)) scale(.4); opacity: 0; } }
-/* Profil : entrée du joueur */
-.pro-kicker span { font: 400 10px/1.6 var(--pixel); letter-spacing: .06em; color: var(--or); }
-.sheet.in .pro-kicker span { animation: blink .2s steps(2, start) 3; }
-.pro-avatar { position: relative; padding: 14px;
-  --l: 20px; --t: 3px; --k: var(--or);
-  background:
-    linear-gradient(var(--k), var(--k)) top left / var(--l) var(--t) no-repeat,
-    linear-gradient(var(--k), var(--k)) top left / var(--t) var(--l) no-repeat,
-    linear-gradient(var(--k), var(--k)) top right / var(--l) var(--t) no-repeat,
-    linear-gradient(var(--k), var(--k)) top right / var(--t) var(--l) no-repeat,
-    linear-gradient(var(--k), var(--k)) bottom left / var(--l) var(--t) no-repeat,
-    linear-gradient(var(--k), var(--k)) bottom left / var(--t) var(--l) no-repeat,
-    linear-gradient(var(--k), var(--k)) bottom right / var(--l) var(--t) no-repeat,
-    linear-gradient(var(--k), var(--k)) bottom right / var(--t) var(--l) no-repeat; }
-.sheet.in .pro-avatar { animation: sel-in .35s steps(5) both; }
-.sheet.in .pro-avatar .pro-av { animation: pop-px .5s steps(5) .1s both; }
-@keyframes pop-px { 0% { scale: .2; filter: brightness(3); } 60% { scale: 1.1; } 100% { scale: 1; filter: none; } }
-@media (max-width: 720px) {
-  .orgs-row { height: 290px !important; }
-  .org-sel-name, .org-sel-go { font-size: 8px; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .org-sel.on, .org-sel-go, .sheet.in .pro-avatar, .sheet.in .pro-avatar .pro-av, .sheet.in .pro-kicker span { animation: none; }
-}
-html.still .org-sel.on, html.still .org-sel-go, html.still .sheet.in .pro-avatar, html.still .sheet.in .pro-avatar .pro-av, html.still .sheet.in .pro-kicker span { animation: none; }
 .org:hover::after, .org:focus-visible::after { opacity: 0; }
-.org-sel-go { font-size: 11px; }
-.org-sel-name { font-size: 11px; }
-.px { width: 10px; height: 10px; margin: -5px 0 0 -5px; }
-@media (max-width: 720px) { .org-sel-name, .org-sel-go { font-size: 8px; } }
+
+/* ════ v16 : ronde qu'on fait glisser, ouverture de profil façon jeu ════ */
+.orgs-row { height: 340px !important; cursor: grab; touch-action: pan-y; user-select: none; -webkit-user-select: none; }
+.orgs-row.dragging { cursor: grabbing; }
+.orgs-row.dragging .org { pointer-events: none; }
+.org-cta { display: none; }
+.org { transition: box-shadow .25s, scale .3s cubic-bezier(.2,.8,.2,1) !important; animation: none !important; }
+.org:hover, .org:focus-visible { scale: 1.05; z-index: 5; box-shadow: 0 0 0 3px var(--or), 0 14px 36px rgba(0,0,0,.55); }
+.org img { pointer-events: none; }
+.orgs-ctrl { margin-top: 26px; }
+.orgs-hint { font-size: 12px; color: var(--texte-2); letter-spacing: .04em; min-width: 150px; text-align: center; }
+
+/* Profil : la bulle s'ouvre en carte, atterrit, puis tout se révèle */
+#profile.game .pro { transition: none; opacity: 1; transform: none; }
+#profile.game.in .pro { animation: card-in .62s cubic-bezier(.2,.85,.25,1) both; }
+@keyframes card-in {
+  0% { transform: translate(var(--ox, 0), var(--oy, 0)) scale(var(--os, .2)); border-radius: 50%; background-color: var(--or); }
+  38% { background-color: var(--or); }
+  62% { transform: translate(0, 0) scale(1.025); border-radius: 22px; background-color: var(--noir-2); }
+  74% { transform: translate(-5px, 0) scale(1); }
+  84% { transform: translate(4px, 0); }
+  92% { transform: translate(-2px, 0); }
+  100% { transform: none; border-radius: 22px; background-color: var(--noir-2); }
+}
+#profile.game.in .pro > :not(.x) { animation: rise .45s cubic-bezier(.2,.8,.2,1) var(--d, .45s) both; }
+#profile.game.in .pro-links li, #profile.game.in .pro-events > * { animation: rise .4s cubic-bezier(.2,.8,.2,1) var(--d, .6s) both; }
+@keyframes rise { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+#profile.game.in .pro-av { animation: slam .5s cubic-bezier(.3,1.5,.5,1) .38s both; }
+@keyframes slam { 0% { opacity: 0; transform: scale(2.6) rotate(-8deg); filter: blur(6px); } 60% { opacity: 1; filter: none; } 100% { transform: none; } }
+#profile.game.in .pro-name { animation: name-in .55s cubic-bezier(.2,.8,.2,1) .5s both; }
+@keyframes name-in { from { opacity: 0; letter-spacing: .35em; filter: blur(8px); } to { opacity: 1; letter-spacing: -.01em; filter: none; } }
+#profile.game.in .pro-kicker { animation: rise .4s .46s both; }
+/* Reflet qui balaie la carte une fois posée */
+.pro::after { content: ''; position: absolute; inset: 0; pointer-events: none; border-radius: inherit; background: linear-gradient(105deg, transparent 35%, rgba(255,255,255,.14) 48%, rgba(200,169,110,.18) 52%, transparent 65%); transform: translateX(-120%); opacity: 0; }
+#profile.game.in .pro::after { animation: shine .9s ease .55s both; }
+@keyframes shine { 0% { transform: translateX(-120%); opacity: 1; } 100% { transform: translateX(120%); opacity: 1; } }
+.pro { isolation: isolate; }
+@media (max-width: 720px) { .orgs-row { height: 250px !important; } .orgs-hint { min-width: 0; } }
+@keyframes slam { 0% { opacity: 0; transform: scale(2.6) rotate(-8deg); } 60% { opacity: 1; } 100% { opacity: 1; transform: none; } }
+#profile.game.in .pro > .x { animation: rise .3s ease .55s both; }
+#profile.game .pro-head { opacity: 0; }
+#profile.game.in .pro-head { opacity: 1; }
