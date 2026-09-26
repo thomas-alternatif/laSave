@@ -746,6 +746,7 @@
     setTimeout(() => {
       intro.classList.add('done');
       setTimeout(() => {
+        if ($('#view-home').hidden === false && !/^#event-/.test(location.hash) && !HOME_ANCHORS.includes(location.hash.slice(1))) window.scrollTo(0, 0);
         intro.classList.add('out'); document.body.classList.remove('intro-on');
         setTimeout(() => intro.remove(), quick ? 350 : 1300);
       }, quick ? 0 : 380);
@@ -753,7 +754,10 @@
   }
   setTimeout(endIntro, 4500); // au pire, on n'attend pas plus
 
-  /* ── Démarrage ── */
+  /* ── Démarrage : toujours ouvrir sur « À la une » ── */
+  try { if ('scrollRestoration' in history) history.scrollRestoration = 'manual'; } catch (_) {}
+  { const h0 = location.hash.slice(1); if (HOME_ANCHORS.includes(h0)) history.replaceState(null, '', location.pathname + location.search); }
+  window.scrollTo(0, 0);
   setupForm();
   setupAvis();
   bindMotion();
