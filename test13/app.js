@@ -736,6 +736,23 @@
     paint();
   }
 
+  /* ── Ouverture du site pendant le chargement ── */
+  const intro = $('#intro'), introT0 = performance.now();
+  let introDone = false;
+  function endIntro() {
+    if (introDone || !intro) return; introDone = true;
+    const quick = motion.still || reduce;
+    const wait = quick ? 0 : Math.max(0, 1300 - (performance.now() - introT0));
+    setTimeout(() => {
+      intro.classList.add('done');
+      setTimeout(() => {
+        intro.classList.add('out'); document.body.classList.remove('intro-on');
+        setTimeout(() => intro.remove(), quick ? 350 : 1300);
+      }, quick ? 0 : 380);
+    }, wait);
+  }
+  setTimeout(endIntro, 4500); // au pire, on n'attend pas plus
+
   /* ── Démarrage ── */
   setupForm();
   setupAvis();
@@ -750,6 +767,7 @@
     buildRows(UP);
     buildOrgs(ORGAS);
     fitAll();
+    endIntro();
     if (pendingEvent) { const e = ALL.find(x => x.id === pendingEvent); pendingEvent = null; if (e && !$('#view-home').hidden) openEvent(e); }
   })();
 })();
