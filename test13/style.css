@@ -834,3 +834,7 @@ html.still .org:hover, html.still .org:focus-visible { animation: none !importan
     linear-gradient(180deg, #1d1d1d, #111111) padding-box,
     linear-gradient(115deg, rgba(255,168,35,.75), rgba(200,169,110,.6) 35%, rgba(92,150,171,.6) 65%, rgba(201,85,224,.55)) border-box;
   background-size: 100% 100%, 220% 100%; }
+
+/* Logo du pied de page plus grand */
+.foot img { height: 52px; width: auto; margin-bottom: 14px; }
+@media (max-width: 720px) { .foot img { height: 44px; } }
