@@ -64,3 +64,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 .k-toast { position: fixed; left: 50%; bottom: calc(22px + env(safe-area-inset-bottom, 0px)); transform: translate(-50%, 20px); opacity: 0; pointer-events: none; background: var(--texte); color: #141210; font-weight: 600; padding: 12px 20px; border-radius: 99px; transition: opacity .25s, transform .25s; z-index: 10; }
 .k-toast.on { opacity: 1; transform: translate(-50%, 0); }
 @media (prefers-reduced-motion: reduce) { .k-btn, .k-toast { transition: none; } }
+
+/* Titres des sections bien visibles : étiquette violette */
+.k-meta { align-items: center; flex-wrap: wrap; row-gap: 8px; }
+.k-meta b { display: inline-block; background: #B923FF; color: #ffffff; font-size: 14px; font-weight: 700; padding: 7px 14px; border-radius: 99px; line-height: 1.2; white-space: nowrap; }
