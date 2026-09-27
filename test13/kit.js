@@ -22,7 +22,8 @@
     if (e.Heure) t += ` · ${String(e.Heure).replace(':', 'h')}`;
     return t;
   };
-  const ou = e => [e.Lieu, e.Commune].filter(Boolean).join(', ');
+  const commune = v => { const t = String(v || '').trim(); return t && t === t.toUpperCase() ? t.toLowerCase().replace(/\s+/g, '-').replace(/(^|-)\S/g, m => m.toUpperCase()).replace(/-(Sur|De|Du|La|Le|Les|En)-/g, m => m.toLowerCase()) : t; };
+  const ou = e => [e.Lieu, commune(e.Commune)].filter(Boolean).join(', ');
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
   const toast = (() => { let t; return msg => { const n = $('#k-toast'); n.textContent = msg; n.classList.add('on'); clearTimeout(t); t = setTimeout(() => n.classList.remove('on'), 2400); }; })();
@@ -75,7 +76,7 @@
     // Mesures du bloc texte pour centrer l'ensemble
     const tl = fitTitle(c, e.Titre || 'Événement', W - 2 * opts.pad, opts.title, opts.titleMin, 3);
     const lineH = tl.px * .98;
-    const infoPx = opts.info, blocTexte = opts.stamp * 1.9 + 34 + tl.lines.length * lineH + 26 + infoPx * 1.35 * 2;
+    const infoPx = opts.info, blocTexte = opts.stamp * 1.9 + 34 + tl.lines.length * lineH + 26 + infoPx * 1.35 * 2.8;
     let pw = 0, ph = 0;
     const place = opts.bottom - opts.top - blocTexte - 56;           // hauteur restante pour l'affiche
     if (poster) { const s = Math.min(opts.posterW / poster.width, Math.max(opts.posterH * .45, Math.min(opts.posterH, place)) / poster.height); pw = poster.width * s; ph = poster.height * s; }
@@ -104,7 +105,15 @@
     c.font = `600 ${infoPx}px "Instrument Sans", sans-serif`; c.fillStyle = col === '#C8A96E' ? '#e3c992' : col;
     c.fillText(quand(e), W / 2, y); y += infoPx * 1.35;
     c.font = `500 ${infoPx * .86}px "Instrument Sans", sans-serif`; c.fillStyle = '#d6d4ce';
-    const lieu = ou(e); if (lieu) c.fillText(lieu.length > 46 ? lieu.slice(0, 44) + '…' : lieu, W / 2, y);
+    const lieu = ou(e), maxW = W - 2 * opts.pad;
+    if (lieu) {
+      if (c.measureText(lieu).width <= maxW) c.fillText(lieu, W / 2, y);
+      else { // sur deux lignes : le lieu, puis la commune
+        const l1 = e.Lieu || lieu, l2 = commune(e.Commune);
+        let a = l1; while (c.measureText(a).width > maxW && a.length > 10) a = a.slice(0, -2);
+        c.fillText(a === l1 ? a : a.trim() + '…', W / 2, y); if (l2) c.fillText(l2, W / 2, y + infoPx * 1.1);
+      }
+    }
 
     // Pastille dorée en bas
     c.font = `600 ${opts.pill}px "Instrument Sans", sans-serif`;
@@ -171,7 +180,7 @@ ${e.Tarif ? `<tr><td style="padding:4px 24px 0;font-size:15px;color:#a3a19b;">${
     state.legende = `${lignes.join('\n')}\n\nToutes les infos sur la-save.fr 👉 ${url}`;
     state.message = `${lignes.join('\n')}\n\nToutes les infos : ${url}`;
     $('#k-legende').textContent = state.legende;
-    $('#k-apercu').innerHTML = `${photo ? `<img src="${esc(photo)}" alt="" />` : ''}<div><small>la-save.fr</small><b>${esc(e.Titre)}</b><span>${esc([quand(e), e.Commune].filter(Boolean).join(' · '))}</span></div>`;
+    $('#k-apercu').innerHTML = `${photo ? `<img src="${esc(photo)}" alt="" />` : ''}<div><small>la-save.fr</small><b>${esc(e.Titre)}</b><span>${esc([quand(e), commune(e.Commune)].filter(Boolean).join(' · '))}</span></div>`;
     $('#k-wa').href = 'https://wa.me/?text=' + encodeURIComponent(`*${e.Titre}*\n${lignes.slice(1).join('\n')}\n\nToutes les infos : ${url}`);
     $('#k-sms').href = 'sms:?&body=' + encodeURIComponent(state.message);
     $('#k-mail').innerHTML = mailHtml(e, photo, lien);
