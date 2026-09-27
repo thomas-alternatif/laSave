@@ -443,7 +443,7 @@
       const head = el('div', 'row-block');
       const t = el('div', 'row-block-text');
       // Tampon façon « Cinéma Cinéma » : pavés noirs penchés, qui peuvent déborder du rectangle
-      const st = el('p', 'stamp'); st.setAttribute('aria-label', r.kicker); r.stamp.forEach(l => { const sp = el('span', null, l); sp.setAttribute('aria-hidden', 'true'); st.appendChild(sp); }); t.appendChild(st);
+      const st = el('p', 'stamp'); st.setAttribute('aria-label', r.kicker); const sp = el('span', null, r.kicker); sp.setAttribute('aria-hidden', 'true'); st.appendChild(sp); t.appendChild(st);
       const h = tel('h2', 'row-title', r.title); h.id = 'rub-' + k; t.appendChild(h); head.appendChild(t);
       const side = el('div', 'row-side');
       const all = el('button', 'see-all', `Voir tout (${r.evs.length})`); all.type = 'button'; all.setAttribute('aria-expanded', 'false');

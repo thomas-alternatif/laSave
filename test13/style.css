@@ -1096,3 +1096,27 @@ main { padding-top: clamp(10px, 4vw, 64px); }
 .stamp span:last-child { background: #0a0a0a; color: #ECE8E1; font-style: italic; clip-path: polygon(7% 0, 100% 0, 92% 100%, 0 100%); }
 .stamp span:only-child { clip-path: none; }
 @media (max-width: 720px) { .stamp span { font-size: 14px; } }
+
+/* ════ v27 : tampon en barre 3D (modèle fourni) : face blanche, épaisseur noire liserée de blanc vers le bas à droite ════ */
+.stamp { display: block; filter: drop-shadow(0 10px 16px rgba(0,0,0,.28)); transform: none; }
+.stamp span {
+  --d: .36em; position: relative; isolation: isolate; display: inline-block; width: auto; clip-path: none !important;
+  background: #fff; color: #0a0a0a; font: 900 clamp(17px, 2.1vw, 30px)/1 var(--display); font-stretch: 75%; font-style: normal !important;
+  letter-spacing: 0; text-transform: uppercase; padding: .2em .45em .14em; white-space: nowrap; box-shadow: none; border-radius: 0;
+}
+/* épaisseur du bloc : contour blanc puis remplissage noir, en forme de pavé vu de face */
+.stamp span::before, .stamp span::after {
+  content: ''; position: absolute; top: 0; left: 0; right: calc(var(--d) * -1); bottom: calc(var(--d) * -1); z-index: -1;
+}
+.stamp span::before { background: #fff; clip-path: polygon(0 0, calc(100% - var(--d)) 0, 100% var(--d), 100% 100%, var(--d) 100%, 0 calc(100% - var(--d))); }
+.stamp span::after { background: #0a0a0a; clip-path: polygon(1.6px 1.6px, calc(100% - var(--d) - .7px) 1.6px, calc(100% - 1.6px) calc(var(--d) + .7px), calc(100% - 1.6px) calc(100% - 1.6px), calc(var(--d) + .7px) calc(100% - 1.6px), 1.6px calc(100% - var(--d) - .7px)); }
+/* liseré noir autour de la face blanche, pour qu'elle se détache sur les couleurs */
+.stamp span { outline: 1.6px solid #0a0a0a; outline-offset: -1.6px; }
+@media (max-width: 720px) { .stamp span { font-size: 15px; } .stamp { top: -14px; } }
+/* correctif : la face blanche est dessinée par ::before, l'épaisseur noire par ::after (en L autour) */
+.stamp span { isolation: auto; background: transparent; z-index: auto; }
+.stamp span::after { clip-path: polygon(calc(100% - var(--d) + 1.6px) 2.3px, calc(100% - 1.6px) calc(var(--d) + .7px), calc(100% - 1.6px) calc(100% - 1.6px), calc(var(--d) + .7px) calc(100% - 1.6px), 2.3px calc(100% - var(--d) + 1.6px), calc(100% - var(--d) + 1.6px) calc(100% - var(--d) + 1.6px)); }
+.stamp { filter: drop-shadow(0 0 1.2px #0a0a0a) drop-shadow(0 10px 16px rgba(0,0,0,.28)); }
+.stamp span:first-child, .stamp span:last-child { background: transparent; color: #0a0a0a; }
+.stamp span { --d: .5em; }
+@media (max-width: 720px) { .stamp span { font-size: 13px; } }
