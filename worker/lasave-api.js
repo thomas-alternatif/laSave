@@ -237,6 +237,7 @@ function publishedMail(f, id) {
   const info = rows => `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-top:14px;">${rows.filter(r => r[1]).map(([k, v]) => `<tr><td valign="top" style="padding:3px 14px 3px 0;font-family:${S};font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:${G};">${k}</td><td style="padding:3px 0;font-family:${S};font-size:14px;line-height:1.4;color:${W};">${escH(v)}</td></tr>`).join('')}</table>`;
   const mot = String(f['Message aux organisateurs'] || '').trim().slice(0, 3000);
   const qui = f.Organisation ? `Bonjour ${escH(f.Organisation)},` : 'Bonjour,';
+  const kitUrl = `${SITE}/test13/kit.html?id=${id}`; // page « kit de partage » (test13 pour l'instant)
   const msg = [titre, quand, ou, f.Tarif].filter(Boolean).join('\n') + `\n\nToutes les infos : ${partage}`;
   const msgWa = [`*${titre}*`, quand, ou, f.Tarif].filter(Boolean).join('\n') + `\n\nToutes les infos : ${partage}`;
   const btnApp = (h, ico, petit, nom, bg, fg) => `<td width="50%" valign="top" style="border-radius:14px;background:${bg};${bg === '#EBD9B4' ? 'background-image:linear-gradient(100deg,#FFB547 0%,#F6E7C8 50%,#C8A96E 100%);' : ''}"><a href="${h}" style="display:block;padding:14px 14px;text-decoration:none;border-radius:14px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td valign="middle" style="padding-right:10px;"><img src="${SITE}/images/partage/${ico}.png" width="24" height="24" alt="" style="display:block;width:24px;height:24px;border:0;"></td><td valign="middle" style="font-family:${S};color:${fg};line-height:1.15;"><span style="font-size:11px;opacity:.85;">${petit}</span><br><span style="font-size:15px;font-weight:600;">${nom}</span></td></tr></table></a></td>`;
@@ -272,9 +273,20 @@ function publishedMail(f, id) {
   <tr><td style="padding:0 0 16px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${P};border-radius:26px;"><tr><td style="padding:26px 26px 28px;">
     ${meta('Faites-le connaître', 'Partage')}
     <div style="padding-top:22px;">${gros('Partagez-le', 34, '#c8a96e', true)}</div>
-    <p style="margin:12px 0 0;font-family:${S};font-size:15px;line-height:1.6;color:#d6d4ce;">Plus il circule, plus il y aura de monde. En un clic, votre lien part avec l’affiche, la date et le lieu.</p>
+    <p style="margin:12px 0 0;font-family:${S};font-size:15px;line-height:1.6;color:#d6d4ce;">Plus il circule, plus il y aura de monde. On vous a préparé de quoi le partager partout, en deux clics.</p>
 
-    <p style="margin:22px 0 8px;font-family:${S};font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:${G};">Aperçu du lien</p>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:22px;background:#EBD9B4;background-image:linear-gradient(120deg,#FFB547 0%,#F6E7C8 45%,#C8A96E 100%);border-radius:18px;"><tr><td style="padding:22px 22px 24px;">
+      <div style="font-family:${S};font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#3a3226;">Votre kit de partage</div>
+      <div style="margin-top:8px;">${gros('Tout est prêt', 30, '#141210')}</div>
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-top:14px;">
+        ${[['Une story Instagram', 'aux couleurs de laSave'], ['Un visuel', 'pour Instagram et Facebook, avec sa légende'], ['Le lien', 'à envoyer par message, avec l’aperçu de l’affiche'], ['Une invitation mail', 'mise en forme, à copier-coller']]
+          .map(([k, v]) => `<tr><td valign="top" style="padding:3px 10px 3px 0;font-family:${S};font-size:15px;font-weight:700;color:#141210;">✓</td><td style="padding:3px 0;font-family:${S};font-size:15px;line-height:1.45;color:#141210;"><strong>${k}</strong> ${v}</td></tr>`).join('')}
+      </table>
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-top:18px;"><tr><td style="border-radius:99px;background:#141210;"><a href="${kitUrl}" style="display:inline-block;padding:14px 26px;font-family:${S};font-size:15px;font-weight:600;color:#f4f3ef;text-decoration:none;border-radius:99px;">Ouvrir mon kit de partage</a></td></tr></table>
+    </td></tr></table>
+
+    <p style="margin:24px 0 0;font-family:${S};font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:${G};">Ou directement</p>
+    <p style="margin:10px 0 8px;font-family:${S};font-size:13px;color:${G};">Votre lien s’affichera comme ceci :</p>
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#181818;border:1px solid #2c2c2c;border-radius:14px;"><tr>
       ${ph ? `<td width="84" valign="top" style="padding:12px 0 12px 12px;"><img src="${escH(ph)}" width="72" alt="" style="display:block;width:72px;height:auto;border-radius:8px;border:0;"></td>` : ''}
       <td valign="top" style="padding:12px 14px;">
@@ -290,16 +302,6 @@ function publishedMail(f, id) {
       <tr>${btnApp(`sms:?&body=${encodeURIComponent(msg)}`, 'sms', 'Envoyer par', 'SMS', '#262626', '#ffffff')}<td width="10" style="font-size:0;">&nbsp;</td>${btnApp(`mailto:?subject=${encodeURIComponent(titre)}&body=${encodeURIComponent(msg)}`, 'mail', 'Envoyer par', 'E-mail', '#EBD9B4', '#141210')}</tr>
     </table>
 
-    <p style="margin:26px 0 8px;font-family:${S};font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:${G};">Texte prêt à publier</p>
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${W};border-radius:14px;"><tr><td style="padding:16px 18px;font-family:${S};font-size:15px;line-height:1.55;color:#141210;word-break:break-word;">${escH(msg).replace(/\n/g, '<br>').replace(escH(partage), `<span style="word-break:break-all;">${escH(partage)}</span>`)}</td></tr></table>
-    <p style="margin:8px 0 0;font-family:${S};font-size:13px;line-height:1.5;color:${G};">Copiez-le, puis collez-le dans une publication, un groupe WhatsApp ou le journal de votre association.</p>
-
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:22px;border-top:1px solid ${L};">
-      ${[['#C955E0', 'Instagram', 'publiez l’affiche en story et ajoutez l’autocollant « Lien » avec l’adresse de votre événement.'],
-         ['#1877F2', 'Facebook', 'partagez-le aussi dans les groupes de votre commune et épinglez-le sur votre page.'],
-         ['#FFA823', 'Sur l’affiche papier', 'ajoutez « Toutes les infos sur la-save.fr » pour ceux qui ne sont pas sur les réseaux.']]
-        .map(([c, k, v]) => `<tr><td valign="top" width="18" style="padding:14px 0 0;"><div style="width:8px;height:8px;margin-top:6px;border-radius:99px;background:${c};font-size:0;">&nbsp;</div></td><td style="padding:14px 0 0;font-family:${S};font-size:14px;line-height:1.55;color:#d6d4ce;"><strong style="color:${W};">${k} :</strong> ${v}</td></tr>`).join('')}
-    </table>
   </td></tr></table></td></tr>
 
   <tr><td style="padding:6px 20px 0;font-family:${S};font-size:14px;line-height:1.6;color:#d6d4ce;">Une erreur ou un changement ? <strong style="color:${W};">Répondez simplement à ce mail</strong>, la mairie s’occupe de la correction.</td></tr>
@@ -320,10 +322,8 @@ ${titre}
 ${quand}${ou ? '\n' + ou : ''}${f.Tarif ? '\n' + f.Tarif : ''}
 
 Voir l'événement : ${lien}
+Votre kit de partage (story Instagram, visuel, invitation) : ${kitUrl}
 Lien à partager : ${partage}
-
-Texte prêt à publier :
-${msg}
 
 Une erreur ou un changement ? Répondez simplement à ce mail.
 

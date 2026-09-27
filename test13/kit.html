@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://lasave-api.partage.workers.dev; base-uri 'self'; form-action 'none'" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="theme-color" content="#050505" />
+  <title>Kit de partage · laSave</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,500..900&family=Archivo+Narrow:wght@700&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="icon" href="../favicon.ico" sizes="48x48" />
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="kit.css?v=1" />
+</head>
+<body>
+  <header class="k-top">
+    <a href="./" aria-label="laSave, accueil"><img src="../test7/logo.png" alt="laSave" width="118" height="29" /></a>
+    <span>Kit de partage</span>
+  </header>
+
+  <main class="k-wrap">
+    <section class="k-hero">
+      <p class="k-kicker">Pour les organisateurs</p>
+      <h1>Faites-le<br /><span>connaître</span></h1>
+      <p class="k-lead" id="k-lead">Chargement de votre événement…</p>
+    </section>
+
+    <p class="k-err" id="k-err" hidden></p>
+
+    <div id="k-body" hidden>
+      <!-- Story Instagram -->
+      <section class="k-card">
+        <div class="k-meta"><b>Story Instagram</b><span>Format 9:16</span></div>
+        <div class="k-split">
+          <div class="k-visu story"><img id="img-story" alt="Story prête à publier" /></div>
+          <div class="k-side">
+            <h2>Une story toute prête</h2>
+            <p>L’affiche, la date et le lieu, aux couleurs de laSave. Publiez-la telle quelle.</p>
+            <div class="k-btns">
+              <button class="k-btn gold" type="button" data-share="story">Partager en story</button>
+              <a class="k-btn" id="dl-story" download="story-lasave.png" href="#">Télécharger l’image</a>
+            </div>
+            <p class="k-tip"><b>Astuce :</b> dans Instagram, ajoutez l’autocollant « Lien » et collez
+              <button class="k-link" type="button" data-copy="url">le lien de l’événement</button> pour que vos abonnés arrivent directement sur la fiche.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Publication -->
+      <section class="k-card">
+        <div class="k-meta"><b>Publication</b><span>Format 4:5 · Instagram, Facebook</span></div>
+        <div class="k-split">
+          <div class="k-visu post"><img id="img-post" alt="Visuel prêt à publier" /></div>
+          <div class="k-side">
+            <h2>Un visuel pour votre fil</h2>
+            <p>Au bon format pour Instagram et Facebook, avec le texte de légende à copier.</p>
+            <div class="k-btns">
+              <button class="k-btn gold" type="button" data-share="post">Partager le visuel</button>
+              <a class="k-btn" id="dl-post" download="publication-lasave.png" href="#">Télécharger l’image</a>
+            </div>
+            <div class="k-text" id="k-legende"></div>
+            <button class="k-btn sm" type="button" data-copy="legende">Copier la légende</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Message -->
+      <section class="k-card">
+        <div class="k-meta"><b>Par message</b><span>WhatsApp, SMS, Messenger…</span></div>
+        <h2>Le lien, avec l’aperçu de l’affiche</h2>
+        <p>Comme depuis le site : le lien s’affiche avec l’affiche, le titre et la date.</p>
+        <div class="k-apercu" id="k-apercu"></div>
+        <div class="k-btns">
+          <button class="k-btn gold" type="button" data-share="link">Envoyer le lien</button>
+          <a class="k-btn wa" id="k-wa" href="#" target="_blank" rel="noopener">WhatsApp</a>
+          <a class="k-btn" id="k-sms" href="#">SMS</a>
+          <button class="k-btn" type="button" data-copy="url">Copier le lien</button>
+        </div>
+      </section>
+
+      <!-- Mail -->
+      <section class="k-card">
+        <div class="k-meta"><b>Par e-mail</b><span>Gmail, Outlook, Apple Mail…</span></div>
+        <h2>Une invitation mise en forme</h2>
+        <p>Copiez-la, puis collez-la dans un nouveau mail : l’affiche et la mise en page sont conservées.</p>
+        <div class="k-mail-frame"><div id="k-mail"></div></div>
+        <div class="k-btns">
+          <button class="k-btn gold" type="button" data-copy="mail">Copier l’invitation</button>
+          <a class="k-btn" id="k-mailto" href="#">Ouvrir un nouveau mail</a>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <div class="k-toast" id="k-toast" role="status" aria-live="polite"></div>
+  <canvas id="cv" width="1080" height="1920" hidden></canvas>
+  <script src="kit.js?v=1"></script>
+</body>
+</html>
