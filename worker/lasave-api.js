@@ -479,11 +479,17 @@ function stat(env, type, id = '', canal = '') {
   try { if (env.STATS && STAT_TYPES.includes(type)) env.STATS.writeDataPoint({ indexes: [type], blobs: [type, String(id).slice(0, 20), String(canal).slice(0, 20)], doubles: [1] }); } catch {}
 }
 async function statsSql(env, sql) {
-  if (!env.CF_ACCOUNT_ID || !env.CF_STATS_TOKEN) throw Object.assign(new Error('Statistiques pas encore configurées (CF_ACCOUNT_ID / CF_STATS_TOKEN).'), { status: 503 });
+  if (!env.CF_ACCOUNT_ID || !env.CF_STATS_TOKEN) throw Object.assign(new Error('Statistiques pas encore configurées : il manque CF_ACCOUNT_ID ou CF_STATS_TOKEN dans les secrets du serveur.'), { status: 503, expose: true });
   const r = await fetch(`https://api.cloudflare.com/client/v4/accounts/${env.CF_ACCOUNT_ID}/analytics_engine/sql`, { method: 'POST', headers: { Authorization: `Bearer ${env.CF_STATS_TOKEN}` }, body: sql });
   const t = await r.text();
-  if (!r.ok) throw Object.assign(new Error('Lecture des statistiques impossible : ' + t.slice(0, 200)), { status: 502 });
-  return JSON.parse(t).data || [];
+  if (!r.ok) {
+    let why = t.slice(0, 300);
+    if (r.status === 401 || r.status === 403) why = 'le jeton CF_STATS_TOKEN est refusé (vérifiez la permission « Account Analytics : Lire » et l’identifiant CF_ACCOUNT_ID).';
+    else if (/unknown table|does not exist|lasave_stats/i.test(t)) why = 'aucune donnée encore enregistrée (la liaison STATS vers le jeu de données « lasave_stats » est-elle ajoutée ?).';
+    throw Object.assign(new Error('Lecture des statistiques impossible : ' + why), { status: 502, expose: true });
+  }
+  let d; try { d = JSON.parse(t); } catch { throw Object.assign(new Error('Réponse inattendue de Cloudflare : ' + t.slice(0, 200)), { status: 502, expose: true }); }
+  return d.data || [];
 }
 
 /* ── routes ── */
@@ -764,7 +770,7 @@ async function route(req, env, ctx) {
 
   if (p === '/' || p === '/health') {
     const snap = KV ? await KV.get('snap', 'json') : null;
-    return json(req, { ok: true, service: 'laSave API', kv: !!KV, copie: snap ? new Date(snap.at).toISOString() : null, evenements: snap ? snap.events.length : null });
+    return json(req, { ok: true, service: 'laSave API', kv: !!KV, stats: !!env.STATS, statsLecture: !!(env.CF_ACCOUNT_ID && env.CF_STATS_TOKEN), copie: snap ? new Date(snap.at).toISOString() : null, evenements: snap ? snap.events.length : null });
   }
   return json(req, { error: 'Introuvable' }, 404);
 }
@@ -780,7 +786,7 @@ export default {
     try { return await route(req, env, ctx); }
     catch (e) {
       console.error(e);
-      if (e.status === 503 || (e.status === 502 && /e-mail/.test(e.message))) return json(req, { error: e.message }, e.status);
+      if (e.expose || e.status === 503 || (e.status === 502 && /e-mail/.test(e.message))) return json(req, { error: e.message }, e.status || 502);
       return json(req, { error: 'Le service est momentanément indisponible, réessayez plus tard.' }, 502);
     }
   },
