@@ -211,6 +211,7 @@ const slowDown = req => json(req, { error: 'Trop de tentatives, réessayez dans 
 
 /* ── Mail « votre événement est en ligne », envoyé une seule fois à la publication ── */
 const firstEmail = s => (String(s || '').match(/[^\s@<>"',;:|()]{1,64}@[^\s@<>"',;:|()]{1,190}\.[a-z]{2,}/i) || [])[0] || '';
+const MOT_AUTEUR = 'Thomas'; // signe le « Message aux organisateurs » dans le mail de publication
 const M_MOIS = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
 const M_JOURS = ['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'];
 function quandTexte(f) {
@@ -253,12 +254,12 @@ function publishedMail(f, id) {
   <tr><td style="padding:0 0 16px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${P};border-radius:26px;"><tr><td style="padding:26px 26px 30px;">
     ${meta('Bonne nouvelle', 'Publication')}
     <div style="padding-top:26px;">${gros('C’est en ligne&nbsp;!', 64)}</div>
-    <p style="margin:18px 0 0;font-family:${S};font-size:16px;line-height:1.6;color:#d6d4ce;">${qui}<br>votre événement a été relu par la mairie${mot ? ', qui vous laisse un petit mot juste en dessous' : ''}. Il est maintenant visible par tous sur laSave, l’agenda de la vallée de la Save.</p>
+    <p style="margin:18px 0 0;font-family:${S};font-size:16px;line-height:1.6;color:#d6d4ce;">${qui}<br>votre événement a été relu par la mairie. Il est maintenant visible par tous sur laSave, l’agenda de la vallée de la Save.${mot ? ` ${escH(MOT_AUTEUR)} vous a laissé un petit message juste en dessous.` : ''}</p>
   </td></tr></table></td></tr>
 
-  ${mot ? `<tr><td style="padding:0 0 16px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f4f3ef;border-radius:26px;"><tr><td style="padding:24px 26px 26px;">
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="font-family:${S};font-size:12px;font-weight:600;color:#141210;">Un mot de la mairie</td><td align="right" style="font-family:${S};font-size:12px;color:#6b6860;">À lire</td></tr><tr><td colspan="2" style="padding-top:12px;border-bottom:1px solid #141210;font-size:0;line-height:0;">&nbsp;</td></tr></table>
-    <p style="margin:18px 0 0;font-family:${S};font-size:16px;line-height:1.6;color:#141210;">${escH(mot).replace(/\n/g, '<br>')}</p>
+  ${mot ? `<tr><td style="padding:0 0 16px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#5C96AB;border-radius:26px;"><tr><td style="padding:24px 26px 26px;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="font-family:${S};font-size:12px;font-weight:600;color:#0a0a0a;">Message de ${escH(MOT_AUTEUR)}</td><td align="right" style="font-family:${S};font-size:12px;color:#0a0a0a;opacity:.7;">À lire</td></tr><tr><td colspan="2" style="padding-top:12px;border-bottom:1px solid #0a0a0a;font-size:0;line-height:0;">&nbsp;</td></tr></table>
+    <p style="margin:18px 0 0;font-family:${S};font-size:16px;line-height:1.6;color:#0a0a0a;">${escH(mot).replace(/\n/g, '<br>')}</p>
   </td></tr></table></td></tr>` : ''}
 
   <tr><td style="padding:0 0 16px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${P};border-radius:26px;"><tr><td style="padding:26px 26px 30px;">
@@ -275,12 +276,12 @@ function publishedMail(f, id) {
     <div style="padding-top:22px;">${gros('Partagez-le', 34, '#FFA823', true)}</div>
     <p style="margin:12px 0 0;font-family:${S};font-size:15px;line-height:1.6;color:#d6d4ce;">Plus il circule, plus il y aura de monde. On vous a préparé de quoi le partager partout, en deux clics.</p>
 
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:22px;background:#FFA823;border-radius:18px;"><tr><td style="padding:22px 22px 24px;">
-      <div style="font-family:${S};font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#3a3226;">Votre kit de partage</div>
-      <div style="margin-top:8px;">${gros('Tout est prêt', 30, '#141210')}</div>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:22px;background:#B923FF;border-radius:18px;"><tr><td style="padding:22px 22px 24px;">
+      <div style="font-family:${S};font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#ffffff;opacity:.8;">Votre kit de partage</div>
+      <div style="margin-top:8px;">${gros('Tout est prêt', 30, '#ffffff')}</div>
       <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-top:14px;">
-        ${[['Une story Instagram', 'aux couleurs de laSave'], ['Un visuel', 'pour Instagram et Facebook, avec sa légende'], ['Le lien', 'à envoyer par message, avec l’aperçu de l’affiche'], ['Une invitation mail', 'mise en forme, à copier-coller']]
-          .map(([k, v]) => `<tr><td valign="top" style="padding:3px 10px 3px 0;font-family:${S};font-size:15px;font-weight:700;color:#141210;">✓</td><td style="padding:3px 0;font-family:${S};font-size:15px;line-height:1.45;color:#141210;"><strong>${k}</strong> ${v}</td></tr>`).join('')}
+        ${[['Une story Instagram', 'prête à publier'], ['Un visuel', 'pour Instagram et Facebook, avec sa légende'], ['Le lien', 'à envoyer par message, avec l’aperçu de l’affiche'], ['Une invitation mail', 'mise en forme, à copier-coller']]
+          .map(([k, v]) => `<tr><td valign="top" style="padding:3px 10px 3px 0;font-family:${S};font-size:15px;font-weight:700;color:#ffffff;">✓</td><td style="padding:3px 0;font-family:${S};font-size:15px;line-height:1.45;color:#ffffff;"><strong>${k}</strong> ${v}</td></tr>`).join('')}
       </table>
       <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-top:18px;"><tr><td style="border-radius:99px;background:#141210;"><a href="${kitUrl}" style="display:inline-block;padding:14px 26px;font-family:${S};font-size:15px;font-weight:600;color:#f4f3ef;text-decoration:none;border-radius:99px;">Ouvrir mon kit de partage</a></td></tr></table>
     </td></tr></table>
@@ -317,7 +318,7 @@ function publishedMail(f, id) {
   const text = `${f.Organisation ? `Bonjour ${f.Organisation},` : 'Bonjour,'}
 
 Votre événement a été relu par la mairie : il est maintenant en ligne sur laSave.
-${mot ? `\nUn mot de la mairie :\n${mot}\n` : ''}
+${mot ? `\nMessage de ${MOT_AUTEUR} :\n${mot}\n` : ''}
 ${titre}
 ${quand}${ou ? '\n' + ou : ''}${f.Tarif ? '\n' + f.Tarif : ''}
 
