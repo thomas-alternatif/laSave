@@ -86,7 +86,15 @@
     let y = Math.max(opts.top, (opts.top + opts.bottom - total) / 2);
 
     // Logo
-    if (logo) { const lw = opts.logo, lh = logo.height * lw / logo.width; c.drawImage(logo, (W - lw) / 2, opts.logoY, lw, lh); }
+    if (logo) {
+      const lw = opts.logo, lh = logo.height * lw / logo.width; c.drawImage(logo, (W - lw) / 2, opts.logoY, lw, lh);
+      // Sous le logo, en petit
+      const sp = Math.round(lw * .075);
+      c.font = `600 ${sp}px "Instrument Sans", sans-serif`; if ('letterSpacing' in c) c.letterSpacing = `${Math.round(sp * .22)}px`;
+      c.fillStyle = 'rgba(244,243,239,.72)'; c.textAlign = 'center'; c.textBaseline = 'top';
+      c.fillText('AGENDA DE LA SAVE', W / 2, opts.logoY + lh + sp * .7);
+      if ('letterSpacing' in c) c.letterSpacing = '0px';
+    }
 
     // Affiche
     if (poster) {
@@ -178,7 +186,7 @@
   function mailHtml(e, photo, lien, orga) {
     const col = catOf(e)[0];
     return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:520px;background:#0e0e0e;border-radius:22px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
-<tr><td style="padding:22px 24px 0;"><img src="${SITE}/test7/logo.png" width="96" alt="laSave" style="display:block;width:96px;height:auto;border:0;"></td></tr>
+<tr><td style="padding:22px 24px 0;"><img src="${SITE}/test7/logo.png" width="96" alt="laSave" style="display:block;width:96px;height:auto;border:0;"><div style="margin-top:5px;font-size:9px;font-weight:700;letter-spacing:.2em;color:#a3a19b;">AGENDA DE LA SAVE</div></td></tr>
 ${photo ? `<tr><td style="padding:18px 24px 0;"><a href="${lien}"><img src="${esc(photo)}" width="472" alt="${esc(e.Titre)}" style="display:block;width:100%;max-width:472px;height:auto;border-radius:14px;border:0;"></a></td></tr>` : ''}
 <tr><td style="padding:20px 24px 0;"><span style="display:inline-block;background:#ffffff;color:#0a0a0a;font-weight:800;font-size:12px;letter-spacing:.06em;text-transform:uppercase;padding:5px 10px 4px;border-radius:5px;box-shadow:3px 3px 0 #0a0a0a,4px 4px 0 #ffffff;">${esc(e['Catégorie'] || 'Événement')}</span></td></tr>
 <tr><td style="padding:14px 24px 0;font-family:'Arial Narrow','Helvetica Neue',Arial,sans-serif;font-size:32px;line-height:1;font-weight:800;text-transform:uppercase;color:#f4f3ef;">${esc(e.Titre)}</td></tr>
