@@ -14,7 +14,7 @@
   <link rel="icon" href="../favicon.ico" sizes="48x48" />
   <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
-  <link rel="stylesheet" href="style.css?v=24" />
+  <link rel="stylesheet" href="style.css?v=25" />
 </head>
 <body class="intro-on">
   <div class="backdrop" aria-hidden="true"><i></i><i></i></div>
@@ -186,7 +186,7 @@
             <div class="private">
               <p class="small"><b>Informations privées</b> <span class="muted">· non publiées, lues seulement par la mairie</span></p>
               <div class="grid-2">
-                <div class="field"><label for="f-cprive">Votre contact</label><input id="f-cprive" type="text" placeholder="e-mail ou téléphone" /></div>
+                <div class="field"><label for="f-cprive">Votre e-mail</label><input id="f-cprive" type="text" inputmode="email" autocomplete="email" placeholder="vous@exemple.fr (ou un téléphone)" aria-describedby="f-cprive-aide" /><small id="f-cprive-aide" class="muted">Avec un e-mail, vous êtes prévenu dès que l’événement est en ligne.</small></div>
                 <div class="field"><label for="f-mprive">Message à la mairie</label><textarea id="f-mprive" rows="2" placeholder="Une question, une précision…"></textarea></div>
               </div>
             </div>
@@ -389,6 +389,6 @@
     </article>
   </div>
 
-  <script src="app.js?v=17" defer></script>
+  <script src="app.js?v=18" defer></script>
 </body>
 </html>

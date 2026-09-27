@@ -8,7 +8,7 @@
  *   AIRTABLE_TOKEN  — jeton Airtable (lecture + écriture sur la base laSave)
  *   ADMIN_PWD       — mot de passe de l'espace admin
  *   IMGBB_KEY       — clé ImgBB pour l'envoi des affiches
- *   BREVO_KEY       — clé API Brevo pour l'envoi des e-mails (codes organisateurs)
+ *   BREVO_KEY       — clé API Brevo pour l'envoi des e-mails (codes organisateurs, mails de publication)
  *
  * Liaison KV à ajouter (Settings → Bindings → KV namespace) :
  *   LASAVE          — espace de stockage « lasave-cache »
@@ -207,6 +207,104 @@ async function tooMany(req, bucket, max, windowSec) {
   return false;
 }
 const slowDown = req => json(req, { error: 'Trop de tentatives, réessayez dans quelques minutes.' }, 429);
+
+/* ── Mail « votre événement est en ligne », envoyé une seule fois à la publication ── */
+const firstEmail = s => (String(s || '').match(/[^\s@<>"',;:|()]{1,64}@[^\s@<>"',;:|()]{1,190}\.[a-z]{2,}/i) || [])[0] || '';
+const M_MOIS = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+const M_JOURS = ['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'];
+function quandTexte(f) {
+  if (!/^\d{4}-\d{2}-\d{2}/.test(f.Date || '')) return f['Période'] || '';
+  const a = new Date(f.Date.slice(0, 10) + 'T12:00:00Z'), fin = f['Date de fin'] && f['Date de fin'] !== f.Date ? new Date(f['Date de fin'].slice(0, 10) + 'T12:00:00Z') : null;
+  let t = fin ? `Du ${a.getUTCDate()}${a.getUTCMonth() !== fin.getUTCMonth() ? ' ' + M_MOIS[a.getUTCMonth()] : ''} au ${fin.getUTCDate()} ${M_MOIS[fin.getUTCMonth()]}`
+              : `${M_JOURS[a.getUTCDay()]} ${a.getUTCDate()} ${M_MOIS[a.getUTCMonth()]}`;
+  t = t.charAt(0).toUpperCase() + t.slice(1);
+  if (f.Heure) t += ` à ${String(f.Heure).replace(':', 'h')}`;
+  return t;
+}
+function publishedMail(f, id) {
+  const lien = `${SITE}/#event-${id}`, partage = `${API_ORIGIN}/e/${id}`;
+  const titre = f.Titre || 'Votre événement', quand = quandTexte(f), ou = [f.Lieu, f.Commune].filter(Boolean).join(', ');
+  const ph = Array.isArray(f.Photo) && f.Photo[0] ? (f.Photo[0].thumbnails?.large?.url || f.Photo[0].url) : '';
+  const S = "'Instrument Sans','Helvetica Neue',Helvetica,Arial,sans-serif", D = "Archivo,'Arial Narrow','Helvetica Neue',Arial,sans-serif";
+  const W = '#f4f3ef', G = '#a3a19b', P = '#0e0e0e', L = '#262626';
+  const gros = (t, px, c = W, large = false) => `<div style="font-family:${D};font-stretch:${large ? '125%' : '75%'};font-size:${px}px;line-height:.95;font-weight:800;text-transform:uppercase;letter-spacing:${large ? '.01em' : '-.01em'};color:${c};">${t}</div>`;
+  const ep = Array.from({ length: 8 }, (_, i) => `${(i + 1) * .05}em ${(i + 1) * .05}em 0 #0a0a0a`).join(',');
+  const tampon = t => `<span style="display:inline-block;font-family:${D};font-stretch:75%;font-size:14px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;background:#ffffff;color:#0a0a0a;border-radius:.26em;padding:.28em .6em .2em;box-shadow:0 0 0 .06em #0a0a0a,${ep},.4em .4em 0 .06em #ffffff;">${escH(t)}</span>`;
+  const btnOr = (h, t) => `<table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td style="border-radius:99px;background:#EBD9B4;background-image:linear-gradient(100deg,#FFB547 0%,#F6E7C8 45%,#C8A96E 100%);border:1.5px solid rgba(255,255,255,.55);"><a href="${h}" style="display:inline-block;padding:14px 26px;font-family:${S};font-size:15px;font-weight:600;color:#141210;text-decoration:none;border-radius:99px;">${t}</a></td></tr></table>`;
+  const btnVerre = (h, t) => `<td style="padding:0 8px 8px 0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td style="border-radius:99px;background:#1a1a1a;border:1.5px solid rgba(255,255,255,.3);"><a href="${h}" style="display:inline-block;padding:11px 16px;font-family:${S};font-size:14px;font-weight:600;color:${W};text-decoration:none;border-radius:99px;white-space:nowrap;">${t}</a></td></tr></table></td>`;
+  const meta = (g, d) => `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="font-family:${S};font-size:12px;font-weight:600;color:${W};">${g}</td><td align="right" style="font-family:${S};font-size:12px;color:${G};">${d}</td></tr><tr><td colspan="2" style="padding-top:12px;border-bottom:1px solid ${L};font-size:0;line-height:0;">&nbsp;</td></tr></table>`;
+  const info = rows => `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-top:14px;">${rows.filter(r => r[1]).map(([k, v]) => `<tr><td valign="top" style="padding:3px 14px 3px 0;font-family:${S};font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:${G};">${k}</td><td style="padding:3px 0;font-family:${S};font-size:14px;line-height:1.4;color:${W};">${escH(v)}</td></tr>`).join('')}</table>`;
+  const qui = f.Organisation ? `Bonjour ${escH(f.Organisation)},` : 'Bonjour,';
+  const txtPartage = encodeURIComponent(`${titre} — ${quand}${ou ? ', ' + ou : ''} : ${partage}`);
+
+  const html = `<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="dark"><meta name="supported-color-schemes" content="dark"><title>Votre événement est en ligne</title>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,500..900&family=Instrument+Sans:wght@400;600&display=swap" rel="stylesheet"></head>
+<body style="margin:0;padding:0;background:#050505;">
+<div style="display:none;max-height:0;overflow:hidden;opacity:0;">${escH(titre)} est maintenant visible sur l’agenda de la vallée de la Save.</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#050505;"><tr><td align="center" style="padding:30px 12px 44px;">
+<table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px;">
+  <tr><td style="padding:4px 6px 22px;"><a href="${SITE}"><img src="${SITE}/test7/logo.png" width="118" alt="laSave" style="display:block;width:118px;height:auto;border:0;"></a></td></tr>
+
+  <tr><td style="padding:0 0 16px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${P};border-radius:26px;"><tr><td style="padding:26px 26px 30px;">
+    ${meta('Bonne nouvelle', 'Publication')}
+    <div style="padding-top:26px;">${gros('C’est en ligne&nbsp;!', 64)}</div>
+    <p style="margin:18px 0 0;font-family:${S};font-size:16px;line-height:1.6;color:#d6d4ce;">${qui}<br>votre événement a été relu par la mairie. Il est maintenant visible par tous sur laSave, l’agenda de la vallée de la Save.</p>
+  </td></tr></table></td></tr>
+
+  <tr><td style="padding:0 0 16px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${P};border-radius:26px;"><tr><td style="padding:26px 26px 30px;">
+    ${meta('Votre événement', escH(f.Commune || ''))}
+    ${ph ? `<a href="${lien}"><img src="${escH(ph)}" width="548" alt="${escH(titre)}" style="display:block;width:100%;max-width:548px;height:auto;border-radius:16px;border:0;margin-top:22px;"></a>` : ''}
+    <div style="padding-top:22px;">${tampon(f['Catégorie'] || 'Événement')}</div>
+    <div style="padding-top:16px;">${gros(escH(titre), 40)}</div>
+    ${info([['Quand', quand], ['Où', ou], ['Prix', f.Tarif || '']])}
+    <div style="padding-top:24px;">${btnOr(lien, 'Voir mon événement')}</div>
+  </td></tr></table></td></tr>
+
+  <tr><td style="padding:0 0 16px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${P};border-radius:26px;"><tr><td style="padding:26px 26px 26px;">
+    ${meta('Faites-le connaître', 'En un clic')}
+    <div style="padding-top:22px;">${gros('Partagez-le', 30, '#c8a96e', true)}</div>
+    <p style="margin:12px 0 18px;font-family:${S};font-size:15px;line-height:1.6;color:#d6d4ce;">Plus il circule, plus il y aura de monde. Le lien s’affiche avec l’affiche et les infos sur les réseaux.</p>
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
+      ${btnVerre(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(partage)}`, 'Facebook')}
+      ${btnVerre(`https://wa.me/?text=${txtPartage}`, 'WhatsApp')}
+      ${btnVerre(`mailto:?subject=${encodeURIComponent(titre)}&body=${txtPartage}`, 'E-mail')}
+    </tr></table>
+    <p style="margin:10px 0 0;font-family:${S};font-size:13px;color:${G};">Lien à copier : <a href="${partage}" style="color:${W};">${partage.replace('https://', '')}</a></p>
+  </td></tr></table></td></tr>
+
+  <tr><td style="padding:6px 20px 0;font-family:${S};font-size:14px;line-height:1.6;color:#d6d4ce;">Une erreur ou un changement ? <strong style="color:${W};">Répondez simplement à ce mail</strong>, la mairie s’occupe de la correction.</td></tr>
+
+  <tr><td align="center" style="padding:30px 16px 0;font-family:${S};font-size:12px;line-height:1.8;color:#77756f;">
+    Mairie de Saint-Paul-sur-Save — Commission culture<br>
+    <a href="${SITE}" style="color:${W};text-decoration:none;font-weight:600;">la-save.fr</a> &nbsp;/&nbsp; <a href="https://linktr.ee/mairiesaintpaulsursave" style="color:${W};text-decoration:none;font-weight:600;">Suivez-nous</a><br>
+    Vous recevez ce mail car vous avez proposé cet événement sur laSave.
+  </td></tr>
+</table>
+</td></tr></table></body></html>`;
+
+  const text = `${f.Organisation ? `Bonjour ${f.Organisation},` : 'Bonjour,'}
+
+Votre événement a été relu par la mairie : il est maintenant en ligne sur laSave.
+
+${titre}
+${quand}${ou ? '\n' + ou : ''}${f.Tarif ? '\n' + f.Tarif : ''}
+
+Voir l'événement : ${lien}
+Lien à partager : ${partage}
+
+Une erreur ou un changement ? Répondez simplement à ce mail.
+
+Mairie de Saint-Paul-sur-Save — ${SITE}`;
+  return { subject: `C’est en ligne : ${titre}`, html, text };
+}
+async function notifyPublished(env, rec) {
+  const f = rec.fields || {}, to = firstEmail(f['Contact privé']);
+  if (!isEmail(to) || !env.BREVO_KEY) return;
+  if (KV && await KV.get('mailpub:' + rec.id)) return;           // déjà prévenu (republication, etc.)
+  if (KV) { try { await keepPhotos([f], { n: 1 }); } catch {} }  // l'affiche doit rester visible dans le mail
+  await sendMail(env, { to, toName: f.Organisation, ...publishedMail(f, rec.id) });
+  if (KV) await KV.put('mailpub:' + rec.id, new Date().toISOString());
+}
 
 /* ── copie locale des données (KV) : quelques appels Airtable par jour au lieu d'un par visite ── */
 const SNAP_MAX_AGE = 24 * 3600e3;   // au-delà, on relit Airtable (en arrière-plan)
@@ -469,6 +567,14 @@ async function route(req, env, ctx) {
     if (typeof b.photoUrl === 'string' && /^https:\/\/(i\.)?ibb\.co\//.test(b.photoUrl)) fields.Photo = [{ url: b.photoUrl }];
     if (fields.Billetterie && !/^https:\/\/[^\s<>"']+$/.test(fields.Billetterie)) delete fields.Billetterie; // lien de billetterie : https uniquement
     fields.Statut = 'En attente';
+    // Proposé avec un code organisateur et sans e-mail : on reprend l'e-mail de la structure (pour le mail de publication)
+    const code = String(b.code || '').trim().toUpperCase().slice(0, 40);
+    if (code && KV && !firstEmail(fields['Contact privé'])) {
+      try {
+        const o = ((await KV.get('codes', 'json')) || {})[code];
+        if (o && isId(o.id)) { const r = await at(env, `${T_ORGAS}/${o.id}`); if (isEmail(r.fields.Email)) fields['Contact privé'] = [fields['Contact privé'], r.fields.Email].filter(Boolean).join(' · '); }
+      } catch (e) { console.error('e-mail organisateur', e.message); }
+    }
     let d;
     try { d = await at(env, T_EVENTS, { method: 'POST', body: JSON.stringify({ fields }) }); }
     catch (e) { // colonne « Billetterie » pas encore créée dans Airtable : on enregistre quand même le reste
@@ -568,8 +674,10 @@ async function route(req, env, ctx) {
     if (m === 'PATCH' && (mm = p.match(/^\/admin\/events\/(rec\w+)$/))) {
       const statut = (await body()).Statut;
       if (!isId(mm[1]) || !ADMIN_STATUTS.includes(statut)) return json(req, { error: 'Requête invalide' }, 400);
-      try { await at(env, `${T_EVENTS}/${mm[1]}`, { method: 'PATCH', body: JSON.stringify({ fields: { Statut: statut } }) }); }
+      let rec;
+      try { rec = await at(env, `${T_EVENTS}/${mm[1]}`, { method: 'PATCH', body: JSON.stringify({ fields: { Statut: statut } }) }); }
       catch (e) { if (e.status === 404) return json(req, { error: 'Événement introuvable' }, 404); throw e; }
+      if (statut === 'Publié') ctx.waitUntil(notifyPublished(env, rec).catch(e => console.error('mail publication', e)));
       await caches.default.delete(new Request(url.origin + '/events'));
       if (KV) await markDirty(); // le site se met à jour dans la minute
       return json(req, { ok: true });

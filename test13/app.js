@@ -569,6 +569,7 @@
     const dl = $('#communes-list'); COMMUNES.forEach(c => { const o = el('option'); o.value = c; dl.appendChild(o); });
     // Code organisateur
     const say = (node, txt, kind) => { node.textContent = txt || ''; node.className = 'form-msg' + (kind ? ' ' + kind : ''); };
+    let memberCode = '';
     async function checkCode() {
       const code = $('#f-code').value.trim();
       if (!code) { say($('#code-msg'), 'Entrez votre code organisateur.', 'err'); $('#f-code').focus(); return; }
@@ -586,6 +587,7 @@
         });
         say($('#code-msg'), `Bonjour ${o.Nom} ! Vos informations sont remplies plus bas.`, 'ok');
         $('#code-box').classList.add('done');
+        memberCode = code;
       } catch (err) {
         say($('#code-msg'), err.status === 404 ? "Ce code n'est pas reconnu. Vérifiez-le, ou demandez-le à nouveau ci-dessous." : (err.status === 429 ? 'Trop d’essais. Réessayez dans quelques minutes.' : 'Vérification impossible pour le moment. Vous pouvez continuer sans code.'), 'err');
       }
@@ -674,6 +676,7 @@
       const soc = [ig && 'IG:' + ig, fb && 'FB:' + fb, site && 'Site:' + site].filter(Boolean).join(' | ');
       if (soc) fields['Contact'] = soc;
       put('Contact privé', '#f-cprive'); put('Message privé', '#f-mprive');
+      if (memberCode) fields.code = memberCode; // la mairie retrouve l'e-mail de la structure pour la prévenir à la publication
       if (photoUrl) fields.photoUrl = photoUrl;
       if ($('#f-website').value) fields.website = $('#f-website').value;
       const btn = $('#f-send'), bt = btn.querySelector('.glow-t'); btn.disabled = true; bt.textContent = 'Envoi…';
