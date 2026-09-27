@@ -29,6 +29,7 @@ const T_AVIS = 'tbl1VfPYliWdORuzN';
 const ALLOWED_ORIGINS = ['https://la-save.fr', 'https://www.la-save.fr', 'https://thomas-alternatif.github.io'];
 
 // Champs visibles par le public (tout le reste, dont les contacts et messages privés, reste caché)
+// « Message aux organisateurs » (Airtable) : mot privé de la mairie, ajouté au mail de publication, jamais affiché sur le site
 const EVENT_PUBLIC = ['Titre','Catégorie','Organisation','Description','Commune','Date','Date de fin','Heure','Lieu','Tarif','Contact','Récurrence','À la une','Période','Jour','Vues','Photo','Likes','Billetterie'];
 const ORGA_PUBLIC = ['Nom','Description courte','Description','Photo','Contact','Ordre'];
 // Champs acceptés depuis le formulaire « Ajouter un événement »
@@ -234,6 +235,7 @@ function publishedMail(f, id) {
   const btnVerre = (h, t) => `<td style="padding:0 8px 8px 0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td style="border-radius:99px;background:#1a1a1a;border:1.5px solid rgba(255,255,255,.3);"><a href="${h}" style="display:inline-block;padding:11px 16px;font-family:${S};font-size:14px;font-weight:600;color:${W};text-decoration:none;border-radius:99px;white-space:nowrap;">${t}</a></td></tr></table></td>`;
   const meta = (g, d) => `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="font-family:${S};font-size:12px;font-weight:600;color:${W};">${g}</td><td align="right" style="font-family:${S};font-size:12px;color:${G};">${d}</td></tr><tr><td colspan="2" style="padding-top:12px;border-bottom:1px solid ${L};font-size:0;line-height:0;">&nbsp;</td></tr></table>`;
   const info = rows => `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-top:14px;">${rows.filter(r => r[1]).map(([k, v]) => `<tr><td valign="top" style="padding:3px 14px 3px 0;font-family:${S};font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:${G};">${k}</td><td style="padding:3px 0;font-family:${S};font-size:14px;line-height:1.4;color:${W};">${escH(v)}</td></tr>`).join('')}</table>`;
+  const mot = String(f['Message aux organisateurs'] || '').trim().slice(0, 3000);
   const qui = f.Organisation ? `Bonjour ${escH(f.Organisation)},` : 'Bonjour,';
   const txtPartage = encodeURIComponent(`${titre} — ${quand}${ou ? ', ' + ou : ''} : ${partage}`);
 
@@ -248,8 +250,13 @@ function publishedMail(f, id) {
   <tr><td style="padding:0 0 16px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${P};border-radius:26px;"><tr><td style="padding:26px 26px 30px;">
     ${meta('Bonne nouvelle', 'Publication')}
     <div style="padding-top:26px;">${gros('C’est en ligne&nbsp;!', 64)}</div>
-    <p style="margin:18px 0 0;font-family:${S};font-size:16px;line-height:1.6;color:#d6d4ce;">${qui}<br>votre événement a été relu par la mairie. Il est maintenant visible par tous sur laSave, l’agenda de la vallée de la Save.</p>
+    <p style="margin:18px 0 0;font-family:${S};font-size:16px;line-height:1.6;color:#d6d4ce;">${qui}<br>votre événement a été relu par la mairie${mot ? ', qui vous laisse un petit mot juste en dessous' : ''}. Il est maintenant visible par tous sur laSave, l’agenda de la vallée de la Save.</p>
   </td></tr></table></td></tr>
+
+  ${mot ? `<tr><td style="padding:0 0 16px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#EBD9B4;background-image:linear-gradient(120deg,#FFB547 0%,#F6E7C8 45%,#C8A96E 100%);border-radius:26px;"><tr><td style="padding:24px 26px 26px;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="font-family:${S};font-size:12px;font-weight:600;color:#141210;">Un mot de la mairie</td><td align="right" style="font-family:${S};font-size:12px;color:#3a3226;">À lire</td></tr><tr><td colspan="2" style="padding-top:12px;border-bottom:1px solid #141210;font-size:0;line-height:0;">&nbsp;</td></tr></table>
+    <p style="margin:18px 0 0;font-family:${S};font-size:16px;line-height:1.6;color:#141210;">${escH(mot).replace(/\n/g, '<br>')}</p>
+  </td></tr></table></td></tr>` : ''}
 
   <tr><td style="padding:0 0 16px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${P};border-radius:26px;"><tr><td style="padding:26px 26px 30px;">
     ${meta('Votre événement', escH(f.Commune || ''))}
@@ -285,7 +292,7 @@ function publishedMail(f, id) {
   const text = `${f.Organisation ? `Bonjour ${f.Organisation},` : 'Bonjour,'}
 
 Votre événement a été relu par la mairie : il est maintenant en ligne sur laSave.
-
+${mot ? `\nUn mot de la mairie :\n${mot}\n` : ''}
 ${titre}
 ${quand}${ou ? '\n' + ou : ''}${f.Tarif ? '\n' + f.Tarif : ''}
 
