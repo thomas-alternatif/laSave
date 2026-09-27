@@ -211,7 +211,8 @@ ${e.Tarif ? `<tr><td style="padding:4px 24px 0;font-size:15px;color:#a3a19b;">${
       const f = state.files && state.files[k];
       if (!f) return toast('L’image est encore en préparation…');
       if (navigator.canShare && navigator.canShare({ files: [f] })) {
-        try { await navigator.share({ files: [f], title: e.Titre }); } catch (err) { if (err.name !== 'AbortError') toast('Partage impossible, téléchargez l’image.'); }
+        // image seule, sans titre : avec un titre, certaines applis iPhone (Facebook, WhatsApp) n'envoient que le texte
+        try { await navigator.share({ files: [f] }); } catch (err) { if (err.name !== 'AbortError') toast('Partage impossible, téléchargez l’image.'); }
       } else { $('#dl-' + k).click(); toast('Image téléchargée : publiez-la depuis votre téléphone.'); }
     }
     if (cp) {
