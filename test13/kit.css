@@ -100,3 +100,7 @@ body { background: #120c09; }
   .k-hero-foot span:first-child { display: none; }
 }
 @media (prefers-reduced-motion: reduce) { .k-backdrop i { transition: none; } }
+/* Icônes dans les tampons de section */
+.k-meta b { display: inline-flex; align-items: center; }
+.k-icos { display: inline-flex; gap: .3em; margin-left: .5em; padding-left: .5em; border-left: .08em solid rgba(10,10,10,.35); }
+.k-ico { width: 1.2em; height: 1.2em; display: block; color: #0a0a0a; }
