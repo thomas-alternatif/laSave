@@ -12,7 +12,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,500..900&family=Archivo+Narrow:wght@700&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="icon" href="../favicon.ico" sizes="48x48" />
   <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
-  <link rel="stylesheet" href="kit.css?v=8" />
+  <link rel="stylesheet" href="kit.css?v=9" />
 </head>
 <body>
   <div class="k-backdrop" aria-hidden="true"><i id="k-bg"></i></div>
@@ -51,6 +51,10 @@
               <button class="k-btn gold" type="button" data-share="story">Partager en story</button>
               <a class="k-btn" id="dl-story" download="story-lasave.png" href="#">Télécharger l’image</a>
             </div>
+            <div class="k-desk" hidden>
+              <div class="k-qr" aria-hidden="true"></div>
+              <p><b>Vous êtes sur ordinateur ?</b> Les stories et publications se font depuis le téléphone. Scannez ce code avec l’appareil photo : ce kit s’ouvre sur votre téléphone, prêt à partager.</p>
+            </div>
             <p class="k-tip"><svg class="k-tip-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.6 10.8c.7.6 1.1 1.3 1.1 2.2h5c0-.9.4-1.6 1.1-2.2A6 6 0 0 0 12 3z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span><b>Astuce :</b> dans votre story Instagram (et Facebook, selon les comptes), ajoutez l’autocollant « Lien » et collez
               <button class="k-link" type="button" data-copy="url">le lien de l’événement</button> : vos abonnés arrivent directement sur la fiche.</span></p>
           </div>
@@ -68,6 +72,10 @@
             <div class="k-btns">
               <button class="k-btn gold" type="button" data-share="post">Partager le visuel</button>
               <a class="k-btn" id="dl-post" download="publication-lasave.png" href="#">Télécharger l’image</a>
+            </div>
+            <div class="k-desk" hidden>
+              <div class="k-qr" aria-hidden="true"></div>
+              <p><b>Vous êtes sur ordinateur ?</b> Les stories et publications se font depuis le téléphone. Scannez ce code avec l’appareil photo : ce kit s’ouvre sur votre téléphone, prêt à partager.</p>
             </div>
             <div class="k-text" id="k-legende"></div>
             <button class="k-btn sm" type="button" data-copy="legende">Copier la légende</button>
@@ -103,6 +111,7 @@
 
   <div class="k-toast" id="k-toast" role="status" aria-live="polite"></div>
   <canvas id="cv" width="1080" height="1920" hidden></canvas>
-  <script src="kit.js?v=7"></script>
+  <script src="qrcode.js?v=1"></script>
+  <script src="kit.js?v=8"></script>
 </body>
 </html>

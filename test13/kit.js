@@ -273,5 +273,18 @@ ${orga ? `<tr><td style="padding:20px 24px 0;"><table role="presentation" cellpa
     }
   });
 
+  // Sur ordinateur : on remplace « Partager » par un QR code qui ouvre ce kit sur le téléphone
+  const mobile = window.matchMedia('(pointer: coarse)').matches || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  if (!mobile) {
+    document.querySelectorAll('[data-share="story"], [data-share="post"]').forEach(b => { b.hidden = true; });
+    document.querySelectorAll('.k-desk').forEach(box => {
+      box.hidden = false;
+      try {
+        const q = qrcode(0, 'M'); q.addData(location.href); q.make();
+        box.querySelector('.k-qr').innerHTML = q.createSvgTag({ cellSize: 4, margin: 2, scalable: true });
+      } catch (_) { box.querySelector('.k-qr').remove(); }
+    });
+  }
+
   init();
 })();
