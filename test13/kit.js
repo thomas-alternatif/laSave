@@ -252,13 +252,14 @@ ${orga ? `<tr><td style="padding:20px 24px 0;"><table role="presentation" cellpa
     const orga = nomOrg || o ? { name: (o && o.Nom) || nomOrg, logo: oa ? ((oa.thumbnails && oa.thumbnails.large && oa.thumbnails.large.url) || oa.url) : '' } : null;
     const att = e.Photo && e.Photo[0];
     const photo = att ? ((att.thumbnails && att.thumbnails.large && att.thumbnails.large.url) || att.url) : (catOf(e)[1] ? SITE + catOf(e)[1] : '');
-    const lien = `${SITE}/#event-${id}`, url = `${API}/e/${id}`;
-    state.url = url;
+    const url = `${API}/e/${id}`, u = c => `${url}?s=${c}`, lien = u('invitation'); // ?s= : canal, pour les statistiques
+    state.url = u('lien'); state.urlCopie = u('copie');
+    stat('kit', new URLSearchParams(location.search).get('via') === 'qr' ? 'qr' : '');
     document.title = `Partager « ${e.Titre} » · laSave`;
     $('#k-lead').innerHTML = `Tout est prêt pour partager <b>${esc(e.Titre)}</b> partout, en deux clics.`;
 
     const lignes = [e.Titre, quand(e), ou(e), e.Tarif].filter(Boolean);
-    state.legende = legende(e, orga, url);
+    state.legende = legende(e, orga, u('legende'));
     // Aperçus façon réseaux sociaux : compte de l'organisateur (pseudo Instagram s'il est connu)
     const ig = String((o && o.Contact) || e.Contact || '').split('|').map(x => x.trim()).find(x => /^IG:/i.test(x));
     const handle = ig ? ig.replace(/^IG:\s*/i, '').replace(/^@/, '').replace(/^https?:\/\/(www\.)?instagram\.com\//, '').replace(/\/$/, '')
@@ -269,11 +270,11 @@ ${orga ? `<tr><td style="padding:20px 24px 0;"><table role="presentation" cellpa
       else n.textContent = (orga && orga.name ? orga.name : 'L').trim().charAt(0).toUpperCase();
     });
     $('#ig-cap-txt').textContent = state.legende.split('\n')[0];
-    state.message = `${lignes.join('\n')}\n\nToutes les infos : ${url}`;
+    state.message = `${lignes.join('\n')}\n\nToutes les infos : ${u('mail')}`;
     $('#k-legende').textContent = state.legende;
     $('#k-apercu').innerHTML = `${photo ? `<img src="${esc(photo)}" alt="" />` : ''}<div><small>la-save.fr</small><b>${esc(e.Titre)}</b><span>${esc([quand(e), commune(e.Commune)].filter(Boolean).join(' · '))}</span></div>`;
-    $('#k-wa').href = 'https://wa.me/?text=' + encodeURIComponent(`*${e.Titre}*\n${lignes.slice(1).join('\n')}\n\nToutes les infos : ${url}`);
-    $('#k-sms').href = 'sms:?&body=' + encodeURIComponent(state.message);
+    $('#k-wa').href = 'https://wa.me/?text=' + encodeURIComponent(`*${e.Titre}*\n${lignes.slice(1).join('\n')}\n\nToutes les infos : ${u('wa')}`);
+    $('#k-sms').href = 'sms:?&body=' + encodeURIComponent(`${lignes.join('\n')}\n\nToutes les infos : ${u('sms')}`);
     $('#k-mail').innerHTML = mailHtml(e, photo, lien, orga);
     // En-tête : affiche + fond flouté
     if (photo) {
@@ -296,10 +297,16 @@ ${orga ? `<tr><td style="padding:20px 24px 0;"><table role="presentation" cellpa
     });
   }
 
+  // Statistiques anonymes (aucune donnée personnelle) : ouverture du kit et boutons utilisés
+  function stat(t, c) {
+    try { const b = JSON.stringify({ t, id, c: c || '' }); if (!(navigator.sendBeacon && navigator.sendBeacon(API + '/stat', b))) fetch(API + '/stat', { method: 'POST', body: b, keepalive: true }); } catch (_) {}
+  }
   document.addEventListener('click', async ev => {
+    const lienWa = ev.target.closest('#k-wa, #k-sms'); if (lienWa) stat('kit_action', lienWa.id === 'k-wa' ? 'wa' : 'sms');
     const s = ev.target.closest('[data-share]'), cp = ev.target.closest('[data-copy]');
     if (s) {
       const k = s.dataset.share, e = state.e; if (!e) return;
+      stat('kit_action', k === 'link' ? 'lien' : k);
       if (k === 'link') {
         if (navigator.share) { try { await navigator.share({ title: e.Titre, text: `${e.Titre} — ${quand(e)}`, url: state.url }); return; } catch (err) { if (err.name === 'AbortError') return; } }
         if (await copyText(state.url)) toast('Lien copié');
@@ -314,7 +321,8 @@ ${orga ? `<tr><td style="padding:20px 24px 0;"><table role="presentation" cellpa
     }
     if (cp) {
       const k = cp.dataset.copy;
-      if (k === 'url' && await copyText(state.url)) toast('Lien copié');
+      if (k) stat('kit_action', k === 'url' ? 'copie' : k === 'legende' ? 'legende' : 'mail');
+      if (k === 'url' && await copyText(state.urlCopie)) toast('Lien copié');
       if (k === 'legende' && await copyText(state.legende)) toast('Légende copiée');
       if (k === 'mail' && await copyHtml($('#k-mail'), state.message)) toast('Invitation copiée : collez-la dans un nouveau mail');
     }
@@ -327,7 +335,7 @@ ${orga ? `<tr><td style="padding:20px 24px 0;"><table role="presentation" cellpa
     document.querySelectorAll('.k-desk').forEach(box => {
       box.hidden = false;
       try {
-        const q = qrcode(0, 'M'); q.addData(location.href); q.make();
+        const q = qrcode(0, 'M'); q.addData(location.href.replace(/([?&])via=[^&]*&?/, '$1').replace(/[?&]$/, '') + (location.search ? '&' : '?') + 'via=qr'); q.make();
         box.querySelector('.k-qr').innerHTML = q.createSvgTag({ cellSize: 4, margin: 2, scalable: true });
       } catch (_) { box.querySelector('.k-qr').remove(); }
     });

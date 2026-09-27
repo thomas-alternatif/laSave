@@ -224,7 +224,7 @@ function quandTexte(f) {
   return t;
 }
 function publishedMail(f, id) {
-  const lien = `${SITE}/#event-${id}`, partage = `${API_ORIGIN}/e/${id}`;
+  const lien = `${SITE}/#event-${id}`, partage = `${API_ORIGIN}/e/${id}`, PS = c => `${partage}?s=${c}`;
   const titre = f.Titre || 'Votre événement', quand = quandTexte(f), ou = [f.Lieu, f.Commune].filter(Boolean).join(', ');
   const ph = Array.isArray(f.Photo) && f.Photo[0] ? (f.Photo[0].thumbnails?.large?.url || f.Photo[0].url) : '';
   const S = "'Instrument Sans','Helvetica Neue',Helvetica,Arial,sans-serif", D = "Archivo,'Arial Narrow','Helvetica Neue',Arial,sans-serif";
@@ -239,8 +239,8 @@ function publishedMail(f, id) {
   const mot = String(f['Message aux organisateurs'] || '').trim().slice(0, 3000);
   const qui = f.Organisation ? `Bonjour ${escH(f.Organisation)},` : 'Bonjour,';
   const kitUrl = `${SITE}/test13/kit.html?id=${id}`; // page « kit de partage » (test13 pour l'instant)
-  const msg = [titre, quand, ou, f.Tarif].filter(Boolean).join('\n') + `\n\nToutes les infos : ${partage}`;
-  const msgWa = [`*${titre}*`, quand, ou, f.Tarif].filter(Boolean).join('\n') + `\n\nToutes les infos : ${partage}`;
+  const msg = [titre, quand, ou, f.Tarif].filter(Boolean).join('\n') + `\n\nToutes les infos : ${PS('mailpub')}`;
+  const msgWa = [`*${titre}*`, quand, ou, f.Tarif].filter(Boolean).join('\n') + `\n\nToutes les infos : ${PS('mailpub')}`;
   const btnApp = (h, ico, petit, nom, bg, fg) => `<td width="50%" valign="top" style="border-radius:14px;background:${bg};"><a href="${h}" style="display:block;padding:14px 14px;text-decoration:none;border-radius:14px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td valign="middle" style="padding-right:10px;"><img src="${SITE}/images/partage/${ico}.png" width="24" height="24" alt="" style="display:block;width:24px;height:24px;border:0;"></td><td valign="middle" style="font-family:${S};color:${fg};line-height:1.15;"><span style="font-size:11px;opacity:.85;">${petit}</span><br><span style="font-size:15px;font-weight:600;">${nom}</span></td></tr></table></a></td>`;
 
   const html = `<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="dark"><meta name="supported-color-schemes" content="dark"><title>Votre événement est en ligne</title>
@@ -298,7 +298,7 @@ function publishedMail(f, id) {
     </tr></table>
 
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:14px;">
-      <tr>${btnApp(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(partage)}`, 'facebook', 'Partager sur', 'Facebook', '#1877F2', '#ffffff')}<td width="10" style="font-size:0;">&nbsp;</td>${btnApp(`https://wa.me/?text=${encodeURIComponent(msgWa)}`, 'whatsapp', 'Envoyer sur', 'WhatsApp', '#128C7E', '#ffffff')}</tr>
+      <tr>${btnApp(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(PS('mailpub'))}`, 'facebook', 'Partager sur', 'Facebook', '#1877F2', '#ffffff')}<td width="10" style="font-size:0;">&nbsp;</td>${btnApp(`https://wa.me/?text=${encodeURIComponent(msgWa)}`, 'whatsapp', 'Envoyer sur', 'WhatsApp', '#128C7E', '#ffffff')}</tr>
       <tr><td colspan="3" height="10" style="font-size:0;line-height:0;">&nbsp;</td></tr>
       <tr>${btnApp(`sms:?&body=${encodeURIComponent(msg)}`, 'sms', 'Envoyer par', 'SMS', '#262626', '#ffffff')}<td width="10" style="font-size:0;">&nbsp;</td>${btnApp(`mailto:?subject=${encodeURIComponent(titre)}&body=${encodeURIComponent(msg)}`, 'mail', 'Envoyer par', 'E-mail', '#FFA823', '#141210')}</tr>
     </table>
@@ -470,6 +470,22 @@ function sameText(a, b) { // comparaison à temps constant
   return d === 0;
 }
 
+/* ── Statistiques (Workers Analytics Engine, liaison « STATS ») ──
+   Chaque ligne : blob1 = type, blob2 = id de l'événement, blob3 = canal / détail. Aucune donnée personnelle. */
+const STAT_TYPES = ['lien', 'apercu', 'kit', 'kit_action', 'fiche', 'jyvais'];
+const CANAUX = ['wa', 'sms', 'fb', 'mail', 'lien', 'copie', 'legende', 'story', 'post', 'site', 'mailpub', 'invitation', 'qr'];
+const ROBOTS = /facebookexternalhit|facebookcatalog|WhatsApp|Twitterbot|TelegramBot|Slackbot|Discordbot|LinkedInBot|Pinterest|SkypeUriPreview|Applebot|iMessage|Googlebot|bingbot|redditbot|vkShare|Embedly|Viber/i;
+function stat(env, type, id = '', canal = '') {
+  try { if (env.STATS && STAT_TYPES.includes(type)) env.STATS.writeDataPoint({ indexes: [type], blobs: [type, String(id).slice(0, 20), String(canal).slice(0, 20)], doubles: [1] }); } catch {}
+}
+async function statsSql(env, sql) {
+  if (!env.CF_ACCOUNT_ID || !env.CF_STATS_TOKEN) throw Object.assign(new Error('Statistiques pas encore configurées (CF_ACCOUNT_ID / CF_STATS_TOKEN).'), { status: 503 });
+  const r = await fetch(`https://api.cloudflare.com/client/v4/accounts/${env.CF_ACCOUNT_ID}/analytics_engine/sql`, { method: 'POST', headers: { Authorization: `Bearer ${env.CF_STATS_TOKEN}` }, body: sql });
+  const t = await r.text();
+  if (!r.ok) throw Object.assign(new Error('Lecture des statistiques impossible : ' + t.slice(0, 200)), { status: 502 });
+  return JSON.parse(t).data || [];
+}
+
 /* ── routes ── */
 async function route(req, env, ctx) {
   const url = new URL(req.url);
@@ -498,6 +514,9 @@ async function route(req, env, ctx) {
   let sm;
   if (m === 'GET' && (sm = p.match(/^\/e\/(rec[A-Za-z0-9]{14})$/))) {
     const id = sm[1], home = 'https://la-save.fr';
+    const canal = CANAUX.includes(url.searchParams.get('s')) ? url.searchParams.get('s') : '';
+    // Un robot d'aperçu (WhatsApp, Facebook…) = le lien vient d'être posté ; sinon = quelqu'un a cliqué
+    stat(env, ROBOTS.test(req.headers.get('User-Agent') || '') ? 'apercu' : 'lien', id, canal);
     let ev = null;
     if (KV) { const snap = await getSnap(env, ctx).catch(() => null); ev = snap && snap.events.find(e => e.id === id) || null; }
     else { try { const r = await at(env, `${T_EVENTS}/${id}`); if (r.fields.Statut === 'Publié') ev = r.fields; } catch {} }
@@ -619,6 +638,14 @@ async function route(req, env, ctx) {
     return json(req, { ok: true, id: d.id }, 201);
   }
 
+  // Statistiques envoyées par le site et le kit de partage (pas de données personnelles)
+  if (m === 'POST' && p === '/stat') {
+    const b = await body();
+    const type = ['kit', 'kit_action'].includes(b.t) ? b.t : null;
+    if (type && isId(b.id)) stat(env, type, b.id, CANAUX.includes(b.c) ? b.c : '');
+    return new Response(null, { status: 204, headers: cors(req) });
+  }
+
   // Compteur de vues / likes (calculés côté serveur)
   let mm;
   if (m === 'POST' && (mm = p.match(/^\/events\/(rec\w+)\/(view|like)$/))) {
@@ -626,6 +653,7 @@ async function route(req, env, ctx) {
     if (!isId(id)) return json(req, { error: 'id' }, 400);
     if (await tooMany(req, `${what}-${id}`, what === 'like' ? 4 : 10, 3600)) return slowDown(req);
     const field = what === 'view' ? 'Vues' : 'Likes';
+    stat(env, what === 'view' ? 'fiche' : 'jyvais', id);
     const delta = what === 'view' ? 1 : ((await body()).delta === -1 ? -1 : 1);
     if (KV) { // compté dans KV, recopié dans Airtable la nuit
       const snap = await getSnap(env, ctx);
@@ -715,6 +743,16 @@ async function route(req, env, ctx) {
       await caches.default.delete(new Request(url.origin + '/events'));
       if (KV) await markDirty(); // le site se met à jour dans la minute
       return json(req, { ok: true });
+    }
+    // Statistiques des N derniers jours
+    if (m === 'GET' && p === '/admin/stats') {
+      const jours = Math.min(90, Math.max(1, parseInt(url.searchParams.get('jours'), 10) || 30));
+      const where = `WHERE timestamp > NOW() - INTERVAL '${jours}' DAY`;
+      const [parEvenement, parJour] = await Promise.all([
+        statsSql(env, `SELECT blob1 AS type, blob2 AS id, blob3 AS canal, SUM(_sample_interval) AS n FROM lasave_stats ${where} GROUP BY type, id, canal`),
+        statsSql(env, `SELECT toStartOfDay(timestamp) AS jour, blob1 AS type, SUM(_sample_interval) AS n FROM lasave_stats ${where} GROUP BY jour, type ORDER BY jour`),
+      ]);
+      return json(req, { jours, parEvenement, parJour });
     }
     // Relecture immédiate d'Airtable (après une modification faite directement dans Airtable)
     if (m === 'POST' && p === '/admin/refresh') {

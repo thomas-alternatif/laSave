@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://lasave-api.partage.workers.dev; base-uri 'self'; form-action 'none'" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="theme-color" content="#050505" />
+  <title>Statistiques · laSave</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,500..900&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="icon" href="../favicon.ico" sizes="48x48" />
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="stats.css?v=1" />
+</head>
+<body>
+  <header class="s-top">
+    <a href="./" aria-label="laSave, accueil"><img src="../test7/logo.png" alt="laSave" width="118" height="29" /></a>
+    <span>Statistiques</span>
+  </header>
+
+  <main class="s-wrap">
+    <section class="s-hero">
+      <div class="s-meta"><span>Espace mairie</span><span id="s-periode-txt">30 derniers jours</span></div>
+      <h1><span class="s-h-a">Les chiffres</span><span class="s-h-b">de laSave</span></h1>
+      <p class="s-lead">Qui regarde l’agenda, ce qui se partage, et par où les gens arrivent.</p>
+    </section>
+
+    <!-- Connexion -->
+    <section class="s-card s-login" id="s-login">
+      <h2>Connexion</h2>
+      <p>Même mot de passe que l’espace admin du site.</p>
+      <form id="s-form" class="s-form">
+        <label for="s-pwd">Mot de passe</label>
+        <div class="s-row">
+          <input id="s-pwd" type="password" autocomplete="current-password" required />
+          <button class="s-btn" type="submit">Voir les statistiques</button>
+        </div>
+        <p class="s-msg" id="s-msg" role="status"></p>
+      </form>
+    </section>
+
+    <div id="s-body" hidden>
+      <div class="s-tabs" role="group" aria-label="Période">
+        <button type="button" data-j="7">7 jours</button>
+        <button type="button" data-j="30" class="on">30 jours</button>
+        <button type="button" data-j="90">90 jours</button>
+      </div>
+
+      <section class="s-kpis" id="s-kpis"></section>
+
+      <section class="s-card">
+        <div class="s-cmeta"><b class="s-stamp">Jour par jour</b><span class="s-legend"><i class="c1"></i>Fiches vues <i class="c2"></i>Clics sur des liens partagés</span></div>
+        <div class="s-chart" id="s-chart"></div>
+      </section>
+
+      <div class="s-grid">
+        <section class="s-card">
+          <div class="s-cmeta"><b class="s-stamp">D’où viennent les clics</b><span>Liens partagés</span></div>
+          <div id="s-canaux" class="s-bars"></div>
+        </section>
+        <section class="s-card">
+          <div class="s-cmeta"><b class="s-stamp">Le kit de partage</b><span>Boutons utilisés</span></div>
+          <div id="s-kit" class="s-bars"></div>
+        </section>
+      </div>
+
+      <section class="s-card">
+        <div class="s-cmeta"><b class="s-stamp">Événements</b><span>Les plus consultés</span></div>
+        <div class="s-table-wrap"><table class="s-table" id="s-table"></table></div>
+      </section>
+
+      <section class="s-card s-note">
+        <p><b>Et la fréquentation générale ?</b> Le nombre de visiteurs du site, les pages vues, les pays et les appareils sont dans <a href="https://dash.cloudflare.com/?to=/:account/web-analytics" target="_blank" rel="noopener">Cloudflare Web Analytics</a>, sans cookies.</p>
+      </section>
+    </div>
+
+    <p class="s-err" id="s-err" hidden></p>
+  </main>
+  <script src="stats.js?v=1"></script>
+</body>
+</html>

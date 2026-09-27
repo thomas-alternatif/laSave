@@ -171,7 +171,7 @@
     const ymd = x => `${x.getFullYear()}${pad(x.getMonth() + 1)}${pad(x.getDate())}`;
     return { s: ymd(d), f: ymd(end), allDay: true };
   }
-  const shareUrl = e => `${API}/e/${encodeURIComponent(e.id)}`;
+  const shareUrl = e => `${API}/e/${encodeURIComponent(e.id)}?s=site`;
   function calendar(e) {
     const r = range(e), where = [e.Lieu, e.Commune].filter(Boolean).join(', ');
     const g = $('#cal-google'), menu = $('#ev-cal').closest('.menu');
