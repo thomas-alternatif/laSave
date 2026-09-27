@@ -9,6 +9,16 @@
  *   ADMIN_PWD       — mot de passe de l'espace admin
  *   IMGBB_KEY       — clé ImgBB pour l'envoi des affiches
  *   BREVO_KEY       — clé API Brevo pour l'envoi des e-mails (codes organisateurs)
+ *
+ * Liaison KV à ajouter (Settings → Bindings → KV namespace) :
+ *   LASAVE          — espace de stockage « lasave-cache »
+ * Déclencheur planifié (Settings → Triggers → Cron) : 0 4 * * *  (une fois par nuit)
+ *
+ * Pourquoi : la formule gratuite d'Airtable n'autorise que 1 000 appels par mois.
+ * Le site ne lit donc plus Airtable à chaque visite : le Worker garde une copie
+ * (événements publiés, organisateurs, codes) dans KV et ne la met à jour que
+ * la nuit, quand l'admin publie ou archive un événement, ou sur demande.
+ * Les « J'y vais » et les vues sont comptés dans KV et recopiés dans Airtable la nuit.
  */
 
 const BASE = 'appHgiuv0ClNd8qsV';
@@ -177,8 +187,17 @@ async function sendCodeTo(env, rec) {
 }
 
 /* ── limiteur anti-abus : N requêtes max par fenêtre, par adresse IP ── */
+let KV = null; // liaison KV (null tant qu'elle n'est pas ajoutée dans Cloudflare)
 async function tooMany(req, bucket, max, windowSec) {
   const ip = req.headers.get('CF-Connecting-IP') || 'inconnu';
+  // Envois (formulaire, avis, codes, connexion) : compteur dans KV, fiable même sur workers.dev
+  if (KV && !/^(like|view)-/.test(bucket)) {
+    const k = `rl:${bucket}:${ip}`;
+    const n = Number(await KV.get(k)) || 0;
+    if (n >= max) return true;
+    await KV.put(k, String(n + 1), { expirationTtl: Math.max(60, windowSec) });
+    return false;
+  }
   const key = new Request(`https://rl.lasave.local/${bucket}/${encodeURIComponent(ip)}`);
   const cache = caches.default;
   const hit = await cache.match(key);
@@ -188,6 +207,57 @@ async function tooMany(req, bucket, max, windowSec) {
   return false;
 }
 const slowDown = req => json(req, { error: 'Trop de tentatives, réessayez dans quelques minutes.' }, 429);
+
+/* ── copie locale des données (KV) : quelques appels Airtable par jour au lieu d'un par visite ── */
+const SNAP_MAX_AGE = 24 * 3600e3;   // au-delà, on relit Airtable (en arrière-plan)
+const DIRTY_DELAY = 60e3;           // après une publication, on relit au plus une fois par minute
+
+async function buildSnap(env) {
+  const evs = await listAll(env, T_EVENTS, '&filterByFormula=' + encodeURIComponent("{Statut}='Publié'"));
+  const orgs = await listAll(env, T_ORGAS, '&sort[0][field]=Ordre&sort[0][direction]=asc');
+  const snap = {
+    at: Date.now(), dirty: false,
+    events: evs.map(r => ({ id: r.id, ...pick(r.fields, EVENT_PUBLIC) })),
+    orgas: orgs.filter(r => r.fields['Publié']).map(r => ({ id: r.id, ...pick(r.fields, ORGA_PUBLIC) })),
+  };
+  // Codes organisateurs : gardés à part, jamais renvoyés tels quels
+  const codes = {};
+  orgs.forEach(r => { const c = (r.fields.Code || '').trim().toUpperCase(); if (c && !['Demandé', 'Refusé'].includes(r.fields['Statut code'])) codes[c] = { id: r.id, ...pick(r.fields, ORGA_PUBLIC) }; });
+  await KV.put('snap', JSON.stringify(snap));
+  await KV.put('codes', JSON.stringify(codes));
+  return snap;
+}
+async function getSnap(env, ctx) {
+  const snap = await KV.get('snap', 'json');
+  if (!snap) return buildSnap(env); // première fois : il faut attendre Airtable
+  const age = Date.now() - snap.at;
+  if (age > SNAP_MAX_AGE || (snap.dirty && age > DIRTY_DELAY)) {
+    ctx.waitUntil((async () => { // une seule relecture à la fois
+      if (await KV.get('lock')) return;
+      await KV.put('lock', '1', { expirationTtl: 60 });
+      try { await buildSnap(env); } catch (e) { console.error('relecture Airtable', e.message); }
+    })());
+  }
+  return snap; // en cas de panne Airtable, on continue de servir la dernière copie
+}
+async function markDirty() { const snap = await KV.get('snap', 'json'); if (snap) { snap.dirty = true; await KV.put('snap', JSON.stringify(snap)); } }
+// Compteurs « J'y vais » / vues en attente de recopie dans Airtable
+async function getCounts() { return (await KV.get('counts', 'json')) || {}; }
+function withCounts(events, counts) {
+  return events.map(e => counts[e.id] ? { ...e, Likes: counts[e.id].Likes ?? e.Likes, Vues: counts[e.id].Vues ?? e.Vues } : e);
+}
+// Tâche de nuit : recopie les compteurs (10 fiches par appel) puis relit Airtable
+async function nightly(env) {
+  if (!KV) return;
+  const counts = await getCounts();
+  const ids = Object.keys(counts).filter(isId);
+  for (let i = 0; i < ids.length; i += 10) {
+    const records = ids.slice(i, i + 10).map(id => ({ id, fields: pick(counts[id], ['Likes', 'Vues']) }));
+    try { await at(env, T_EVENTS, { method: 'PATCH', body: JSON.stringify({ records }) }); } catch (e) { console.error('recopie compteurs', e.message); return; }
+  }
+  await buildSnap(env);
+  await KV.delete('counts');
+}
 
 /* ── session admin : jeton signé HMAC, valable 12 h ── */
 async function hmac(env, msg) {
@@ -217,6 +287,10 @@ async function route(req, env, ctx) {
   const body = async () => { try { return await req.json(); } catch { return {}; } };
 
   // Événements publiés (mis en cache 60 s au bord du réseau Cloudflare)
+  if (m === 'GET' && p === '/events' && KV) {
+    const snap = await getSnap(env, ctx);
+    return json(req, withCounts(snap.events, await getCounts()), 200, { 'Cache-Control': 'public, max-age=60' });
+  }
   if (m === 'GET' && p === '/events') {
     const cache = caches.default, key = new Request(url.origin + '/events');
     let res = await cache.match(key);
@@ -234,7 +308,8 @@ async function route(req, env, ctx) {
   if (m === 'GET' && (sm = p.match(/^\/e\/(rec[A-Za-z0-9]{14})$/))) {
     const id = sm[1], home = 'https://la-save.fr';
     let ev = null;
-    try { const r = await at(env, `${T_EVENTS}/${id}`); if (r.fields.Statut === 'Publié') ev = r.fields; } catch {}
+    if (KV) { const snap = await getSnap(env, ctx).catch(() => null); ev = snap && snap.events.find(e => e.id === id) || null; }
+    else { try { const r = await at(env, `${T_EVENTS}/${id}`); if (r.fields.Statut === 'Publié') ev = r.fields; } catch {} }
     if (!ev) return Response.redirect(home, 302);
     const esc = s => String(s || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     const titre = ev.Titre || 'Événement', commune = ev.Commune || '', cat = ev['Catégorie'] || '';
@@ -256,6 +331,10 @@ async function route(req, env, ctx) {
   }
 
   // Organisateurs publiés (sans leur code membre)
+  if (m === 'GET' && p === '/orgas' && KV) {
+    const snap = await getSnap(env, ctx);
+    return json(req, snap.orgas, 200, { 'Cache-Control': 'public, max-age=120' });
+  }
   if (m === 'GET' && p === '/orgas') {
     const recs = await listAll(env, T_ORGAS, '&filterByFormula=' + encodeURIComponent('{Publié}=1') + '&sort[0][field]=Ordre&sort[0][direction]=asc');
     return json(req, recs.map(r => ({ id: r.id, ...pick(r.fields, ORGA_PUBLIC) })), 200, { 'Cache-Control': 'public, max-age=120' });
@@ -266,6 +345,17 @@ async function route(req, env, ctx) {
     if (await tooMany(req, 'code', 10, 600)) return slowDown(req);
     const code = String((await body()).code || '').trim().toUpperCase().slice(0, 40);
     if (!code) return json(req, { error: 'Code manquant' }, 400);
+    if (KV) {
+      let codes = await KV.get('codes', 'json');
+      if (!codes) { await getSnap(env, ctx); codes = (await KV.get('codes', 'json')) || {}; }
+      if (codes[code]) return json(req, codes[code]);
+      // Code tout juste créé dans Airtable ? On relit une fois (au plus toutes les 10 min)
+      if (!(await KV.get('codes-recheck'))) {
+        await KV.put('codes-recheck', '1', { expirationTtl: 600 });
+        try { await buildSnap(env); codes = (await KV.get('codes', 'json')) || {}; if (codes[code]) return json(req, codes[code]); } catch {}
+      }
+      return json(req, { error: 'Code non reconnu' }, 404);
+    }
     const recs = await listAll(env, T_ORGAS);
     const o = recs.find(r => (r.fields.Code || '').trim().toUpperCase() === code && !['Demandé', 'Refusé'].includes(r.fields['Statut code']));
     if (!o) return json(req, { error: 'Code non reconnu' }, 404);
@@ -323,6 +413,17 @@ async function route(req, env, ctx) {
     if (await tooMany(req, `${what}-${id}`, what === 'like' ? 4 : 10, 3600)) return slowDown(req);
     const field = what === 'view' ? 'Vues' : 'Likes';
     const delta = what === 'view' ? 1 : ((await body()).delta === -1 ? -1 : 1);
+    if (KV) { // compté dans KV, recopié dans Airtable la nuit
+      const snap = await getSnap(env, ctx);
+      const ev = snap.events.find(e => e.id === id);
+      if (!ev) return json(req, { error: 'Événement introuvable' }, 404);
+      const counts = await getCounts();
+      const c = counts[id] || { Likes: ev.Likes || 0, Vues: ev.Vues || 0 };
+      c[field] = Math.max(0, (c[field] || 0) + delta);
+      counts[id] = c;
+      await KV.put('counts', JSON.stringify(counts));
+      return json(req, { [field]: c[field] });
+    }
     let cur;
     try { cur = await at(env, `${T_EVENTS}/${id}`); } catch { return json(req, { error: 'Événement introuvable' }, 404); }
     if (cur.fields.Statut !== 'Publié') return json(req, { error: 'Événement introuvable' }, 404);
@@ -393,19 +494,34 @@ async function route(req, env, ctx) {
     if (m === 'PATCH' && (mm = p.match(/^\/admin\/events\/(rec\w+)$/))) {
       const statut = (await body()).Statut;
       if (!isId(mm[1]) || !ADMIN_STATUTS.includes(statut)) return json(req, { error: 'Requête invalide' }, 400);
-      try { await at(env, `${T_EVENTS}/${mm[1]}`); } catch { return json(req, { error: 'Événement introuvable' }, 404); }
-      await at(env, `${T_EVENTS}/${mm[1]}`, { method: 'PATCH', body: JSON.stringify({ fields: { Statut: statut } }) });
+      try { await at(env, `${T_EVENTS}/${mm[1]}`, { method: 'PATCH', body: JSON.stringify({ fields: { Statut: statut } }) }); }
+      catch (e) { if (e.status === 404) return json(req, { error: 'Événement introuvable' }, 404); throw e; }
       await caches.default.delete(new Request(url.origin + '/events'));
+      if (KV) await markDirty(); // le site se met à jour dans la minute
       return json(req, { ok: true });
+    }
+    // Relecture immédiate d'Airtable (après une modification faite directement dans Airtable)
+    if (m === 'POST' && p === '/admin/refresh') {
+      if (!KV) return json(req, { error: 'Stockage KV non relié' }, 400);
+      const snap = await buildSnap(env);
+      return json(req, { ok: true, events: snap.events.length, orgas: snap.orgas.length });
     }
   }
 
-  if (p === '/' || p === '/health') return json(req, { ok: true, service: 'laSave API' });
+  if (p === '/' || p === '/health') {
+    const snap = KV ? await KV.get('snap', 'json') : null;
+    return json(req, { ok: true, service: 'laSave API', kv: !!KV, copie: snap ? new Date(snap.at).toISOString() : null, evenements: snap ? snap.events.length : null });
+  }
   return json(req, { error: 'Introuvable' }, 404);
 }
 
 export default {
+  async scheduled(event, env, ctx) {
+    KV = env.LASAVE || null;
+    ctx.waitUntil(nightly(env));
+  },
   async fetch(req, env, ctx) {
+    KV = env.LASAVE || null;
     if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors(req) });
     try { return await route(req, env, ctx); }
     catch (e) {
