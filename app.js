@@ -712,7 +712,7 @@ const FB_B64="iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAYAAADhAJiYAAAJUUlEQVR42r1Ya4xdVR
   window.showSection=function(name,el){
     $$('.section').forEach(s=>s.classList.remove('active'));const t=$('#section-'+name);if(t)t.classList.add('active');
     if(el){$$('.nav-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');}
-    const T={agenda:'laSave — Agenda festif de la vallée de la Save',partager:'Ajouter un événement — laSave',legal:'Mentions légales — laSave',admin:'Administration — laSave'};if(T[name])document.title=T[name];
+    const T={agenda:'laSave - Agenda festif de la vallée de la Save',partager:'Ajouter un événement - laSave',legal:'Mentions légales - laSave',admin:'Administration - laSave'};if(T[name])document.title=T[name];
     window.scrollTo({top:0,behavior:'smooth'});
   };
   window.openLegalTab=function(name){
