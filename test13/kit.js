@@ -63,7 +63,8 @@
   async function render(e, W, H, opts) {
     const cv = $('#cv'); cv.width = W; cv.height = H;
     const c = cv.getContext('2d');
-    const [poster, logo] = await Promise.all([opts.photo ? load(opts.photo).catch(() => null) : null, load('../test7/logo.png').catch(() => null)]);
+    const org = opts.orga || null;
+    const [poster, logo, orgLogo] = await Promise.all([opts.photo ? load(opts.photo).catch(() => null) : null, load('../test7/logo.png').catch(() => null), org && org.logo ? load(org.logo).catch(() => null) : null]);
     const col = catOf(e)[0];
     // Fond : l'affiche floutée et assombrie
     c.fillStyle = '#050505'; c.fillRect(0, 0, W, H);
@@ -76,7 +77,8 @@
     // Mesures du bloc texte pour centrer l'ensemble
     const tl = fitTitle(c, e.Titre || 'Événement', W - 2 * opts.pad, opts.title, opts.titleMin, 3);
     const lineH = tl.px * .98;
-    const infoPx = opts.info, blocTexte = opts.stamp * 1.9 + 34 + tl.lines.length * lineH + 26 + infoPx * 1.35 * 2.8;
+    const orgH = org ? (orgLogo ? opts.orgLogo : opts.info * 1.6) + 44 : 0;
+    const infoPx = opts.info, blocTexte = opts.stamp * 1.9 + 34 + tl.lines.length * lineH + 26 + infoPx * 1.35 * 2.8 + orgH;
     let pw = 0, ph = 0;
     const place = opts.bottom - opts.top - blocTexte - 56;           // hauteur restante pour l'affiche
     if (poster) { const s = Math.min(opts.posterW / poster.width, Math.max(opts.posterH * .45, Math.min(opts.posterH, place)) / poster.height); pw = poster.width * s; ph = poster.height * s; }
@@ -106,16 +108,42 @@
     c.fillText(quand(e), W / 2, y); y += infoPx * 1.35;
     c.font = `500 ${infoPx * .86}px "Instrument Sans", sans-serif`; c.fillStyle = '#d6d4ce';
     const lieu = ou(e), maxW = W - 2 * opts.pad;
+    let lieuL = 0;
     if (lieu) {
+      lieuL = 1;
       if (c.measureText(lieu).width <= maxW) c.fillText(lieu, W / 2, y);
       else { // sur deux lignes : le lieu, puis la commune
         const l1 = e.Lieu || lieu, l2 = commune(e.Commune);
         let a = l1; while (c.measureText(a).width > maxW && a.length > 10) a = a.slice(0, -2);
-        c.fillText(a === l1 ? a : a.trim() + '…', W / 2, y); if (l2) c.fillText(l2, W / 2, y + infoPx * 1.1);
+        c.fillText(a === l1 ? a : a.trim() + '…', W / 2, y); if (l2) { c.fillText(l2, W / 2, y + infoPx * 1.1); lieuL = 2; }
       }
     }
 
-    // Pastille dorée en bas
+    y += lieuL * infoPx * 1.1;
+
+    // Organisateur : logo rond + nom (si on le connaît)
+    if (org) {
+      y += 44;
+      const nomPx = opts.info * .82, petitPx = opts.info * .56, L = orgLogo ? opts.orgLogo : 0, gap = L ? opts.orgLogo * .22 : 0;
+      c.font = `600 ${nomPx}px "Instrument Sans", sans-serif`;
+      let nom = org.name; while (c.measureText(nom).width > maxW - L - gap && nom.length > 8) nom = nom.slice(0, -2);
+      if (nom !== org.name) nom = nom.trim() + '…';
+      const tw = Math.max(c.measureText(nom).width, (c.font = `500 ${petitPx}px "Instrument Sans", sans-serif`, c.measureText('Organisé par').width));
+      const x0 = (W - (L + gap + tw)) / 2, h = Math.max(L, nomPx + petitPx * 1.5), cy = y + h / 2;
+      if (orgLogo) {
+        c.save(); c.beginPath(); c.arc(x0 + L / 2, cy, L / 2, 0, Math.PI * 2); c.closePath(); c.fillStyle = '#ffffff'; c.fill(); c.clip();
+        const s2 = Math.max(L / orgLogo.width, L / orgLogo.height); c.drawImage(orgLogo, x0 + L / 2 - orgLogo.width * s2 / 2, cy - orgLogo.height * s2 / 2, orgLogo.width * s2, orgLogo.height * s2);
+        c.restore();
+        c.beginPath(); c.arc(x0 + L / 2, cy, L / 2, 0, Math.PI * 2); c.lineWidth = L * .04; c.strokeStyle = 'rgba(255,255,255,.9)'; c.stroke();
+      }
+      c.textAlign = 'left'; c.textBaseline = 'alphabetic';
+      const tx = x0 + L + gap;
+      c.font = `500 ${petitPx}px "Instrument Sans", sans-serif`; c.fillStyle = '#a3a19b'; c.fillText('Organisé par', tx, cy - nomPx * .2);
+      c.font = `600 ${nomPx}px "Instrument Sans", sans-serif`; c.fillStyle = '#f4f3ef'; c.fillText(nom, tx, cy + nomPx * .9);
+      c.textAlign = 'center'; c.textBaseline = 'top';
+    }
+
+    // Pastille orange en bas
     c.font = `600 ${opts.pill}px "Instrument Sans", sans-serif`;
     const pt = 'Toutes les infos sur la-save.fr', pwid = c.measureText(pt).width + opts.pill * 2.2, phh = opts.pill * 2.4, px0 = (W - pwid) / 2, py0 = opts.pillY;
     rr(c, px0, py0, pwid, phh, phh / 2); c.fillStyle = "#FFA823"; c.fill();
@@ -147,7 +175,7 @@
     const ok = document.execCommand('copy'); s.removeAllRanges(); return ok;
   }
 
-  function mailHtml(e, photo, lien) {
+  function mailHtml(e, photo, lien, orga) {
     const col = catOf(e)[0];
     return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:520px;background:#0e0e0e;border-radius:22px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
 <tr><td style="padding:22px 24px 0;"><img src="${SITE}/test7/logo.png" width="96" alt="laSave" style="display:block;width:96px;height:auto;border:0;"></td></tr>
@@ -157,6 +185,7 @@ ${photo ? `<tr><td style="padding:18px 24px 0;"><a href="${lien}"><img src="${es
 <tr><td style="padding:14px 24px 0;font-size:16px;font-weight:600;color:${col};">${esc(quand(e))}</td></tr>
 ${ou(e) ? `<tr><td style="padding:4px 24px 0;font-size:15px;color:#d6d4ce;">${esc(ou(e))}</td></tr>` : ''}
 ${e.Tarif ? `<tr><td style="padding:4px 24px 0;font-size:15px;color:#a3a19b;">${esc(e.Tarif)}</td></tr>` : ''}
+${orga ? `<tr><td style="padding:20px 24px 0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>${orga.logo ? `<td valign="middle" style="padding-right:12px;"><img src="${esc(orga.logo)}" width="44" height="44" alt="" style="display:block;width:44px;height:44px;border-radius:99px;border:2px solid #ffffff;background:#ffffff;object-fit:cover;"></td>` : ''}<td valign="middle" style="font-size:12px;line-height:1.3;color:#a3a19b;">Organisé par<br><span style="font-size:15px;font-weight:700;color:#f4f3ef;">${esc(orga.name)}</span></td></tr></table></td></tr>` : ''}
 <tr><td style="padding:22px 24px 26px;"><a href="${lien}" style="display:inline-block;background:#FFA823;color:#141210;font-weight:700;font-size:15px;text-decoration:none;padding:13px 24px;border-radius:99px;">Voir l’événement</a>${/^https:\/\//.test(e.Billetterie || '') ? ` &nbsp;<a href="${esc(e.Billetterie)}" style="display:inline-block;color:#f4f3ef;font-weight:700;font-size:15px;text-decoration:underline;padding:13px 6px;">Prendre ma place</a>` : ''}</td></tr>
 </table>`;
   }
@@ -164,10 +193,18 @@ ${e.Tarif ? `<tr><td style="padding:4px 24px 0;font-size:15px;color:#a3a19b;">${
   async function init() {
     if (!/^rec[A-Za-z0-9]{14}$/.test(id)) return fail('Ce lien de partage est incomplet. Ouvrez-le depuis le mail de confirmation reçu à la publication.');
     let events;
-    try { events = await (await fetch(API + '/events')).json(); } catch (_) { return fail('Impossible de charger l’agenda pour le moment. Réessayez dans un instant.'); }
+    let orgas = [];
+    try { [events, orgas] = await Promise.all([fetch(API + '/events').then(r => r.json()), fetch(API + '/orgas').then(r => r.json()).catch(() => [])]); } catch (_) { return fail('Impossible de charger l’agenda pour le moment. Réessayez dans un instant.'); }
     const e = (Array.isArray(events) ? events : []).find(x => x.id === id);
     if (!e) return fail('Cet événement n’est pas (ou plus) en ligne sur laSave.');
     state.e = e;
+    // Organisateur : même rapprochement par le nom que sur le site
+    const norm = v => String(v || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+    const nomOrg = Array.isArray(e.Organisation) ? e.Organisation.join(', ') : String(e.Organisation || '').trim();
+    const n = norm(nomOrg), list = Array.isArray(orgas) ? orgas : [];
+    const o = n ? (list.find(x => norm(x.Nom) === n) || list.find(x => norm(x.Nom) && (n.includes(norm(x.Nom)) || norm(x.Nom).includes(n)))) : null;
+    const oa = o && o.Photo && o.Photo[0];
+    const orga = nomOrg || o ? { name: (o && o.Nom) || nomOrg, logo: oa ? ((oa.thumbnails && oa.thumbnails.large && oa.thumbnails.large.url) || oa.url) : '' } : null;
     const att = e.Photo && e.Photo[0];
     const photo = att ? ((att.thumbnails && att.thumbnails.large && att.thumbnails.large.url) || att.url) : (catOf(e)[1] ? SITE + catOf(e)[1] : '');
     const lien = `${SITE}/#event-${id}`, url = `${API}/e/${id}`;
@@ -182,12 +219,12 @@ ${e.Tarif ? `<tr><td style="padding:4px 24px 0;font-size:15px;color:#a3a19b;">${
     $('#k-apercu').innerHTML = `${photo ? `<img src="${esc(photo)}" alt="" />` : ''}<div><small>la-save.fr</small><b>${esc(e.Titre)}</b><span>${esc([quand(e), commune(e.Commune)].filter(Boolean).join(' · '))}</span></div>`;
     $('#k-wa').href = 'https://wa.me/?text=' + encodeURIComponent(`*${e.Titre}*\n${lignes.slice(1).join('\n')}\n\nToutes les infos : ${url}`);
     $('#k-sms').href = 'sms:?&body=' + encodeURIComponent(state.message);
-    $('#k-mail').innerHTML = mailHtml(e, photo, lien);
+    $('#k-mail').innerHTML = mailHtml(e, photo, lien, orga);
     $('#k-body').hidden = false;
 
     try { await document.fonts.load(titleFont(100)); await document.fonts.load('600 40px "Instrument Sans"'); } catch (_) { /* polices de secours */ }
-    const story = await render(e, 1080, 1920, { photo, pad: 90, title: 132, titleMin: 72, info: 46, stamp: 34, posterW: 820, posterH: 900, top: 250, bottom: 1640, logo: 260, logoY: 110, pill: 34, pillY: 1690 });
-    const post = await render(e, 1080, 1350, { photo, pad: 80, title: 96, titleMin: 56, info: 38, stamp: 28, posterW: 620, posterH: 560, top: 150, bottom: 1170, logo: 200, logoY: 60, pill: 28, pillY: 1215 });
+    const story = await render(e, 1080, 1920, { photo, orga, orgLogo: 112, pad: 90, title: 132, titleMin: 72, info: 46, stamp: 34, posterW: 820, posterH: 900, top: 250, bottom: 1640, logo: 260, logoY: 110, pill: 34, pillY: 1690 });
+    const post = await render(e, 1080, 1350, { photo, orga, orgLogo: 84, pad: 80, title: 96, titleMin: 56, info: 38, stamp: 28, posterW: 620, posterH: 560, top: 150, bottom: 1170, logo: 200, logoY: 60, pill: 28, pillY: 1215 });
     state.files = {};
     [['story', story, 'story-lasave.png'], ['post', post, 'publication-lasave.png']].forEach(([k, blob, name]) => {
       if (!blob) return;
