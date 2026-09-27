@@ -21,10 +21,10 @@
   };
   const catOf = e => CATS[e['Catégorie']] || ['#9C988F', null];
   const RUBRIQUES = [
-    { title: "Envie d'une belle soirée ?", kicker: 'Concerts, spectacles & festivals', cats: ['Concert', 'Spectacle', 'Festival'], color: '#FFA823' },
-    { title: 'Et si vous vous lanciez ?', kicker: 'Ateliers & conférences', cats: ['Conférence / Atelier'], color: '#C955E0' },
-    { title: 'Transformez vos envies en énergie', kicker: 'Sport & loisirs', cats: ['Sport / Loisir'], color: '#5C96AB' },
-    { title: 'À découvrir dans la vallée', kicker: 'Marchés, fêtes, guinguettes & expositions', cats: ['Guinguette', 'Marché', 'Fête & Célébration', 'Exposition', 'Autre'], color: '#C8A96E' },
+    { title: "Envie d'une belle soirée ?", kicker: 'Concerts, spectacles & festivals', stamp: ['Concerts, spectacles', '& festivals'], cats: ['Concert', 'Spectacle', 'Festival'], color: '#FFA823' },
+    { title: 'Et si vous vous lanciez ?', kicker: 'Ateliers & conférences', stamp: ['Ateliers', '& conférences'], cats: ['Conférence / Atelier'], color: '#C955E0' },
+    { title: 'Transformez vos envies en énergie', kicker: 'Sport & loisirs', stamp: ['Sport', '& loisirs'], cats: ['Sport / Loisir'], color: '#5C96AB' },
+    { title: 'À découvrir dans la vallée', kicker: 'Marchés, fêtes, guinguettes & expositions', stamp: ['Marchés, fêtes,', 'guinguettes & expositions'], cats: ['Guinguette', 'Marché', 'Fête & Célébration', 'Exposition', 'Autre'], color: '#C8A96E' },
   ];
 
   /* ── Outils ── */
@@ -441,7 +441,9 @@
       const sec = el('section', 'row-sec'); sec.setAttribute('aria-labelledby', 'rub-' + k);
       sec.style.setProperty('--c', r.color);
       const head = el('div', 'row-block');
-      const t = el('div', 'row-block-text'); t.appendChild(el('p', 'row-kicker', r.kicker));
+      const t = el('div', 'row-block-text');
+      // Tampon façon « Cinéma Cinéma » : pavés noirs penchés, qui peuvent déborder du rectangle
+      const st = el('p', 'stamp'); st.setAttribute('aria-label', r.kicker); r.stamp.forEach(l => { const sp = el('span', null, l); sp.setAttribute('aria-hidden', 'true'); st.appendChild(sp); }); t.appendChild(st);
       const h = tel('h2', 'row-title', r.title); h.id = 'rub-' + k; t.appendChild(h); head.appendChild(t);
       const side = el('div', 'row-side');
       const all = el('button', 'see-all', `Voir tout (${r.evs.length})`); all.type = 'button'; all.setAttribute('aria-expanded', 'false');
