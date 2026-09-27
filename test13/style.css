@@ -1023,3 +1023,21 @@ main { padding-top: clamp(10px, 4vw, 64px); }
 .top.solid, .top.on-page { top: var(--vgap); left: var(--side); right: var(--side); }
 @media (max-width: 720px) { .top { padding-inline: calc(var(--side) + 16px); } }
 @media (max-width: 720px) { :root { --side: 10px; } }
+
+/* ════ v23 : rendez-vous et organisateurs posés directement sur le fond, pied de page en verre ════ */
+#view-home > section.flow, #view-home > section.orgs { background: none; border-radius: 0; margin-inline: 0; overflow: hidden; }
+.flow { padding-block: clamp(60px, 7vw, 110px) clamp(50px, 6vw, 90px); }
+.orgs { padding-block: clamp(50px, 6vw, 90px); }
+.flow .serif-title, .orgs-title { text-shadow: 0 2px 30px rgba(0,0,0,.35); }
+.fcard-in { box-shadow: 0 30px 60px rgba(0,0,0,.45); }
+.org { box-shadow: 0 12px 30px rgba(0,0,0,.35); }
+/* Pied de page : panneau de verre dépoli, le fond coloré transparaît */
+.foot { background: rgba(12,12,12,.38); border: 1px solid rgba(255,255,255,.12); backdrop-filter: blur(24px) saturate(1.4); -webkit-backdrop-filter: blur(24px) saturate(1.4); box-shadow: inset 0 1px 0 rgba(255,255,255,.08); }
+.foot, .foot a { color: rgba(255,255,255,.72); }
+.foot a:hover, .foot .motion-btn:hover { color: #fff; }
+[data-theme="light"] .foot { background: rgba(255,255,255,.45); border-color: rgba(255,255,255,.7); box-shadow: inset 0 1px 0 rgba(255,255,255,.8); }
+[data-theme="light"] .foot, [data-theme="light"] .foot a { color: #4a463f; }
+[data-theme="light"] .foot a:hover { color: #161616; }
+[data-theme="light"] .flow .serif-title, [data-theme="light"] .orgs-title { text-shadow: 0 2px 24px rgba(255,255,255,.5); }
+[data-theme="light"] .fcard-in { box-shadow: 0 24px 50px rgba(60,40,15,.25); }
+.foot a.glow, [data-theme="light"] .foot a.glow { color: #fff; }
