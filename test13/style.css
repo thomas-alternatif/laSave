@@ -1077,3 +1077,22 @@ main { padding-top: clamp(10px, 4vw, 64px); }
 }
 /* Tampons à plat, bien horizontaux (le volume du bloc reste) */
 .stamp { transform: none; }
+
+/* ════ v26 : tampon copié sur le logo « CINÉMA CINÉMA » ════
+   Un bloc vu en biais : face du dessus claire (texte noir), face avant noire (texte clair en italique),
+   les deux faces partagent une arête et forment un seul pavé. */
+.stamp {
+  display: inline-grid; grid-template-columns: max-content; gap: 0; transform: none;
+  filter: drop-shadow(0 1.5px 0 #0a0a0a) drop-shadow(0 -1.5px 0 #0a0a0a) drop-shadow(1.5px 0 0 #0a0a0a) drop-shadow(-1.5px 0 0 #0a0a0a) drop-shadow(0 10px 18px rgba(0,0,0,.3));
+}
+.stamp span {
+  width: 100%; margin: 0 !important; text-align: center; box-shadow: none; border-radius: 0; transform: none;
+  font: 900 clamp(17px, 2.1vw, 30px)/1 var(--display); font-stretch: 125%; letter-spacing: -.01em; text-transform: uppercase;
+  padding: .26em 1.05em .2em;
+}
+/* Face du dessus : claire, penchée vers la droite */
+.stamp span:first-child { background: #ECE8E1; color: #0a0a0a; font-style: normal; clip-path: polygon(0 0, 91% 0, 100% 100%, 3% 100%); }
+/* Face avant : noire, texte clair en italique, penchée vers la gauche */
+.stamp span:last-child { background: #0a0a0a; color: #ECE8E1; font-style: italic; clip-path: polygon(7% 0, 100% 0, 92% 100%, 0 100%); }
+.stamp span:only-child { clip-path: none; }
+@media (max-width: 720px) { .stamp span { font-size: 14px; } }
