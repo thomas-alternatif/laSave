@@ -75,13 +75,19 @@
     const g = c.createLinearGradient(0, H * .45, 0, H); g.addColorStop(0, 'rgba(5,5,5,0)'); g.addColorStop(1, 'rgba(5,5,5,.92)'); c.fillStyle = g; c.fillRect(0, 0, W, H);
 
     // Mesures du bloc texte pour centrer l'ensemble
-    const tl = fitTitle(c, e.Titre || 'Événement', W - 2 * opts.pad, opts.title, opts.titleMin, 3);
-    const lineH = tl.px * .98;
     const orgH = org ? (orgLogo ? opts.orgLogo : opts.info * 1.6) + 44 : 0;
-    const infoPx = opts.info, blocTexte = opts.stamp * 1.9 + 34 + tl.lines.length * lineH + 26 + infoPx * 1.35 * 2.8 + orgH;
+    const infoPx = opts.info;
+    // On réduit le titre tant que l'affiche n'a pas assez de place (et que rien ne déborde sur la pastille)
+    let tl, lineH, blocTexte;
+    for (let start = opts.title; ; start -= 8) {
+      tl = fitTitle(c, e.Titre || 'Événement', W - 2 * opts.pad, Math.max(start, opts.titleMin), opts.titleMin, 3);
+      lineH = tl.px * .98;
+      blocTexte = opts.stamp * 1.9 + 34 + tl.lines.length * lineH + 26 + infoPx * 1.35 * 2.8 + orgH;
+      if (opts.bottom - opts.top - blocTexte - 56 >= opts.posterH * .4 || start <= opts.titleMin) break;
+    }
     let pw = 0, ph = 0;
     const place = opts.bottom - opts.top - blocTexte - 56;           // hauteur restante pour l'affiche
-    if (poster) { const s = Math.min(opts.posterW / poster.width, Math.max(opts.posterH * .45, Math.min(opts.posterH, place)) / poster.height); pw = poster.width * s; ph = poster.height * s; }
+    if (poster) { const s = Math.min(opts.posterW / poster.width, Math.max(opts.posterH * .3, Math.min(opts.posterH, place)) / poster.height); pw = poster.width * s; ph = poster.height * s; }
     const total = (ph ? ph + 56 : 0) + blocTexte;
     let y = Math.max(opts.top, (opts.top + opts.bottom - total) / 2);
 
@@ -177,16 +183,16 @@
     const lieuNom = String(e.Lieu || '').trim().replace(/^(Salle|Place|Maison|Église|Eglise|Parc|Gymnase|Stade|École|Ecole|Halle|Jardin|Bibliothèque|Médiathèque)\b/, m => m.toLowerCase());
     const lieu = [lieuNom, commune(e.Commune)].filter(Boolean).join(' à ');
     let phrase = String(e.Titre || '').trim();
-    if (quandTxt) phrase += `, ${quandTxt}`;
+    if (quandTxt) phrase += ` ${quandTxt}`;
     if (lieu) phrase += `, ${lieu}`;
     phrase += '.';
     const l = [phrase];
     if (e.Tarif) l.push(`${e.Tarif.charAt(0).toUpperCase() + e.Tarif.slice(1)}${/[.!?]$/.test(e.Tarif) ? '' : '.'}`);
     const r = resume(e.Description, 200);
-    if (r) l.push('', r);
-    l.push('', `Toutes les infos sur la-save.fr : ${url}`);
+    if (r) l.push(r);
+    l.push(`Toutes les infos sur la-save.fr : ${url}`);
     const tags = [commune(e.Commune) && hashtag(commune(e.Commune)), '#ValleeDeLaSave'].filter(Boolean);
-    l.push('', [...new Set(tags)].join(' '));
+    l.push([...new Set(tags)].join(' '));
     return l.join('\n');
   }
 
@@ -253,6 +259,16 @@ ${orga ? `<tr><td style="padding:20px 24px 0;"><table role="presentation" cellpa
 
     const lignes = [e.Titre, quand(e), ou(e), e.Tarif].filter(Boolean);
     state.legende = legende(e, orga, url);
+    // Aperçus façon réseaux sociaux : compte de l'organisateur (pseudo Instagram s'il est connu)
+    const ig = String((o && o.Contact) || e.Contact || '').split('|').map(x => x.trim()).find(x => /^IG:/i.test(x));
+    const handle = ig ? ig.replace(/^IG:\s*/i, '').replace(/^@/, '').replace(/^https?:\/\/(www\.)?instagram\.com\//, '').replace(/\/$/, '')
+      : (orga && orga.name ? orga.name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '') : 'votre.compte');
+    document.querySelectorAll('[data-handle]').forEach(n => { n.textContent = handle; });
+    document.querySelectorAll('[data-av]').forEach(n => {
+      if (orga && orga.logo) { const im = document.createElement('img'); im.src = orga.logo; im.alt = ''; n.appendChild(im); }
+      else n.textContent = (orga && orga.name ? orga.name : 'L').trim().charAt(0).toUpperCase();
+    });
+    $('#ig-cap-txt').textContent = state.legende.split('\n')[0];
     state.message = `${lignes.join('\n')}\n\nToutes les infos : ${url}`;
     $('#k-legende').textContent = state.legende;
     $('#k-apercu').innerHTML = `${photo ? `<img src="${esc(photo)}" alt="" />` : ''}<div><small>la-save.fr</small><b>${esc(e.Titre)}</b><span>${esc([quand(e), commune(e.Commune)].filter(Boolean).join(' · '))}</span></div>`;
@@ -269,7 +285,7 @@ ${orga ? `<tr><td style="padding:20px 24px 0;"><table role="presentation" cellpa
     $('#k-body').hidden = false;
 
     try { await document.fonts.load(titleFont(100)); await document.fonts.load('600 40px "Instrument Sans"'); } catch (_) { /* polices de secours */ }
-    const story = await render(e, 1080, 1920, { photo, orga, orgLogo: 112, pad: 90, title: 132, titleMin: 72, info: 46, stamp: 34, posterW: 820, posterH: 900, top: 250, bottom: 1640, logo: 260, logoY: 110, pill: 34, pillY: 1690 });
+    const story = await render(e, 1080, 1920, { photo, orga, orgLogo: 112, pad: 90, title: 132, titleMin: 72, info: 46, stamp: 34, posterW: 820, posterH: 900, top: 380, bottom: 1530, logo: 250, logoY: 235, pill: 34, pillY: 1580 });
     const post = await render(e, 1080, 1350, { photo, orga, orgLogo: 84, pad: 80, title: 96, titleMin: 56, info: 38, stamp: 28, posterW: 620, posterH: 560, top: 150, bottom: 1170, logo: 200, logoY: 60, pill: 28, pillY: 1215 });
     state.files = {};
     [['story', story, 'story-lasave.png'], ['post', post, 'publication-lasave.png']].forEach(([k, blob, name]) => {
