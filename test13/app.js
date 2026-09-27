@@ -730,9 +730,9 @@
     if (view === 'legal') {
       Object.keys(LEGAL).forEach(k => { $('#tab-' + k).hidden = k !== h; const a = $(`[data-tab="${k}"]`); if (k === h) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
       $('#legal-title').textContent = LEGAL[h];
-      document.title = `${LEGAL[h]} — laSave`;
-    } else if (view === 'partager') document.title = 'Ajouter un événement — laSave';
-    else document.title = 'laSave — Sortir dans la vallée de la Save';
+      document.title = `${LEGAL[h]} · laSave`;
+    } else if (view === 'partager') document.title = 'Proposer un événement · laSave';
+    else document.title = 'laSave · Agenda de la Save';
     const changed = was && was.id !== 'view-' + view;
     if (view === 'home') {
       flowRender(); fitAll();
