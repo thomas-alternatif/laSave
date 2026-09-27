@@ -1139,16 +1139,3 @@ main { padding-top: clamp(10px, 4vw, 64px); }
 }
 /* Essai : tampon à droite du rectangle */
 .stamp { left: auto; right: -.35em; }
-/* Tampon à droite mais pas collé au bord ; texte sur deux lignes possible */
-.stamp { right: clamp(28px, 9%, 140px); }
-.stamp span { white-space: pre-line; text-align: center; line-height: 1.02; }
-.row-block.two .row-block-text { padding-top: max(4px, calc(var(--sf) * 2.05 + 10px - 26px)); }
-@media (max-width: 720px) {
-  .stamp { right: 14px; }
-  .row-block.two .row-block-text { padding-top: max(4px, calc(var(--sf) * 2.05 + 8px - 18px)); }
-}
-/* Tampon à droite mais pas collé au bord ; deux lignes sur ordinateur pour les thèmes longs */
-.stamp { right: clamp(24px, 6%, 90px); }
-.stamp span { white-space: nowrap; line-height: 1.02; text-align: left; }
-@media (max-width: 720px) { .stamp { right: 14px; } .br-dsk { display: none; } }
-@media (max-width: 720px) { .row-block.two .row-block-text { padding-top: max(4px, calc(var(--sf) * 1.02 + 8px - 18px)); } }
