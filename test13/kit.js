@@ -160,6 +160,33 @@
     return new Promise(ok => cv.toBlob(b => ok(b), 'image/png'));
   }
 
+
+  /* ── Légende pour Instagram / Facebook ── */
+  const EMO = { 'Concert': '🎶', 'Festival': '🎉', 'Spectacle': '🎭', 'Guinguette': '🍻', 'Fête & Célébration': '🎉', 'Marché': '🧺', 'Exposition': '🎨', 'Conférence / Atelier': '✏️', 'Sport / Loisir': '⚽' };
+  const TAG = { 'Concert': 'Concert', 'Festival': 'Festival', 'Spectacle': 'Spectacle', 'Guinguette': 'Guinguette', 'Fête & Célébration': 'Fête', 'Marché': 'Marché', 'Exposition': 'Expo', 'Conférence / Atelier': 'Atelier', 'Sport / Loisir': 'Sport' };
+  const hashtag = t => '#' + String(t).normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/['’]/g, '').split(/[^A-Za-z0-9]+/).filter(Boolean).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join('');
+  function resume(txt, max = 220) {
+    const t = String(txt || '').replace(/\s+/g, ' ').trim();
+    if (!t) return '';
+    if (t.length <= max) return t;
+    const coupe = t.slice(0, max), fin = Math.max(coupe.lastIndexOf('. '), coupe.lastIndexOf('! '), coupe.lastIndexOf('? '));
+    return fin > 80 ? coupe.slice(0, fin + 1) : coupe.slice(0, coupe.lastIndexOf(' ')).replace(/[,;:\s]+$/, '') + '…';
+  }
+  function legende(e, orga, url) {
+    const cat = e['Catégorie'] || '';
+    const l = [`${EMO[cat] || '✨'} ${String(e.Titre || '').toUpperCase()}`, ''];
+    l.push(`📅 ${quand(e)}`);
+    if (ou(e)) l.push(`📍 ${ou(e)}`);
+    if (e.Tarif) l.push(`🎟️ ${e.Tarif}`);
+    const r = resume(e.Description);
+    if (r) l.push('', r);
+    if (orga && orga.name) l.push('', `Organisation : ${orga.name}`);
+    l.push('', `👉 Toutes les infos sur laSave, l’agenda de la vallée de la Save : ${url}`);
+    const tags = [commune(e.Commune) && hashtag(commune(e.Commune)), '#ValleeDeLaSave', TAG[cat] && '#' + TAG[cat], '#SortirEnHauteGaronne', '#laSave'].filter(Boolean);
+    l.push('', [...new Set(tags)].join(' '));
+    return l.join('\n');
+  }
+
   /* ── Page ── */
   const id = new URLSearchParams(location.search).get('id') || '';
   const state = {};
@@ -221,7 +248,7 @@ ${orga ? `<tr><td style="padding:20px 24px 0;"><table role="presentation" cellpa
     $('#k-lead').innerHTML = `Tout est prêt pour partager <b>${esc(e.Titre)}</b> partout, en deux clics.`;
 
     const lignes = [e.Titre, quand(e), ou(e), e.Tarif].filter(Boolean);
-    state.legende = `${lignes.join('\n')}\n\nToutes les infos sur la-save.fr 👉 ${url}`;
+    state.legende = legende(e, orga, url);
     state.message = `${lignes.join('\n')}\n\nToutes les infos : ${url}`;
     $('#k-legende').textContent = state.legende;
     $('#k-apercu').innerHTML = `${photo ? `<img src="${esc(photo)}" alt="" />` : ''}<div><small>la-save.fr</small><b>${esc(e.Titre)}</b><span>${esc([quand(e), commune(e.Commune)].filter(Boolean).join(' · '))}</span></div>`;

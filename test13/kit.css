@@ -113,3 +113,4 @@ body { background: #120c09; }
 .k-qr svg { display: block; width: 100%; height: 100%; }
 .k-desk p { font-size: 14px; color: #d6d4ce; }
 .k-desk b { color: var(--texte); }
+.k-note { margin-top: 10px; font-size: 13px; color: var(--texte-2) !important; }
