@@ -1120,3 +1120,20 @@ main { padding-top: clamp(10px, 4vw, 64px); }
 .stamp span:first-child, .stamp span:last-child { background: transparent; color: #0a0a0a; }
 .stamp span { --d: .5em; }
 @media (max-width: 720px) { .stamp span { font-size: 13px; } }
+
+/* ════ v28 : barre 3D aux coins arrondis + tampon collé au titre ════ */
+.row-block { --sf: clamp(17px, 2.1vw, 30px); padding-top: 26px; }
+.stamp { font-size: var(--sf); top: -.8em; left: -.35em; filter: drop-shadow(0 10px 16px rgba(0,0,0,.28)); }
+.stamp span {
+  font-size: 1em; background: #fff !important; color: #0a0a0a !important; border-radius: .26em; outline: 0;
+  padding: .2em .5em .14em;
+  /* liseré noir de la face, puis l'épaisseur noire, puis son liseré blanc (qui suit aussi les diagonales) */
+  box-shadow: 0 0 0 .06em #0a0a0a, 0.04em 0.04em 0 #0a0a0a, 0.08em 0.08em 0 #0a0a0a, 0.12em 0.12em 0 #0a0a0a, 0.16em 0.16em 0 #0a0a0a, 0.20em 0.20em 0 #0a0a0a, 0.24em 0.24em 0 #0a0a0a, 0.28em 0.28em 0 #0a0a0a, 0.32em 0.32em 0 #0a0a0a, 0.36em 0.36em 0 #0a0a0a, 0.40em 0.40em 0 #0a0a0a, 0.44em 0.44em 0 #0a0a0a, 0.48em 0.48em 0 #0a0a0a, 0.04em 0.04em 0 .06em #fff, 0.08em 0.08em 0 .06em #fff, 0.12em 0.12em 0 .06em #fff, 0.16em 0.16em 0 .06em #fff, 0.20em 0.20em 0 .06em #fff, 0.24em 0.24em 0 .06em #fff, 0.28em 0.28em 0 .06em #fff, 0.32em 0.32em 0 .06em #fff, 0.36em 0.36em 0 .06em #fff, 0.40em 0.40em 0 .06em #fff, 0.44em 0.44em 0 .06em #fff, 0.48em 0.48em 0 .06em #fff;
+}
+.stamp span::before, .stamp span::after { content: none; display: none; }
+/* le grand titre commence juste sous le tampon */
+.row-block-text { padding-top: max(4px, calc(var(--sf) * 1.02 + 10px - 26px)); }
+@media (max-width: 720px) {
+  .row-block { --sf: 13px; padding-top: 18px; }
+  .row-block-text { padding-top: max(4px, calc(var(--sf) * 1.02 + 8px - 18px)); }
+}
