@@ -763,7 +763,14 @@ async function route(req, env, ctx) {
         statsSql(env, `SELECT blob1 AS type, blob2 AS id, blob3 AS canal, SUM(_sample_interval) AS n FROM lasave_stats ${where} GROUP BY type, id, canal`),
         statsSql(env, `SELECT toStartOfDay(timestamp) AS jour, blob1 AS type, SUM(_sample_interval) AS n FROM lasave_stats ${where} GROUP BY jour, type ORDER BY jour`),
       ]);
-      return json(req, { jours, parEvenement, parJour });
+      // Diagnostic si rien n'est trouvé : jeux de données existants et nombre total de lignes
+      let diag = null;
+      if (!parEvenement.length) {
+        diag = { tables: [], lignes: null };
+        try { diag.tables = (await statsSql(env, 'SHOW TABLES')).map(t => t.dataset || t.name || Object.values(t)[0]); } catch (e) { diag.tables = ['? ' + e.message.slice(0, 120)]; }
+        try { diag.lignes = +((await statsSql(env, 'SELECT count() AS n FROM lasave_stats'))[0] || {}).n || 0; } catch (e) { diag.lignes = 'erreur : ' + e.message.slice(0, 160); }
+      }
+      return json(req, { jours, parEvenement, parJour, diag });
     }
     // Relecture immédiate d'Airtable (après une modification faite directement dans Airtable)
     if (m === 'POST' && p === '/admin/refresh') {

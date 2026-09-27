@@ -58,6 +58,9 @@
   }
 
   function render(d) {
+    const dg = $('#s-diag');
+    if (d.diag) { dg.hidden = false; dg.textContent = `Diagnostic : jeux de données trouvés chez Cloudflare → ${d.diag.tables.length ? d.diag.tables.join(', ') : 'aucun'} · lignes dans « lasave_stats » : ${d.diag.lignes}`; }
+    else dg.hidden = true;
     const rows = d.parEvenement.map(r => ({ ...r, n: +r.n || 0 }));
     const somme = (f) => rows.filter(f).reduce((a, r) => a + r.n, 0);
     const kpi = [
