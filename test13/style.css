@@ -1137,3 +1137,5 @@ main { padding-top: clamp(10px, 4vw, 64px); }
   .row-block { --sf: 13px; padding-top: 18px; }
   .row-block-text { padding-top: max(4px, calc(var(--sf) * 1.02 + 8px - 18px)); }
 }
+/* Essai : tampon à droite du rectangle */
+.stamp { left: auto; right: -.35em; }
