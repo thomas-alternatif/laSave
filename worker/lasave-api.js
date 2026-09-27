@@ -261,9 +261,34 @@ async function buildSnap(env) {
   await KV.put('codes', JSON.stringify(codes));
   return snap;
 }
-async function getSnap(env, ctx) {
+// Dépannage : si Airtable est bloqué et qu'aucune copie n'existe, on part d'un export publié sur le site
+async function loadSeed() {
+  try {
+    const r = await fetch(`${SITE}/data/seed.json`, { cf: { cacheTtl: 0 } });
+    if (!r.ok) return null;
+    const d = await r.json();
+    return { at: Date.now(), dirty: false, seed: true, photosPending: true, events: d.events || [], orgas: d.orgas || [] };
+  } catch { return null; }
+}
+async function finishSeedPhotos() { // copie des photos de l'export, 40 par passage
+  if (await KV.get('photolock')) return;
+  await KV.put('photolock', '1', { expirationTtl: 60 });
   const snap = await KV.get('snap', 'json');
-  if (!snap) return buildSnap(env); // première fois : il faut attendre Airtable
+  if (!snap || !snap.photosPending) return;
+  const budget = { n: 40 };
+  await keepPhotos(snap.events, budget);
+  await keepPhotos(snap.orgas, budget);
+  if (budget.n > 0) snap.photosPending = false;
+  await KV.put('snap', JSON.stringify(snap));
+  await KV.delete('photolock');
+}
+async function getSnap(env, ctx) {
+  let snap = await KV.get('snap', 'json');
+  if (!snap) { // première fois : il faut attendre Airtable
+    try { return await buildSnap(env); }
+    catch (e) { snap = await loadSeed(); if (!snap) throw e; await KV.put('snap', JSON.stringify(snap)); }
+  }
+  if (snap.photosPending) ctx.waitUntil(finishSeedPhotos().catch(e => console.error('photos export', e.message)));
   const age = Date.now() - snap.at;
   if (age > SNAP_MAX_AGE || (snap.dirty && age > DIRTY_DELAY)) {
     ctx.waitUntil((async () => { // une seule relecture à la fois
@@ -284,7 +309,7 @@ function withCounts(events, counts) {
 async function nightly(env) {
   if (!KV) return;
   const counts = await getCounts();
-  const ids = Object.keys(counts).filter(isId);
+  const ids = Object.keys(counts).filter(id => isId(id) && !id.startsWith('recTMP')); // recTMP… : fiches de l'export de dépannage
   for (let i = 0; i < ids.length; i += 10) {
     const records = ids.slice(i, i + 10).map(id => ({ id, fields: pick(counts[id], ['Likes', 'Vues']) }));
     try { await at(env, T_EVENTS, { method: 'PATCH', body: JSON.stringify({ records }) }); } catch (e) { console.error('recopie compteurs', e.message); return; }
