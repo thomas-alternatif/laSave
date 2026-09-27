@@ -162,8 +162,6 @@
 
 
   /* ── Légende pour Instagram / Facebook ── */
-  const EMO = { 'Concert': '🎶', 'Festival': '🎉', 'Spectacle': '🎭', 'Guinguette': '🍻', 'Fête & Célébration': '🎉', 'Marché': '🧺', 'Exposition': '🎨', 'Conférence / Atelier': '✏️', 'Sport / Loisir': '⚽' };
-  const TAG = { 'Concert': 'Concert', 'Festival': 'Festival', 'Spectacle': 'Spectacle', 'Guinguette': 'Guinguette', 'Fête & Célébration': 'Fête', 'Marché': 'Marché', 'Exposition': 'Expo', 'Conférence / Atelier': 'Atelier', 'Sport / Loisir': 'Sport' };
   const hashtag = t => '#' + String(t).normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/['’]/g, '').split(/[^A-Za-z0-9]+/).filter(Boolean).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join('');
   function resume(txt, max = 220) {
     const t = String(txt || '').replace(/\s+/g, ' ').trim();
@@ -173,19 +171,25 @@
     return fin > 80 ? coupe.slice(0, fin + 1) : coupe.slice(0, coupe.lastIndexOf(' ')).replace(/[,;:\s]+$/, '') + '…';
   }
   function legende(e, orga, url) {
-    const cat = e['Catégorie'] || '';
-    const l = [`${EMO[cat] || '✨'} ${String(e.Titre || '').toUpperCase()}`, ''];
-    l.push(`📅 ${quand(e)}`);
-    if (ou(e)) l.push(`📍 ${ou(e)}`);
-    if (e.Tarif) l.push(`🎟️ ${e.Tarif}`);
-    const r = resume(e.Description);
+    // Écrite comme un vrai message : une phrase, pas de liste ni d'émojis en série
+    const q = quand(e).replace(' · ', ' à ');
+    const quandTxt = q ? q.charAt(0).toLowerCase() + q.slice(1) : '';
+    const lieuNom = String(e.Lieu || '').trim().replace(/^(Salle|Place|Maison|Église|Eglise|Parc|Gymnase|Stade|École|Ecole|Halle|Jardin|Bibliothèque|Médiathèque)\b/, m => m.toLowerCase());
+    const lieu = [lieuNom, commune(e.Commune)].filter(Boolean).join(' à ');
+    let phrase = String(e.Titre || '').trim();
+    if (quandTxt) phrase += `, ${quandTxt}`;
+    if (lieu) phrase += `, ${lieu}`;
+    phrase += '.';
+    const l = [phrase];
+    if (e.Tarif) l.push(`${e.Tarif.charAt(0).toUpperCase() + e.Tarif.slice(1)}${/[.!?]$/.test(e.Tarif) ? '' : '.'}`);
+    const r = resume(e.Description, 200);
     if (r) l.push('', r);
-    if (orga && orga.name) l.push('', `Organisation : ${orga.name}`);
-    l.push('', `👉 Toutes les infos sur laSave, l’agenda de la vallée de la Save : ${url}`);
-    const tags = [commune(e.Commune) && hashtag(commune(e.Commune)), '#ValleeDeLaSave', TAG[cat] && '#' + TAG[cat], '#SortirEnHauteGaronne', '#laSave'].filter(Boolean);
+    l.push('', `Toutes les infos sur la-save.fr : ${url}`);
+    const tags = [commune(e.Commune) && hashtag(commune(e.Commune)), '#ValleeDeLaSave'].filter(Boolean);
     l.push('', [...new Set(tags)].join(' '));
     return l.join('\n');
   }
+
 
   /* ── Page ── */
   const id = new URLSearchParams(location.search).get('id') || '';
