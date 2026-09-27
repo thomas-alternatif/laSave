@@ -480,11 +480,16 @@ function stat(env, type, id = '', canal = '') {
 }
 async function statsSql(env, sql) {
   if (!env.CF_ACCOUNT_ID || !env.CF_STATS_TOKEN) throw Object.assign(new Error('Statistiques pas encore configurées : il manque CF_ACCOUNT_ID ou CF_STATS_TOKEN dans les secrets du serveur.'), { status: 503, expose: true });
-  const r = await fetch(`https://api.cloudflare.com/client/v4/accounts/${env.CF_ACCOUNT_ID}/analytics_engine/sql`, { method: 'POST', headers: { Authorization: `Bearer ${env.CF_STATS_TOKEN}` }, body: sql });
+  const r = await fetch(`https://api.cloudflare.com/client/v4/accounts/${env.CF_ACCOUNT_ID.trim()}/analytics_engine/sql`, { method: 'POST', headers: { Authorization: `Bearer ${env.CF_STATS_TOKEN.trim()}` }, body: sql });
   const t = await r.text();
   if (!r.ok) {
-    let why = t.slice(0, 300);
-    if (r.status === 401 || r.status === 403) why = 'le jeton CF_STATS_TOKEN est refusé (vérifiez la permission « Account Analytics : Lire » et l’identifiant CF_ACCOUNT_ID).';
+    let why = `réponse ${r.status} de Cloudflare : ${t.replace(/\s+/g, ' ').slice(0, 300)}`;
+    if (r.status === 401 || r.status === 403) {
+      // Diagnostic : le jeton est-il valide en lui-même ?
+      let etat = 'inconnu';
+      try { const v = await (await fetch('https://api.cloudflare.com/client/v4/user/tokens/verify', { headers: { Authorization: `Bearer ${env.CF_STATS_TOKEN.trim()}` } })).json(); etat = v.success ? `valide (${v.result && v.result.status})` : `refusé (${(v.errors && v.errors[0] && v.errors[0].message) || 'erreur'})`; } catch {}
+      why = `accès refusé (${r.status}). Jeton : ${etat}. Longueur du jeton : ${env.CF_STATS_TOKEN.trim().length} caractères, ID du compte : ${env.CF_ACCOUNT_ID.trim().length} caractères. Détail : ${t.replace(/\s+/g, ' ').slice(0, 200)}`;
+    }
     else if (/unknown table|does not exist|lasave_stats/i.test(t)) why = 'aucune donnée encore enregistrée (la liaison STATS vers le jeu de données « lasave_stats » est-elle ajoutée ?).';
     throw Object.assign(new Error('Lecture des statistiques impossible : ' + why), { status: 502, expose: true });
   }
