@@ -1139,3 +1139,20 @@ main { padding-top: clamp(10px, 4vw, 64px); }
 }
 /* Essai : tampon à droite du rectangle */
 .stamp { left: auto; right: -.35em; }
+
+/* Ouverture du profil plus planante : la carte glisse et se pose, sans secousse ni rebond */
+@keyframes card-in {
+  0% { transform: translate(var(--ox, 0), var(--oy, 0)) scale(var(--os, .2)); border-radius: 50%; background-color: var(--or); opacity: .9; }
+  45% { background-color: var(--or); }
+  100% { transform: none; border-radius: 22px; background-color: var(--noir-2); opacity: 1; }
+}
+#profile.game.in .pro { animation: card-in .9s cubic-bezier(.22,.9,.3,1) both; }
+@keyframes slam { 0% { opacity: 0; transform: scale(1.35); filter: blur(4px); } 100% { opacity: 1; transform: none; filter: none; } }
+#profile.game.in .pro-av { animation: slam .8s cubic-bezier(.22,.9,.3,1) .45s both; }
+#profile.game.in .pro > :not(.x) { animation-duration: .7s; }
+/* Survol des bulles : le grossissement passe par la transformation de la bulle elle-même.
+   (La propriété « scale » s'appliquait aussi au déplacement et poussait la bulle loin du curseur.) */
+@property --hs { syntax: '<number>'; inherits: false; initial-value: 1; }
+.org, .org:hover, .org:focus-visible { scale: none !important; }
+.org { transition: --hs .35s cubic-bezier(.2,.8,.2,1), box-shadow .25s !important; }
+.org:hover, .org:focus-visible { --hs: 1.06; }

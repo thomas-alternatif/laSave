@@ -482,19 +482,20 @@
     const erf = x => { const t = 1 / (1 + .3275911 * Math.abs(x)); const y = 1 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - .284496736) * t + .254829592) * t * Math.exp(-x * x); return x < 0 ? -y : y; };
     let off = 0, last = 0, hold = false, paused = motion.still, vel = 0, goal = null, drag = null, moved = false;
     const unit = () => row.clientWidth < 720 ? 100 : 150; // pixels pour passer d'une bulle à la suivante
+    const hover = window.matchMedia('(hover: hover)').matches;
     // Effet « balles » : chaque bulle suit sa place avec un ressort (elle dépasse un peu puis se cale),
     // rebondit doucement sur place, et s'écrase légèrement quand elle change de taille
     let clock = 0;
     function place(b, tx, ty, ts, dt, i) {
       const k = Math.min(2, dt / 16);
       if (b._x == null || Math.abs(tx - b._x) > row.clientWidth * .5) { b._x = tx; b._s = ts; b._vx = 0; b._vs = 0; } // passage d'un bord à l'autre : pas de ressort
-      b._vx = (b._vx + (tx - b._x) * .09 * k) * Math.pow(.74, k); b._x += b._vx * k;
-      b._vs = (b._vs + (ts - b._s) * .1 * k) * Math.pow(.7, k); b._s += b._vs * k;
+      b._x += (tx - b._x) * (1 - Math.pow(.84, k)); if (Math.abs(tx - b._x) < .05) b._x = tx; b._vx = 0; // glisse doucement vers sa place, sans rebond
+      b._s += (ts - b._s) * (1 - Math.pow(.86, k)); if (Math.abs(ts - b._s) < .05) b._s = ts; b._vs = 0;
       const sz = Math.max(8, b._s);
-      const hop = still() ? 0 : Math.abs(Math.sin(clock * .0032 + i * 1.7)) * sz * .035; // petit rebond
-      const squash = still() ? 0 : Math.max(-.08, Math.min(.08, b._vs * .012 + Math.abs(b._vx) * .002));
+      const hop = still() ? 0 : Math.sin(clock * .0011 + i * 1.9) * sz * .03; // flottement lent, comme en apesanteur
+      const squash = 0;
       b.style.setProperty('--sz', sz.toFixed(1) + 'px');
-      b.style.transform = `translate(${(b._x - sz / 2).toFixed(1)}px, ${(ty - sz / 2 - hop).toFixed(1)}px) scale(${(1 + squash).toFixed(3)}, ${(1 - squash).toFixed(3)})`;
+      b.style.transform = `translate(${(b._x - sz / 2).toFixed(1)}px, ${(ty - sz / 2 - hop).toFixed(1)}px) scale(var(--hs, 1))`; // --hs : léger grossissement au survol (voir style.css)
     }
     const still = () => motion.still || reduce;
     function layout(dt) {
@@ -518,10 +519,10 @@
       });
     }
     function frame(ts) {
-      const dt = last ? Math.min(50, ts - last) : 16; last = ts; clock += dt;
+      const dt = last ? Math.min(50, ts - last) : 16; last = ts; const over = hover && row.matches(':hover'); if (!hold && !over && !paused && !drag) clock += dt; // le flottement s'arrête sous la souris
       if (goal != null) { off += (goal - off) * Math.min(1, dt * .012); if (Math.abs(goal - off) < .002) { off = goal; goal = null; } }
       else if (!drag && Math.abs(vel) > 1e-5) { off += vel * dt; vel *= Math.pow(.93, dt / 16); }
-      else if (!paused && !hold && !drag && !openDlg) off += dt * 0.00028;
+      else if (!paused && !hold && !over && !drag && !openDlg) off += dt * 0.00028;
       layout(dt);
       requestAnimationFrame(frame);
     }
