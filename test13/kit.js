@@ -218,7 +218,7 @@ ${orga ? `<tr><td style="padding:20px 24px 0;"><table role="presentation" cellpa
     const lien = `${SITE}/#event-${id}`, url = `${API}/e/${id}`;
     state.url = url;
     document.title = `Partager « ${e.Titre} » · laSave`;
-    $('#k-lead').innerHTML = `Tout est prêt pour partager <b>${esc(e.Titre)}</b> : une story, un visuel, un message et une invitation mail.`;
+    $('#k-lead').innerHTML = `Tout est prêt pour partager <b>${esc(e.Titre)}</b> partout, en deux clics.`;
 
     const lignes = [e.Titre, quand(e), ou(e), e.Tarif].filter(Boolean);
     state.legende = `${lignes.join('\n')}\n\nToutes les infos sur la-save.fr 👉 ${url}`;
@@ -228,6 +228,13 @@ ${orga ? `<tr><td style="padding:20px 24px 0;"><table role="presentation" cellpa
     $('#k-wa').href = 'https://wa.me/?text=' + encodeURIComponent(`*${e.Titre}*\n${lignes.slice(1).join('\n')}\n\nToutes les infos : ${url}`);
     $('#k-sms').href = 'sms:?&body=' + encodeURIComponent(state.message);
     $('#k-mail').innerHTML = mailHtml(e, photo, lien, orga);
+    // En-tête : affiche + fond flouté
+    if (photo) {
+      const bg = $('#k-bg'); bg.style.backgroundImage = `url("${photo.replace(/"/g, '%22')}")`; requestAnimationFrame(() => bg.classList.add('on'));
+      $('#k-hero-img').src = photo; $('#k-hero-img').alt = `Affiche : ${e.Titre}`; $('#k-hero-poster').hidden = false;
+    }
+    $('#k-hero-cat').textContent = e['Catégorie'] || 'Événement';
+    $('#k-hero-date').textContent = [quand(e).split(' · ')[0], commune(e.Commune)].filter(Boolean).join(' · ');
     $('#k-body').hidden = false;
 
     try { await document.fonts.load(titleFont(100)); await document.fonts.load('600 40px "Instrument Sans"'); } catch (_) { /* polices de secours */ }

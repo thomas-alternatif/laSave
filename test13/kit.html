@@ -12,9 +12,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,500..900&family=Archivo+Narrow:wght@700&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="icon" href="../favicon.ico" sizes="48x48" />
   <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
-  <link rel="stylesheet" href="kit.css?v=5" />
+  <link rel="stylesheet" href="kit.css?v=6" />
 </head>
 <body>
+  <div class="k-backdrop" aria-hidden="true"><i id="k-bg"></i></div>
   <header class="k-top">
     <a href="./" aria-label="laSave, accueil"><img src="../test7/logo.png" alt="laSave" width="118" height="29" /></a>
     <span>Kit de partage</span>
@@ -22,9 +23,18 @@
 
   <main class="k-wrap">
     <section class="k-hero">
-      <p class="k-kicker">Pour les organisateurs</p>
-      <h1>Faites-le<br /><span>connaître</span></h1>
-      <p class="k-lead" id="k-lead">Chargement de votre événement…</p>
+      <div class="k-hero-meta"><span>Pour les organisateurs</span><span id="k-hero-date">laSave · Agenda de la Save</span></div>
+      <div class="k-hero-grid">
+        <div class="k-hero-txt">
+          <h1><span class="k-h-a">Faites-le</span><span class="k-h-b">connaître</span></h1>
+          <p class="k-lead" id="k-lead">Chargement de votre événement…</p>
+        </div>
+        <figure class="k-hero-poster" id="k-hero-poster" hidden>
+          <img id="k-hero-img" alt="" />
+          <figcaption><b id="k-hero-cat"></b></figcaption>
+        </figure>
+      </div>
+      <div class="k-hero-foot"><span>Story · Publication · Message · E-mail</span><span>la-save.fr</span></div>
     </section>
 
     <p class="k-err" id="k-err" hidden></p>
@@ -94,6 +104,6 @@
 
   <div class="k-toast" id="k-toast" role="status" aria-live="polite"></div>
   <canvas id="cv" width="1080" height="1920" hidden></canvas>
-  <script src="kit.js?v=6"></script>
+  <script src="kit.js?v=7"></script>
 </body>
 </html>
