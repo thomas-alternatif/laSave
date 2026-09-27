@@ -29,10 +29,10 @@ const T_AVIS = 'tbl1VfPYliWdORuzN';
 const ALLOWED_ORIGINS = ['https://la-save.fr', 'https://www.la-save.fr', 'https://thomas-alternatif.github.io'];
 
 // Champs visibles par le public (tout le reste, dont les contacts et messages privés, reste caché)
-const EVENT_PUBLIC = ['Titre','Catégorie','Organisation','Description','Commune','Date','Date de fin','Heure','Lieu','Tarif','Contact','Récurrence','À la une','Période','Jour','Vues','Photo','Likes'];
+const EVENT_PUBLIC = ['Titre','Catégorie','Organisation','Description','Commune','Date','Date de fin','Heure','Lieu','Tarif','Contact','Récurrence','À la une','Période','Jour','Vues','Photo','Likes','Billetterie'];
 const ORGA_PUBLIC = ['Nom','Description courte','Description','Photo','Contact','Ordre'];
 // Champs acceptés depuis le formulaire « Ajouter un événement »
-const EVENT_SUBMIT = ['Titre','Catégorie','Commune','Date','Date de fin','Heure','Lieu','Description','Tarif','Récurrence','Période','Organisation','Contact','Contact privé','Message privé'];
+const EVENT_SUBMIT = ['Titre','Catégorie','Commune','Date','Date de fin','Heure','Lieu','Description','Tarif','Récurrence','Période','Organisation','Contact','Contact privé','Message privé','Billetterie'];
 const ADMIN_STATUTS = ['Publié','Archivé','En attente'];
 
 // E-mails
@@ -467,8 +467,15 @@ async function route(req, env, ctx) {
     for (const k in fields) fields[k] = clip(fields[k], k === 'Description' || k === 'Message privé' ? 5000 : 300);
     if (!fields.Titre || !fields['Catégorie'] || !fields.Commune) return json(req, { error: 'Titre, catégorie et commune sont obligatoires.' }, 400);
     if (typeof b.photoUrl === 'string' && /^https:\/\/(i\.)?ibb\.co\//.test(b.photoUrl)) fields.Photo = [{ url: b.photoUrl }];
+    if (fields.Billetterie && !/^https:\/\/[^\s<>"']+$/.test(fields.Billetterie)) delete fields.Billetterie; // lien de billetterie : https uniquement
     fields.Statut = 'En attente';
-    const d = await at(env, T_EVENTS, { method: 'POST', body: JSON.stringify({ fields }) });
+    let d;
+    try { d = await at(env, T_EVENTS, { method: 'POST', body: JSON.stringify({ fields }) }); }
+    catch (e) { // colonne « Billetterie » pas encore créée dans Airtable : on enregistre quand même le reste
+      if (!fields.Billetterie || !/Billetterie|UNKNOWN_FIELD/i.test(e.message)) throw e;
+      delete fields.Billetterie;
+      d = await at(env, T_EVENTS, { method: 'POST', body: JSON.stringify({ fields }) });
+    }
     return json(req, { ok: true, id: d.id }, 201);
   }
 

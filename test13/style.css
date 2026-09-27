@@ -1174,3 +1174,8 @@ main { padding-top: clamp(10px, 4vw, 64px); }
   .top-links { display: none; }
   .lg-only { display: none; } .sm-only { display: inline; }
 }
+
+/* Billetterie */
+.ev-ticket { min-height: 46px; padding: 0 22px; font-size: 14px; }
+.tix { position: absolute; left: 10px; top: 10px; z-index: 2; background: var(--or); color: #0a0a0a; font: 700 10.5px/1 var(--sans); letter-spacing: .1em; text-transform: uppercase; padding: 6px 9px 5px; border-radius: 99px; box-shadow: 0 4px 12px rgba(0,0,0,.3); }
+.poster-img { position: relative; }

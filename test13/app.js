@@ -225,6 +225,10 @@
     bindHeart('#ev-heart', e);
     calendar(e); closeCalMenu();
     $('#ev-msg').textContent = '';
+    // Billetterie (Festik ou autre) : bouton « Prendre ma place » si l'événement a un lien
+    const tk = $('#ev-ticket'), link = String(e.Billetterie || '').trim();
+    tk.hidden = !/^https:\/\//.test(link);
+    if (!tk.hidden) { tk.href = link; tk.setAttribute('aria-label', `Prendre ma place pour ${e.Titre || 'cet événement'} (ouvre la billetterie)`); }
     $('#ev-share').onclick = async () => {
       const url = shareUrl(e);
       if (navigator.share) { try { await navigator.share({ title: e.Titre, text: `${e.Titre} — ${whenOf(e)}`, url }); return; } catch (err) { if (err.name === 'AbortError') return; } }
@@ -426,6 +430,7 @@
     b.appendChild(pi);
     const tx = el('div', 'poster-tx');
     tx.appendChild(el('span', 'poster-date', whenOf(e)));
+    if (/^https:\/\//.test(String(e.Billetterie || ''))) pi.appendChild(el('span', 'tix', 'Billets'));
     tx.appendChild(tel('span', 'poster-t', e.Titre || 'Événement'));
     tx.appendChild(el('span', 'poster-c', e.Commune || e['Catégorie'] || ''));
     b.appendChild(tx);
@@ -660,6 +665,8 @@
       const put = (k, id) => { const v = $(id).value.trim(); if (v) fields[k] = v; };
       put('Date', '#f-date'); put('Date de fin', '#f-date-fin'); put('Heure', '#f-heure'); put('Lieu', '#f-lieu');
       put('Description', '#f-desc'); put('Tarif', '#f-tarif'); put('Organisation', '#f-org');
+      const bil = $('#f-billet').value.trim();
+      if (bil) { if (!/^https:\/\/[^\s]+\.[^\s]+/.test(bil)) return err('Le lien de billetterie doit commencer par https://', ['#f-billet']); fields['Billetterie'] = bil; }
       if ($('#f-rec').value !== 'Aucune') { fields['Récurrence'] = $('#f-rec').value; put('Jour/Période', '#f-periode'); }
       const ig = $('#f-ig').value.trim().replace(/^https?:\/\/(www\.)?instagram\.com\//, '').replace(/\/?$/, '').replace(/^@/, '');
       const fb = $('#f-fb').value.trim().replace(/^https?:\/\/(www\.)?(facebook|fb)\.com\//, '').replace(/\/?(\?.*)?$/, '').replace(/^@/, '');
