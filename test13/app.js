@@ -52,7 +52,7 @@
   // Titre sans coupure : les mots composés (Saint-Jean) restent entiers
   const title = (node, text) => {
     node.replaceChildren();
-    String(text || '').split(/(\s+)/).forEach(w => { if (/\S-\S/.test(w)) node.appendChild(el('span', 'nw', w)); else node.appendChild(document.createTextNode(w)); });
+    String(text || '').replace(/ ([?!:;»])/g, '\u00a0$1').replace(/(«) /g, '$1\u00a0').split(/(\s+)/).forEach(w => { if (/\S-\S/.test(w)) node.appendChild(el('span', 'nw', w)); else node.appendChild(document.createTextNode(w)); });
     return node;
   };
   const tel = (tag, cls, text) => title(el(tag, cls), text);
@@ -304,6 +304,14 @@
   const onScroll = () => top.classList.toggle('solid', window.scrollY > 40 || top.classList.contains('on-page'));
   window.addEventListener('scroll', onScroll, { passive: true });
 
+  /* ── Fond du site : la photo de « À la une », très floutée ── */
+  let bdCur = 0;
+  function setBackdrop(src) {
+    const layers = $$('.backdrop i'); if (!layers.length || !src) return;
+    bdCur = 1 - bdCur;
+    bg(layers[bdCur], src); layers[bdCur].classList.add('on'); layers[1 - bdCur].classList.remove('on');
+  }
+
   /* ── 1. À la une ── */
   function buildHero(events) {
     let feats = events.filter(e => e['À la une'] && photoOf(e));
@@ -318,7 +326,7 @@
       const e = feats[cur], b = $('#hero-bg'), r = $('#hero-ref'), tx = $('.hero-text');
       b.classList.add('fade'); r.classList.add('fade'); tx.classList.add('fade');
       setTimeout(() => {
-        bg(b, photoOf(e)); bg(r, photoOf(e));
+        bg(b, photoOf(e)); bg(r, photoOf(e)); setBackdrop(photoOf(e));
         $('#hero-when').textContent = [whenOf(e), e.Commune].filter(Boolean).join(' · ');
         title($('#hero-title'), e.Titre || 'Événement');
         fit($('#hero-title'), 30);
@@ -471,33 +479,48 @@
     const N = slots.length;
     const erf = x => { const t = 1 / (1 + .3275911 * Math.abs(x)); const y = 1 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - .284496736) * t + .254829592) * t * Math.exp(-x * x); return x < 0 ? -y : y; };
     let off = 0, last = 0, hold = false, paused = motion.still, vel = 0, goal = null, drag = null, moved = false;
-    const unit = () => row.clientWidth < 720 ? 110 : 165; // pixels pour passer d'une bulle à la suivante
-    function layout() {
+    const unit = () => row.clientWidth < 720 ? 100 : 150; // pixels pour passer d'une bulle à la suivante
+    // Effet « balles » : chaque bulle suit sa place avec un ressort (elle dépasse un peu puis se cale),
+    // rebondit doucement sur place, et s'écrase légèrement quand elle change de taille
+    let clock = 0;
+    function place(b, tx, ty, ts, dt, i) {
+      const k = Math.min(2, dt / 16);
+      if (b._x == null || Math.abs(tx - b._x) > row.clientWidth * .5) { b._x = tx; b._s = ts; b._vx = 0; b._vs = 0; } // passage d'un bord à l'autre : pas de ressort
+      b._vx = (b._vx + (tx - b._x) * .09 * k) * Math.pow(.74, k); b._x += b._vx * k;
+      b._vs = (b._vs + (ts - b._s) * .1 * k) * Math.pow(.7, k); b._s += b._vs * k;
+      const sz = Math.max(8, b._s);
+      const hop = still() ? 0 : Math.abs(Math.sin(clock * .0032 + i * 1.7)) * sz * .035; // petit rebond
+      const squash = still() ? 0 : Math.max(-.08, Math.min(.08, b._vs * .012 + Math.abs(b._vx) * .002));
+      b.style.setProperty('--sz', sz.toFixed(1) + 'px');
+      b.style.transform = `translate(${(b._x - sz / 2).toFixed(1)}px, ${(ty - sz / 2 - hop).toFixed(1)}px) scale(${(1 + squash).toFixed(3)}, ${(1 - squash).toFixed(3)})`;
+    }
+    const still = () => motion.still || reduce;
+    function layout(dt) {
       const W = row.clientWidth, H = row.clientHeight;
       if (!W) return;
       const mob = W < 720;
-      const Smax = mob ? 170 : 250, Smin = mob ? 64 : 92, sig = mob ? 1.35 : 1.9, gap = mob ? 12 : 18;
+      // Bulles presque collées les unes aux autres
+      const Smax = mob ? 176 : 262, Smin = mob ? 70 : 104, sig = mob ? 1.3 : 1.8, gap = mob ? 2 : 3;
       const X = u => (Smin + gap) * u + (Smax - Smin) * sig * Math.sqrt(Math.PI) / 2 * erf(u / sig);
       slots.forEach((sl, i) => {
         let u = ((i - off) % N + N) % N; if (u > N / 2) u -= N;
         const s = Smin + (Smax - Smin) * Math.exp(-((u / sig) ** 2));
         const x = W / 2 + X(u);
         if (sl.length === 1) {
-          const b = sl[0]; b.style.setProperty('--sz', s.toFixed(1) + 'px');
-          b.style.transform = `translate(${(x - s / 2).toFixed(1)}px, ${((H - s) / 2).toFixed(1)}px)`;
-          b.classList.toggle('big', Math.abs(u) < .5);
+          place(sl[0], x, H / 2, s, dt, i);
+          sl[0].classList.toggle('big', Math.abs(u) < .5);
         } else {
-          const t = s * .47;
-          sl.forEach((b, j) => { const y = H / 2 + (j ? s * .04 : -s * .04 - t); b.style.setProperty('--sz', t.toFixed(1) + 'px'); b.style.transform = `translate(${(x - t / 2).toFixed(1)}px, ${y.toFixed(1)}px)`; b.classList.remove('big'); });
+          const t = s * .56; // deux bulles en quinconce, serrées l'une contre l'autre
+          sl.forEach((b, j) => { const d = j ? 1 : -1; place(b, x + d * t * .4, H / 2 + d * (t * .47 + gap / 2), t, dt, i * 2 + j); b.classList.remove('big'); });
         }
       });
     }
     function frame(ts) {
-      const dt = last ? Math.min(50, ts - last) : 16; last = ts;
+      const dt = last ? Math.min(50, ts - last) : 16; last = ts; clock += dt;
       if (goal != null) { off += (goal - off) * Math.min(1, dt * .012); if (Math.abs(goal - off) < .002) { off = goal; goal = null; } }
       else if (!drag && Math.abs(vel) > 1e-5) { off += vel * dt; vel *= Math.pow(.93, dt / 16); }
       else if (!paused && !hold && !drag && !openDlg) off += dt * 0.00028;
-      layout();
+      layout(dt);
       requestAnimationFrame(frame);
     }
     // Souris sur la ronde : elle s'arrête, pour viser tranquillement même les petites photos
