@@ -1058,3 +1058,20 @@ main { padding-top: clamp(10px, 4vw, 64px); }
 .stamp { top: clamp(-26px, -1.9vw, -14px); }
 .row-block-text { padding-top: clamp(40px, 4.4vw, 60px); }
 @media (max-width: 720px) { .stamp span { font-size: 14px; } .stamp { top: -12px; } .row-block-text { padding-top: 30px; } }
+
+/* ════ v25 : tampons en « pavé droit » (bloc en volume, en perspective) ════ */
+.stamp { transform: perspective(700px) rotateX(14deg) rotateY(-20deg) rotateZ(-4deg); transform-style: preserve-3d; filter: drop-shadow(0 10px 16px rgba(0,0,0,.35)); }
+.stamp span {
+  transform: none; border-radius: 2px; font-style: normal;
+  /* face avant noire + liseré blanc, puis l'épaisseur du bloc vers le bas à droite */
+  box-shadow:
+    inset 0 0 0 2px #0a0a0a, inset 0 0 0 3.5px #fff,
+    1px 1px 0 #2e2e2e, 2px 2px 0 #2b2b2b, 3px 3px 0 #282828, 4px 4px 0 #252525,
+    5px 5px 0 #222, 6px 6px 0 #1f1f1f, 7px 7px 0 #1c1c1c, 8px 8px 0 #191919,
+    8px 8px 0 1.5px #fff;
+}
+.stamp span + span { margin: 6px 0 0 1.2em; }
+@media (max-width: 720px) {
+  .stamp span { box-shadow: inset 0 0 0 1.5px #0a0a0a, inset 0 0 0 2.5px #fff, 1px 1px 0 #2e2e2e, 2px 2px 0 #282828, 3px 3px 0 #222, 4px 4px 0 #1c1c1c, 4px 4px 0 1px #fff; }
+  .stamp span + span { margin-top: 4px; }
+}
