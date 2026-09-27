@@ -780,6 +780,18 @@
   }
   setTimeout(endIntro, 4500); // au pire, on n'attend pas plus
 
+  /* ── Barre du haut : la section visible est soulignée ── */
+  (function spy() {
+    const links = $$('[data-spy]'); if (!links.length || !('IntersectionObserver' in window)) return;
+    const seen = new Map();
+    const io = new IntersectionObserver(entries => {
+      entries.forEach(en => seen.set(en.target.id, en.isIntersecting ? en.intersectionRatio : 0));
+      let best = null, max = 0; seen.forEach((r, id) => { if (r > max) { max = r; best = id; } });
+      links.forEach(a => { if (a.dataset.spy === best && max > 0) a.setAttribute('aria-current', 'location'); else a.removeAttribute('aria-current'); });
+    }, { threshold: [0, .15, .3, .5], rootMargin: '-30% 0px -40% 0px' });
+    links.forEach(a => { const t = document.getElementById(a.dataset.spy); if (t) io.observe(t); });
+  })();
+
   /* ── Thème clair / sombre ── */
   function bindTheme() {
     const root = document.documentElement, meta = document.querySelector('meta[name="theme-color"]');
