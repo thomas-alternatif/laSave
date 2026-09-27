@@ -118,8 +118,7 @@
     // Pastille dorée en bas
     c.font = `600 ${opts.pill}px "Instrument Sans", sans-serif`;
     const pt = 'Toutes les infos sur la-save.fr', pwid = c.measureText(pt).width + opts.pill * 2.2, phh = opts.pill * 2.4, px0 = (W - pwid) / 2, py0 = opts.pillY;
-    const gg = c.createLinearGradient(px0, 0, px0 + pwid, 0); gg.addColorStop(0, '#FFB547'); gg.addColorStop(.5, '#F6E7C8'); gg.addColorStop(1, '#C8A96E');
-    rr(c, px0, py0, pwid, phh, phh / 2); c.fillStyle = gg; c.fill();
+    rr(c, px0, py0, pwid, phh, phh / 2); c.fillStyle = "#FFA823"; c.fill();
     c.fillStyle = '#141210'; c.textBaseline = 'middle'; c.fillText(pt, W / 2, py0 + phh / 2 + 1);
 
     return new Promise(ok => cv.toBlob(b => ok(b), 'image/png'));
@@ -158,7 +157,7 @@ ${photo ? `<tr><td style="padding:18px 24px 0;"><a href="${lien}"><img src="${es
 <tr><td style="padding:14px 24px 0;font-size:16px;font-weight:600;color:${col};">${esc(quand(e))}</td></tr>
 ${ou(e) ? `<tr><td style="padding:4px 24px 0;font-size:15px;color:#d6d4ce;">${esc(ou(e))}</td></tr>` : ''}
 ${e.Tarif ? `<tr><td style="padding:4px 24px 0;font-size:15px;color:#a3a19b;">${esc(e.Tarif)}</td></tr>` : ''}
-<tr><td style="padding:22px 24px 26px;"><a href="${lien}" style="display:inline-block;background:#EBD9B4;background-image:linear-gradient(100deg,#FFB547,#F6E7C8,#C8A96E);color:#141210;font-weight:700;font-size:15px;text-decoration:none;padding:13px 24px;border-radius:99px;">Voir l’événement</a>${/^https:\/\//.test(e.Billetterie || '') ? ` &nbsp;<a href="${esc(e.Billetterie)}" style="display:inline-block;color:#f4f3ef;font-weight:700;font-size:15px;text-decoration:underline;padding:13px 6px;">Prendre ma place</a>` : ''}</td></tr>
+<tr><td style="padding:22px 24px 26px;"><a href="${lien}" style="display:inline-block;background:#FFA823;color:#141210;font-weight:700;font-size:15px;text-decoration:none;padding:13px 24px;border-radius:99px;">Voir l’événement</a>${/^https:\/\//.test(e.Billetterie || '') ? ` &nbsp;<a href="${esc(e.Billetterie)}" style="display:inline-block;color:#f4f3ef;font-weight:700;font-size:15px;text-decoration:underline;padding:13px 6px;">Prendre ma place</a>` : ''}</td></tr>
 </table>`;
   }
 
@@ -184,7 +183,6 @@ ${e.Tarif ? `<tr><td style="padding:4px 24px 0;font-size:15px;color:#a3a19b;">${
     $('#k-wa').href = 'https://wa.me/?text=' + encodeURIComponent(`*${e.Titre}*\n${lignes.slice(1).join('\n')}\n\nToutes les infos : ${url}`);
     $('#k-sms').href = 'sms:?&body=' + encodeURIComponent(state.message);
     $('#k-mail').innerHTML = mailHtml(e, photo, lien);
-    $('#k-mailto').href = `mailto:?subject=${encodeURIComponent(e.Titre)}&body=${encodeURIComponent(state.message)}`;
     $('#k-body').hidden = false;
 
     try { await document.fonts.load(titleFont(100)); await document.fonts.load('600 40px "Instrument Sans"'); } catch (_) { /* polices de secours */ }

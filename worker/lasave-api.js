@@ -231,7 +231,7 @@ function publishedMail(f, id) {
   const gros = (t, px, c = W, large = false) => `<div style="font-family:${D};font-stretch:${large ? '125%' : '75%'};font-size:${px}px;line-height:.95;font-weight:800;text-transform:uppercase;letter-spacing:${large ? '.01em' : '-.01em'};color:${c};">${t}</div>`;
   const ep = Array.from({ length: 8 }, (_, i) => `${(i + 1) * .05}em ${(i + 1) * .05}em 0 #0a0a0a`).join(',');
   const tampon = t => `<span style="display:inline-block;font-family:${D};font-stretch:75%;font-size:14px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;background:#ffffff;color:#0a0a0a;border-radius:.26em;padding:.28em .6em .2em;box-shadow:0 0 0 .06em #0a0a0a,${ep},.4em .4em 0 .06em #ffffff;">${escH(t)}</span>`;
-  const btnOr = (h, t) => `<table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td style="border-radius:99px;background:#EBD9B4;background-image:linear-gradient(100deg,#FFB547 0%,#F6E7C8 45%,#C8A96E 100%);border:1.5px solid rgba(255,255,255,.55);"><a href="${h}" style="display:inline-block;padding:14px 26px;font-family:${S};font-size:15px;font-weight:600;color:#141210;text-decoration:none;border-radius:99px;">${t}</a></td></tr></table>`;
+  const btnOr = (h, t) => `<table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td style="border-radius:99px;background:#FFA823;"><a href="${h}" style="display:inline-block;padding:14px 26px;font-family:${S};font-size:15px;font-weight:600;color:#141210;text-decoration:none;border-radius:99px;">${t}</a></td></tr></table>`;
   const btnVerre = (h, t) => `<td style="padding:0 8px 8px 0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td style="border-radius:99px;background:#1a1a1a;border:1.5px solid rgba(255,255,255,.3);"><a href="${h}" style="display:inline-block;padding:11px 16px;font-family:${S};font-size:14px;font-weight:600;color:${W};text-decoration:none;border-radius:99px;white-space:nowrap;">${t}</a></td></tr></table></td>`;
   const meta = (g, d) => `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="font-family:${S};font-size:12px;font-weight:600;color:${W};">${g}</td><td align="right" style="font-family:${S};font-size:12px;color:${G};">${d}</td></tr><tr><td colspan="2" style="padding-top:12px;border-bottom:1px solid ${L};font-size:0;line-height:0;">&nbsp;</td></tr></table>`;
   const info = rows => `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-top:14px;">${rows.filter(r => r[1]).map(([k, v]) => `<tr><td valign="top" style="padding:3px 14px 3px 0;font-family:${S};font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:${G};">${k}</td><td style="padding:3px 0;font-family:${S};font-size:14px;line-height:1.4;color:${W};">${escH(v)}</td></tr>`).join('')}</table>`;
@@ -240,7 +240,7 @@ function publishedMail(f, id) {
   const kitUrl = `${SITE}/test13/kit.html?id=${id}`; // page « kit de partage » (test13 pour l'instant)
   const msg = [titre, quand, ou, f.Tarif].filter(Boolean).join('\n') + `\n\nToutes les infos : ${partage}`;
   const msgWa = [`*${titre}*`, quand, ou, f.Tarif].filter(Boolean).join('\n') + `\n\nToutes les infos : ${partage}`;
-  const btnApp = (h, ico, petit, nom, bg, fg) => `<td width="50%" valign="top" style="border-radius:14px;background:${bg};${bg === '#EBD9B4' ? 'background-image:linear-gradient(100deg,#FFB547 0%,#F6E7C8 50%,#C8A96E 100%);' : ''}"><a href="${h}" style="display:block;padding:14px 14px;text-decoration:none;border-radius:14px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td valign="middle" style="padding-right:10px;"><img src="${SITE}/images/partage/${ico}.png" width="24" height="24" alt="" style="display:block;width:24px;height:24px;border:0;"></td><td valign="middle" style="font-family:${S};color:${fg};line-height:1.15;"><span style="font-size:11px;opacity:.85;">${petit}</span><br><span style="font-size:15px;font-weight:600;">${nom}</span></td></tr></table></a></td>`;
+  const btnApp = (h, ico, petit, nom, bg, fg) => `<td width="50%" valign="top" style="border-radius:14px;background:${bg};"><a href="${h}" style="display:block;padding:14px 14px;text-decoration:none;border-radius:14px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td valign="middle" style="padding-right:10px;"><img src="${SITE}/images/partage/${ico}.png" width="24" height="24" alt="" style="display:block;width:24px;height:24px;border:0;"></td><td valign="middle" style="font-family:${S};color:${fg};line-height:1.15;"><span style="font-size:11px;opacity:.85;">${petit}</span><br><span style="font-size:15px;font-weight:600;">${nom}</span></td></tr></table></a></td>`;
 
   const html = `<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="dark"><meta name="supported-color-schemes" content="dark"><title>Votre événement est en ligne</title>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,500..900&family=Instrument+Sans:wght@400;600&display=swap" rel="stylesheet"></head>
@@ -256,8 +256,8 @@ function publishedMail(f, id) {
     <p style="margin:18px 0 0;font-family:${S};font-size:16px;line-height:1.6;color:#d6d4ce;">${qui}<br>votre événement a été relu par la mairie${mot ? ', qui vous laisse un petit mot juste en dessous' : ''}. Il est maintenant visible par tous sur laSave, l’agenda de la vallée de la Save.</p>
   </td></tr></table></td></tr>
 
-  ${mot ? `<tr><td style="padding:0 0 16px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#EBD9B4;background-image:linear-gradient(120deg,#FFB547 0%,#F6E7C8 45%,#C8A96E 100%);border-radius:26px;"><tr><td style="padding:24px 26px 26px;">
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="font-family:${S};font-size:12px;font-weight:600;color:#141210;">Un mot de la mairie</td><td align="right" style="font-family:${S};font-size:12px;color:#3a3226;">À lire</td></tr><tr><td colspan="2" style="padding-top:12px;border-bottom:1px solid #141210;font-size:0;line-height:0;">&nbsp;</td></tr></table>
+  ${mot ? `<tr><td style="padding:0 0 16px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f4f3ef;border-radius:26px;"><tr><td style="padding:24px 26px 26px;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="font-family:${S};font-size:12px;font-weight:600;color:#141210;">Un mot de la mairie</td><td align="right" style="font-family:${S};font-size:12px;color:#6b6860;">À lire</td></tr><tr><td colspan="2" style="padding-top:12px;border-bottom:1px solid #141210;font-size:0;line-height:0;">&nbsp;</td></tr></table>
     <p style="margin:18px 0 0;font-family:${S};font-size:16px;line-height:1.6;color:#141210;">${escH(mot).replace(/\n/g, '<br>')}</p>
   </td></tr></table></td></tr>` : ''}
 
@@ -272,10 +272,10 @@ function publishedMail(f, id) {
 
   <tr><td style="padding:0 0 16px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${P};border-radius:26px;"><tr><td style="padding:26px 26px 28px;">
     ${meta('Faites-le connaître', 'Partage')}
-    <div style="padding-top:22px;">${gros('Partagez-le', 34, '#c8a96e', true)}</div>
+    <div style="padding-top:22px;">${gros('Partagez-le', 34, '#FFA823', true)}</div>
     <p style="margin:12px 0 0;font-family:${S};font-size:15px;line-height:1.6;color:#d6d4ce;">Plus il circule, plus il y aura de monde. On vous a préparé de quoi le partager partout, en deux clics.</p>
 
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:22px;background:#EBD9B4;background-image:linear-gradient(120deg,#FFB547 0%,#F6E7C8 45%,#C8A96E 100%);border-radius:18px;"><tr><td style="padding:22px 22px 24px;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:22px;background:#FFA823;border-radius:18px;"><tr><td style="padding:22px 22px 24px;">
       <div style="font-family:${S};font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#3a3226;">Votre kit de partage</div>
       <div style="margin-top:8px;">${gros('Tout est prêt', 30, '#141210')}</div>
       <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-top:14px;">
@@ -299,7 +299,7 @@ function publishedMail(f, id) {
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:14px;">
       <tr>${btnApp(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(partage)}`, 'facebook', 'Partager sur', 'Facebook', '#1877F2', '#ffffff')}<td width="10" style="font-size:0;">&nbsp;</td>${btnApp(`https://wa.me/?text=${encodeURIComponent(msgWa)}`, 'whatsapp', 'Envoyer sur', 'WhatsApp', '#128C7E', '#ffffff')}</tr>
       <tr><td colspan="3" height="10" style="font-size:0;line-height:0;">&nbsp;</td></tr>
-      <tr>${btnApp(`sms:?&body=${encodeURIComponent(msg)}`, 'sms', 'Envoyer par', 'SMS', '#262626', '#ffffff')}<td width="10" style="font-size:0;">&nbsp;</td>${btnApp(`mailto:?subject=${encodeURIComponent(titre)}&body=${encodeURIComponent(msg)}`, 'mail', 'Envoyer par', 'E-mail', '#EBD9B4', '#141210')}</tr>
+      <tr>${btnApp(`sms:?&body=${encodeURIComponent(msg)}`, 'sms', 'Envoyer par', 'SMS', '#262626', '#ffffff')}<td width="10" style="font-size:0;">&nbsp;</td>${btnApp(`mailto:?subject=${encodeURIComponent(titre)}&body=${encodeURIComponent(msg)}`, 'mail', 'Envoyer par', 'E-mail', '#FFA823', '#141210')}</tr>
     </table>
 
   </td></tr></table></td></tr>
