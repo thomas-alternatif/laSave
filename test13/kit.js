@@ -189,10 +189,10 @@
     const l = [phrase];
     if (e.Tarif) l.push(`${e.Tarif.charAt(0).toUpperCase() + e.Tarif.slice(1)}${/[.!?]$/.test(e.Tarif) ? '' : '.'}`);
     const r = resume(e.Description, 200);
-    if (r) l.push(r);
-    l.push(`Toutes les infos sur la-save.fr : ${url}`);
+    if (r) l.push('', r);
+    l.push('', `Toutes les infos sur la-save.fr : ${url}`);
     const tags = [commune(e.Commune) && hashtag(commune(e.Commune)), '#ValleeDeLaSave'].filter(Boolean);
-    l.push([...new Set(tags)].join(' '));
+    l.push('', [...new Set(tags)].join(' '));
     return l.join('\n');
   }
 
