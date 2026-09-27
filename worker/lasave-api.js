@@ -212,6 +212,35 @@ const slowDown = req => json(req, { error: 'Trop de tentatives, réessayez dans 
 const SNAP_MAX_AGE = 24 * 3600e3;   // au-delà, on relit Airtable (en arrière-plan)
 const DIRTY_DELAY = 60e3;           // après une publication, on relit au plus une fois par minute
 
+// Les liens des photos Airtable expirent au bout de 2 h : on garde une copie de chaque photo dans KV
+const API_ORIGIN = 'https://lasave-api.partage.workers.dev';
+async function keepPhotos(list, budget) {
+  for (const item of list) {
+    if (!Array.isArray(item.Photo)) continue;
+    const out = [];
+    for (const a of item.Photo) {
+      if (!a || !a.id) { out.push(a); continue; }
+      const key = 'img:' + a.id, mine = `${API_ORIGIN}/img/${a.id}`;
+      let have = !!(await KV.get(key + ':ok'));
+      if (!have && budget.n > 0) {
+        budget.n--;
+        try {
+          const src = a.thumbnails?.large?.url || a.url;
+          const r = await fetch(src);
+          const type = r.headers.get('Content-Type') || 'image/jpeg';
+          const buf = await r.arrayBuffer();
+          if (r.ok && /^image\//.test(type) && buf.byteLength < 20 * 1024 * 1024) {
+            await KV.put(key, buf, { metadata: { type } });
+            await KV.put(key + ':ok', '1');
+            have = true;
+          }
+        } catch (e) { console.error('photo', a.id, e.message); }
+      }
+      out.push(have ? { id: a.id, url: mine, thumbnails: { large: { url: mine } } } : a);
+    }
+    item.Photo = out;
+  }
+}
 async function buildSnap(env) {
   const evs = await listAll(env, T_EVENTS, '&filterByFormula=' + encodeURIComponent("{Statut}='Publié'"));
   const orgs = await listAll(env, T_ORGAS, '&sort[0][field]=Ordre&sort[0][direction]=asc');
@@ -220,6 +249,11 @@ async function buildSnap(env) {
     events: evs.map(r => ({ id: r.id, ...pick(r.fields, EVENT_PUBLIC) })),
     orgas: orgs.filter(r => r.fields['Publié']).map(r => ({ id: r.id, ...pick(r.fields, ORGA_PUBLIC) })),
   };
+  // Au plus 35 nouvelles photos par passage (limite de Cloudflare) ; les suivantes au passage d'après
+  const budget = { n: 35 };
+  await keepPhotos(snap.events, budget);
+  await keepPhotos(snap.orgas, budget);
+  if (budget.n <= 0) snap.dirty = true; // il reste des photos à copier : on repasse dans une minute
   // Codes organisateurs : gardés à part, jamais renvoyés tels quels
   const codes = {};
   orgs.forEach(r => { const c = (r.fields.Code || '').trim().toUpperCase(); if (c && !['Demandé', 'Refusé'].includes(r.fields['Statut code'])) codes[c] = { id: r.id, ...pick(r.fields, ORGA_PUBLIC) }; });
@@ -328,6 +362,14 @@ async function route(req, env, ctx) {
 <style>body{font-family:-apple-system,sans-serif;background:#08111e;color:#e8e8e8;display:grid;place-items:center;min-height:100vh;margin:0;padding:2rem}a{color:#c8a96e}</style>
 </head><body><p>${esc(titre)} — <a href="${esc(back)}">voir l’événement sur laSave →</a></p></body></html>`;
     return new Response(html, { headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'public, max-age=300' } });
+  }
+
+  // Photos gardées dans KV
+  let im;
+  if (m === 'GET' && KV && (im = p.match(/^\/img\/(att[A-Za-z0-9]{14})$/))) {
+    const { value, metadata } = await KV.getWithMetadata('img:' + im[1], { type: 'arrayBuffer' });
+    if (!value) return new Response('Introuvable', { status: 404 });
+    return new Response(value, { headers: { 'Content-Type': metadata?.type || 'image/jpeg', 'Cache-Control': 'public, max-age=31536000, immutable', 'Access-Control-Allow-Origin': '*' } });
   }
 
   // Organisateurs publiés (sans leur code membre)
