@@ -65,6 +65,8 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 .k-toast.on { opacity: 1; transform: translate(-50%, 0); }
 @media (prefers-reduced-motion: reduce) { .k-btn, .k-toast { transition: none; } }
 
-/* Titres des sections bien visibles : étiquette violette */
-.k-meta { align-items: center; flex-wrap: wrap; row-gap: 8px; }
-.k-meta b { display: inline-block; background: #B923FF; color: #ffffff; font-size: 14px; font-weight: 700; padding: 7px 14px; border-radius: 99px; line-height: 1.2; white-space: nowrap; }
+/* Titres des sections : même tampon blanc en relief que les thèmes du site */
+.k-meta { align-items: center; flex-wrap: wrap; row-gap: 10px; padding-bottom: 16px; }
+.k-meta b { display: inline-block; font: 800 17px/1 var(--display); font-stretch: 75%; text-transform: uppercase; letter-spacing: .03em; white-space: nowrap;
+  background: #fff; color: #0a0a0a; border-radius: .26em; padding: .3em .55em .22em; margin: 0 .5em .5em 0;
+  box-shadow: 0 0 0 .06em #0a0a0a, 0.04em 0.04em 0 #0a0a0a, 0.08em 0.08em 0 #0a0a0a, 0.12em 0.12em 0 #0a0a0a, 0.16em 0.16em 0 #0a0a0a, 0.20em 0.20em 0 #0a0a0a, 0.24em 0.24em 0 #0a0a0a, 0.28em 0.28em 0 #0a0a0a, 0.32em 0.32em 0 #0a0a0a, 0.36em 0.36em 0 #0a0a0a, 0.40em 0.40em 0 #0a0a0a, 0.44em 0.44em 0 #0a0a0a, 0.48em 0.48em 0 #0a0a0a, 0.04em 0.04em 0 .06em #fff, 0.08em 0.08em 0 .06em #fff, 0.12em 0.12em 0 .06em #fff, 0.16em 0.16em 0 .06em #fff, 0.20em 0.20em 0 .06em #fff, 0.24em 0.24em 0 .06em #fff, 0.28em 0.28em 0 .06em #fff, 0.32em 0.32em 0 .06em #fff, 0.36em 0.36em 0 .06em #fff, 0.40em 0.40em 0 .06em #fff, 0.44em 0.44em 0 .06em #fff, 0.48em 0.48em 0 .06em #fff; }
