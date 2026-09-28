@@ -472,7 +472,8 @@ function sameText(a, b) { // comparaison à temps constant
 
 /* ── Statistiques (Workers Analytics Engine, liaison « STATS ») ──
    Chaque ligne : blob1 = type, blob2 = id de l'événement, blob3 = canal / détail. Aucune donnée personnelle. */
-const STAT_TYPES = ['lien', 'apercu', 'kit', 'kit_action', 'fiche', 'jyvais'];
+const STAT_TYPES = ['lien', 'apercu', 'kit', 'kit_action', 'fiche', 'jyvais', 'visite'];
+const SOURCES = ['direct', 'interne', 'partage', 'google', 'facebook', 'instagram', 'recherche', 'mairie', 'autre'];
 const CANAUX = ['wa', 'sms', 'fb', 'mail', 'lien', 'copie', 'legende', 'story', 'post', 'site', 'mailpub', 'invitation', 'qr'];
 const ROBOTS = /facebookexternalhit|facebookcatalog|WhatsApp|Twitterbot|TelegramBot|Slackbot|Discordbot|LinkedInBot|Pinterest|SkypeUriPreview|Applebot|iMessage|Googlebot|bingbot|redditbot|vkShare|Embedly|Viber/i;
 let CTX = null; // contexte de la requête en cours (pour écrire les stats sans ralentir la réponse)
@@ -670,6 +671,8 @@ async function route(req, env, ctx) {
     const b = await body();
     const type = ['kit', 'kit_action'].includes(b.t) ? b.t : null;
     if (type && isId(b.id)) stat(env, type, b.id, CANAUX.includes(b.c) ? b.c : '');
+    // Visite du site (une par session) : page « site » ou « test », et provenance
+    if (b.t === 'visite' && ['site', 'test'].includes(b.id)) stat(env, 'visite', b.id, SOURCES.includes(b.c) ? b.c : 'autre');
     return new Response(null, { status: 204, headers: cors(req) });
   }
 
@@ -778,8 +781,8 @@ async function route(req, env, ctx) {
         await statsTable(env.DB);
         const depuis = new Date(Date.now() + 2 * 3600e3 - (jours - 1) * 864e5).toISOString().slice(0, 10);
         const [a, b] = await Promise.all([
-          env.DB.prepare('SELECT type, id, canal, SUM(n) AS n FROM stats WHERE jour >= ?1 GROUP BY type, id, canal').bind(depuis).all(),
-          env.DB.prepare('SELECT jour, type, SUM(n) AS n FROM stats WHERE jour >= ?1 GROUP BY jour, type ORDER BY jour').bind(depuis).all(),
+          env.DB.prepare("SELECT type, id, canal, SUM(n) AS n FROM stats WHERE jour >= ?1 AND NOT (type = 'visite' AND id = 'test') GROUP BY type, id, canal").bind(depuis).all(),
+          env.DB.prepare("SELECT jour, type, SUM(n) AS n FROM stats WHERE jour >= ?1 AND NOT (type = 'visite' AND id = 'test') GROUP BY jour, type ORDER BY jour").bind(depuis).all(),
         ]);
         return json(req, { jours, parEvenement: a.results || [], parJour: b.results || [], source: 'd1' });
       }

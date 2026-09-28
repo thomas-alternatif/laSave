@@ -11,6 +11,7 @@
     lien: 'Partage direct (kit)', copie: 'Lien copié', legende: 'Légende Instagram / Facebook', story: 'Story',
     site: 'Bouton « Partager » du site', mailpub: 'Mail de confirmation', qr: 'QR code', '': 'Autre / inconnu',
   };
+  const SOURCES = { direct: 'Accès direct (favori, adresse tapée, appli)', interne: 'Navigation interne', partage: 'Lien partagé laSave', google: 'Google', facebook: 'Facebook / Messenger', instagram: 'Instagram', recherche: 'Autres moteurs de recherche', mairie: 'Site de la mairie, IntraMuros, Linktree', autre: 'Autres sites' };
   const KIT = { story: 'Partager en story', post: 'Partager le visuel', lien: 'Envoyer le lien', copie: 'Copier le lien', legende: 'Copier la légende', mail: 'Copier l’invitation mail', wa: 'WhatsApp', sms: 'SMS' };
 
   let token = '';
@@ -64,6 +65,7 @@
     const rows = d.parEvenement.map(r => ({ ...r, n: +r.n || 0 }));
     const somme = (f) => rows.filter(f).reduce((a, r) => a + r.n, 0);
     const kpi = [
+      [somme(r => r.type === 'visite'), 'Visites', 'Personnes venues sur le site (une par session)'],
       [somme(r => r.type === 'fiche'), 'Fiches consultées', 'Événements ouverts sur le site'],
       [somme(r => r.type === 'apercu'), 'Liens partagés', 'Postés sur WhatsApp, Facebook, Messenger…'],
       [somme(r => r.type === 'lien'), 'Clics sur ces liens', 'Personnes arrivées grâce à un partage'],
@@ -75,22 +77,24 @@
 
     // Jour par jour
     const byDay = {};
-    for (let i = jours - 1; i >= 0; i--) { const dt = new Date(Date.now() - i * 864e5); byDay[dt.toISOString().slice(0, 10)] = { a: 0, b: 0 }; }
-    d.parJour.forEach(r => { const key = String(r.jour).slice(0, 10); if (!byDay[key]) return; if (r.type === 'fiche') byDay[key].a += +r.n; if (r.type === 'lien') byDay[key].b += +r.n; });
-    const max = Math.max(1, ...Object.values(byDay).map(v => Math.max(v.a, v.b)));
+    for (let i = jours - 1; i >= 0; i--) { const dt = new Date(Date.now() - i * 864e5); byDay[dt.toISOString().slice(0, 10)] = { a: 0, b: 0, v: 0 }; }
+    d.parJour.forEach(r => { const key = String(r.jour).slice(0, 10); if (!byDay[key]) return; if (r.type === 'fiche') byDay[key].a += +r.n; if (r.type === 'lien') byDay[key].b += +r.n; if (r.type === 'visite') byDay[key].v += +r.n; });
+    const max = Math.max(1, ...Object.values(byDay).map(v => Math.max(v.a, v.b, v.v)));
     const ch = $('#s-chart'); ch.replaceChildren();
     const keys = Object.keys(byDay), pas = Math.ceil(keys.length / 8);
     keys.forEach((key, i) => {
       const v = byDay[key], day = el('div', 's-day');
-      const a = el('i', 'a'), b = el('i', 'b');
-      a.style.height = (v.a / max * 100) + '%'; b.style.height = (v.b / max * 100) + '%';
+      const c = el('i', 'c'), a = el('i', 'a'), b = el('i', 'b');
+      c.style.height = (v.v / max * 100) + '%'; a.style.height = (v.a / max * 100) + '%'; b.style.height = (v.b / max * 100) + '%';
       const dt = new Date(key + 'T12:00:00');
-      day.title = `${dt.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })} : ${v.a} fiches vues, ${v.b} clics sur des liens partagés`;
-      day.append(a, b);
+      day.title = `${dt.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })} : ${v.v} visites, ${v.a} fiches vues, ${v.b} clics sur des liens partagés`;
+      day.append(c, a, b);
       if (i % pas === 0) day.appendChild(el('small', null, dt.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }).replace('.', '')));
       ch.appendChild(day);
     });
 
+    // Provenance des visiteurs
+    bars($('#s-sources'), rows.filter(r => r.type === 'visite' && r.canal !== 'interne'), r => r.canal || 'autre', SOURCES, 'Pas encore de visite enregistrée.');
     // Canaux (clics sur les liens partagés)
     bars($('#s-canaux'), rows.filter(r => r.type === 'lien'), r => r.canal || '', CANAUX, 'Aucun clic sur un lien partagé pour l’instant.');
     // Kit : boutons utilisés

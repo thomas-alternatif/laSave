@@ -12,7 +12,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,500..900&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="icon" href="../favicon.ico" sizes="48x48" />
   <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
-  <link rel="stylesheet" href="stats.css?v=2" />
+  <link rel="stylesheet" href="stats.css?v=3" />
 </head>
 <body>
   <header class="s-top">
@@ -52,8 +52,13 @@
       <section class="s-kpis" id="s-kpis"></section>
 
       <section class="s-card">
-        <div class="s-cmeta"><b class="s-stamp">Jour par jour</b><span class="s-legend"><i class="c1"></i>Fiches vues <i class="c2"></i>Clics sur des liens partagés</span></div>
+        <div class="s-cmeta"><b class="s-stamp">Jour par jour</b><span class="s-legend"><i class="c3"></i>Visites <i class="c1"></i>Fiches vues <i class="c2"></i>Clics sur des liens partagés</span></div>
         <div class="s-chart" id="s-chart"></div>
+      </section>
+
+      <section class="s-card">
+        <div class="s-cmeta"><b class="s-stamp">D’où viennent les visiteurs</b><span>Site en ligne</span></div>
+        <div id="s-sources" class="s-bars"></div>
       </section>
 
       <div class="s-grid">
@@ -73,12 +78,12 @@
       </section>
 
       <section class="s-card s-note">
-        <p><b>Et la fréquentation générale ?</b> Le nombre de visiteurs du site, les pages vues, les pays et les appareils sont dans <a href="https://dash.cloudflare.com/?to=/:account/web-analytics" target="_blank" rel="noopener">Cloudflare Web Analytics</a>, sans cookies.</p>
+        <p><b>Encore plus de détails ?</b> Les pays, les appareils et les pages les plus vues sont dans <a href="https://dash.cloudflare.com/?to=/:account/web-analytics" target="_blank" rel="noopener">Cloudflare Web Analytics</a>, sans cookies.</p>
       </section>
     </div>
 
     <p class="s-err" id="s-err" hidden></p>
   </main>
-  <script src="stats.js?v=2"></script>
+  <script src="stats.js?v=3"></script>
 </body>
 </html>
