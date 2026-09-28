@@ -475,8 +475,24 @@ function sameText(a, b) { // comparaison à temps constant
 const STAT_TYPES = ['lien', 'apercu', 'kit', 'kit_action', 'fiche', 'jyvais'];
 const CANAUX = ['wa', 'sms', 'fb', 'mail', 'lien', 'copie', 'legende', 'story', 'post', 'site', 'mailpub', 'invitation', 'qr'];
 const ROBOTS = /facebookexternalhit|facebookcatalog|WhatsApp|Twitterbot|TelegramBot|Slackbot|Discordbot|LinkedInBot|Pinterest|SkypeUriPreview|Applebot|iMessage|Googlebot|bingbot|redditbot|vkShare|Embedly|Viber/i;
+let CTX = null; // contexte de la requête en cours (pour écrire les stats sans ralentir la réponse)
+let tableOk = false;
+async function statsTable(db) {
+  if (tableOk) return;
+  await db.prepare('CREATE TABLE IF NOT EXISTS stats (jour TEXT NOT NULL, type TEXT NOT NULL, id TEXT NOT NULL, canal TEXT NOT NULL, n INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (jour, type, id, canal))').run();
+  tableOk = true;
+}
 function stat(env, type, id = '', canal = '') {
-  try { if (env.STATS && STAT_TYPES.includes(type)) env.STATS.writeDataPoint({ indexes: [type], blobs: [type, String(id).slice(0, 20), String(canal).slice(0, 20)], doubles: [1] }); } catch {}
+  if (!STAT_TYPES.includes(type)) return;
+  id = String(id).slice(0, 20); canal = String(canal).slice(0, 20);
+  // Base D1 (liaison « DB ») : un compteur par jour, type, événement et canal
+  if (env.DB) {
+    const jour = new Date(Date.now() + 2 * 3600e3).toISOString().slice(0, 10); // jour à l'heure de Paris (à peu près)
+    const w = (async () => { await statsTable(env.DB); await env.DB.prepare('INSERT INTO stats (jour, type, id, canal, n) VALUES (?1, ?2, ?3, ?4, 1) ON CONFLICT (jour, type, id, canal) DO UPDATE SET n = n + 1').bind(jour, type, id, canal).run(); })().catch(e => console.error('stats D1', e.message));
+    if (CTX) CTX.waitUntil(w);
+    return;
+  }
+  try { if (env.STATS) env.STATS.writeDataPoint({ indexes: [type], blobs: [type, id, canal], doubles: [1] }); } catch {}
 }
 async function statsSql(env, sql) {
   if (!env.CF_ACCOUNT_ID || !env.CF_STATS_TOKEN) throw Object.assign(new Error('Statistiques pas encore configurées : il manque CF_ACCOUNT_ID ou CF_STATS_TOKEN dans les secrets du serveur.'), { status: 503, expose: true });
@@ -758,6 +774,15 @@ async function route(req, env, ctx) {
     // Statistiques des N derniers jours
     if (m === 'GET' && p === '/admin/stats') {
       const jours = Math.min(90, Math.max(1, parseInt(url.searchParams.get('jours'), 10) || 30));
+      if (env.DB) {
+        await statsTable(env.DB);
+        const depuis = new Date(Date.now() + 2 * 3600e3 - (jours - 1) * 864e5).toISOString().slice(0, 10);
+        const [a, b] = await Promise.all([
+          env.DB.prepare('SELECT type, id, canal, SUM(n) AS n FROM stats WHERE jour >= ?1 GROUP BY type, id, canal').bind(depuis).all(),
+          env.DB.prepare('SELECT jour, type, SUM(n) AS n FROM stats WHERE jour >= ?1 GROUP BY jour, type ORDER BY jour').bind(depuis).all(),
+        ]);
+        return json(req, { jours, parEvenement: a.results || [], parJour: b.results || [], source: 'd1' });
+      }
       const where = `WHERE timestamp > NOW() - INTERVAL '${jours}' DAY`;
       const [parEvenement, parJour] = await Promise.all([
         statsSql(env, `SELECT blob1 AS type, blob2 AS id, blob3 AS canal, SUM(_sample_interval) AS n FROM lasave_stats ${where} GROUP BY type, id, canal`),
@@ -782,7 +807,7 @@ async function route(req, env, ctx) {
 
   if (p === '/' || p === '/health') {
     const snap = KV ? await KV.get('snap', 'json') : null;
-    return json(req, { ok: true, service: 'laSave API', kv: !!KV, stats: !!env.STATS, statsLecture: !!(env.CF_ACCOUNT_ID && env.CF_STATS_TOKEN), copie: snap ? new Date(snap.at).toISOString() : null, evenements: snap ? snap.events.length : null });
+    return json(req, { ok: true, service: 'laSave API', kv: !!KV, statsD1: !!env.DB, stats: !!env.STATS, statsLecture: !!(env.CF_ACCOUNT_ID && env.CF_STATS_TOKEN), copie: snap ? new Date(snap.at).toISOString() : null, evenements: snap ? snap.events.length : null });
   }
   return json(req, { error: 'Introuvable' }, 404);
 }
@@ -793,7 +818,7 @@ export default {
     ctx.waitUntil(nightly(env));
   },
   async fetch(req, env, ctx) {
-    KV = env.LASAVE || null;
+    KV = env.LASAVE || null; CTX = ctx;
     if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors(req) });
     try { return await route(req, env, ctx); }
     catch (e) {
