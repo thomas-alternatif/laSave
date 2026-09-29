@@ -767,27 +767,75 @@
 
   /* ── Votre avis ── */
   function setupAvis() {
-    const stars = $('#stars'); let note = 0;
+    const stars = $('#stars'); if (!stars) return;
+    let note = 0;
+    const MOTS = ['Touchez une étoile', 'Pas terrible', 'Bof', 'Pas mal', 'Bien !', 'Génial !'];
     const btns = [1, 2, 3, 4, 5].map(n => {
       const b = el('button', 'star'); b.type = 'button'; b.setAttribute('role', 'radio'); b.setAttribute('aria-checked', 'false');
       b.setAttribute('aria-label', `${n} sur 5`); b.tabIndex = n === 1 ? 0 : -1;
-      b.innerHTML = '<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z"/></svg>';
+      b.innerHTML = '<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z"/></svg>';
       b.addEventListener('click', () => set(n));
+      b.addEventListener('mouseenter', () => paint(n)); b.addEventListener('mouseleave', () => paint(note));
       b.addEventListener('keydown', ev => { if (ev.key === 'ArrowRight' || ev.key === 'ArrowUp') { ev.preventDefault(); set(Math.min(5, n + 1), true); } if (ev.key === 'ArrowLeft' || ev.key === 'ArrowDown') { ev.preventDefault(); set(Math.max(1, n - 1), true); } });
       stars.appendChild(b); return b;
     });
-    function set(n, focus) { note = n; btns.forEach((b, i) => { b.classList.toggle('on', i < n); b.setAttribute('aria-checked', String(i + 1 === n)); b.tabIndex = i + 1 === n ? 0 : -1; }); if (focus) btns[n - 1].focus(); }
-    $('#avis-open').addEventListener('click', () => { $('#avis-out').textContent = ''; $('#avis-send').disabled = false; openDialog($('#avis')); });
+    const paint = n => { btns.forEach((b, i) => b.classList.toggle('on', i < n)); $('#av-word').textContent = MOTS[n]; };
+    function set(n, focus) {
+      note = n; paint(n);
+      btns.forEach((b, i) => { b.setAttribute('aria-checked', String(i + 1 === n)); b.tabIndex = i + 1 === n ? 0 : -1; });
+      if (focus) btns[n - 1].focus();
+      $('#av-more').hidden = !n; $('#avis-out').textContent = '';
+    }
     $('#avis-send').addEventListener('click', async () => {
-      const out = $('#avis-out');
-      if (!note) { out.className = 'form-msg err'; out.textContent = 'Choisissez une note de 1 à 5 étoiles.'; btns[0].focus(); return; }
-      $('#avis-send').disabled = true; out.className = 'form-msg'; out.textContent = 'Envoi…';
+      const out = $('#avis-out'), btn = $('#avis-send');
+      if (!note) return;
+      btn.disabled = true; out.className = 'av-out'; out.textContent = 'Envoi…';
       try {
         await api('/avis', { method: 'POST', body: JSON.stringify({ note, commentaire: $('#avis-txt').value.trim(), page: location.pathname + location.hash }) });
-        out.className = 'form-msg ok'; out.textContent = 'Merci ! Votre avis a bien été transmis à la mairie.';
-        $('#avis-txt').value = ''; set(0);
-        btns.forEach(b => b.classList.remove('on')); btns[0].tabIndex = 0;
-      } catch (err) { out.className = 'form-msg err'; out.textContent = err.status === 429 ? 'Vous avez déjà donné votre avis récemment. Merci !' : 'Envoi impossible pour le moment. Réessayez plus tard.'; $('#avis-send').disabled = false; }
+        $('#avis-card').classList.add('merci'); out.className = 'av-out ok'; out.textContent = 'Merci ! Votre avis a bien été transmis à la mairie.';
+        $('#avis-txt').value = ''; $('#av-more').hidden = true;
+      } catch (err) { out.className = 'av-out err'; out.textContent = err.status === 429 ? 'Vous avez déjà donné votre avis récemment. Merci !' : 'Envoi impossible pour le moment. Réessayez plus tard.'; }
+      btn.disabled = false;
+    });
+  }
+
+  /* ── Avis directement dans la carte de l'accueil : on touche une étoile, un mot si on veut, on envoie ── */
+  function setupAvisCard() {
+    const form = $('#ac-form'); if (!form) return;
+    const box = $('#ac-stars'), more = $('#ac-more'), msg = $('#ac-msg'), btn = $('#ac-send'), q = $('#ac-q');
+    const MOTS = ['Comment trouvez-vous laSave ?', 'Pas terrible', 'Peut mieux faire', 'Pas mal', 'Très bien', 'Génial !'];
+    let note = 0;
+    const star = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2.6 2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17.4l-5.8 3.1 1.1-6.5L2.6 9.4l6.5-.9z"/></svg>';
+    // Au survol, seules les étoiles changent (changer le texte ferait bouger les étoiles sous le doigt)
+    const paint = n => btns.forEach((b, i) => b.classList.toggle('on', i < n));
+    const btns = [1, 2, 3, 4, 5].map(n => {
+      const b = el('button', 'ac-star'); b.type = 'button'; b.innerHTML = star;
+      b.setAttribute('role', 'radio'); b.setAttribute('aria-checked', 'false'); b.setAttribute('aria-label', `${n} sur 5`); b.tabIndex = n === 1 ? 0 : -1;
+      b.addEventListener('click', () => pick(n));
+      b.addEventListener('mouseenter', () => paint(n)); b.addEventListener('mouseleave', () => paint(note));
+      b.addEventListener('keydown', ev => { if (/Right|Up/.test(ev.key)) { ev.preventDefault(); pick(Math.min(5, n + 1), true); } if (/Left|Down/.test(ev.key)) { ev.preventDefault(); pick(Math.max(1, n - 1), true); } });
+      box.appendChild(b); return b;
+    });
+    function pick(n, focus) {
+      note = n; paint(n); q.textContent = MOTS[n];
+      btns.forEach((b, i) => { b.setAttribute('aria-checked', String(i + 1 === n)); b.tabIndex = i + 1 === n ? 0 : -1; });
+      more.hidden = false; msg.textContent = ''; msg.className = 'ac-msg';
+      if (focus) btns[n - 1].focus();
+    }
+    form.addEventListener('submit', async ev => {
+      ev.preventDefault(); if (!note) return;
+      btn.disabled = true; msg.className = 'ac-msg'; msg.textContent = 'Envoi…';
+      try {
+        await api('/avis', { method: 'POST', body: JSON.stringify({ note, commentaire: $('#ac-txt').value.trim(), page: location.pathname + '#accueil' }) });
+        form.classList.add('ac-ok'); more.hidden = true; q.textContent = 'Merci !';
+        msg.textContent = 'Votre avis est bien arrivé à la mairie.';
+        btns.forEach(b => { b.disabled = true; b.onmouseenter = null; });
+        box.replaceWith(box.cloneNode(true)); // étoiles figées sur la note donnée
+      } catch (e) {
+        msg.className = 'ac-msg err';
+        msg.textContent = e.status === 429 ? 'Vous avez déjà donné votre avis récemment. Merci !' : 'Envoi impossible pour le moment, réessayez plus tard.';
+      }
+      btn.disabled = false;
     });
   }
 
@@ -898,6 +946,7 @@
   window.scrollTo({ top: 0, behavior: 'instant' });
   setupForm();
   setupAvis();
+  setupAvisCard();
   setupLettre();
   bindMotion();
   route();

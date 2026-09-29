@@ -1334,3 +1334,53 @@ main { padding-top: clamp(10px, 4vw, 64px); }
 .duo > .avis-card.ed-card { background: #5C96AB; }
 .avis-card .ed-title { font-size: clamp(46px, 5.6vw, 104px); }
 @media (max-width: 900px) { .avis-card .ed-title { font-size: clamp(52px, 15vw, 84px); } }
+
+/* ════ v42 : avis directement dans la carte, avec les étoiles ════ */
+.avis-card { position: relative; overflow: hidden; isolation: isolate; }
+/* grande étoile en filigrane, coupée par le bord, comme sur les affiches */
+.avis-card::after { content: ''; position: absolute; z-index: -1; right: -14%; bottom: -18%; width: 62%; aspect-ratio: 1; opacity: .16; background: #0a0a0a;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z'/%3E%3C/svg%3E") center/contain no-repeat;
+          mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z'/%3E%3C/svg%3E") center/contain no-repeat; transform: rotate(-12deg); pointer-events: none; }
+.av-rate { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.av-stars { display: flex; gap: 2px; }
+.av-stars .star { padding: 2px; color: #0a0a0a; }
+.av-stars .star svg { width: clamp(36px, 3.4vw, 48px); height: auto; }
+.av-stars .star.on { color: #0a0a0a; }
+.av-stars .star.on svg { fill: #0a0a0a; }
+.av-stars .star:focus-visible { outline: 2px solid #0a0a0a; outline-offset: 2px; border-radius: 6px; }
+.av-word { font: 900 clamp(24px, 2.4vw, 36px)/1 var(--display); font-stretch: 62%; text-transform: uppercase; color: #0a0a0a; letter-spacing: -.005em; }
+.av-word:first-letter { text-transform: uppercase; }
+.av-more { display: grid; gap: 10px; }
+.av-more[hidden] { display: none; }
+.av-more textarea { width: 100%; min-height: 64px; background: rgba(255,255,255,.55); border: 1.5px solid #0a0a0a; border-radius: 16px; color: #0a0a0a; font: 500 15px/1.45 var(--sans); padding: 12px 14px; resize: vertical; }
+.av-more textarea::placeholder { color: rgba(10,10,10,.6); }
+.av-more textarea:hover, .av-more textarea:focus { background: rgba(255,255,255,.75); border-color: #0a0a0a; outline: none; }
+.av-out { font: 600 14px/1.4 var(--sans); color: #0a0a0a; min-height: 0; }
+.av-out:empty { display: none; }
+.avis-card.merci .av-out { font: 900 clamp(26px, 2.6vw, 40px)/1 var(--display); font-stretch: 62%; text-transform: uppercase; }
+@media (prefers-reduced-motion: no-preference) { .av-stars .star.on svg { animation: av-pop .3s cubic-bezier(.3,1.6,.5,1); } }
+@keyframes av-pop { from { transform: scale(.7); } to { transform: none; } }
+[data-theme="light"] .av-more textarea { background: rgba(255,255,255,.6); }
+
+/* ════ v43 : carte avis façon affiche — étoiles directement dedans ════ */
+.duo > .avis-card.ed-card { background: #E4572E; }
+.ac-form { display: grid; gap: 14px; }
+.ac-q { font: 900 clamp(26px, 2.6vw, 40px)/1 var(--display); font-stretch: 62%; text-transform: uppercase; color: #0a0a0a; letter-spacing: -.005em; min-height: 1em; }
+.ac-stars { display: flex; gap: 4px; margin-left: -4px; }
+.ac-star { background: none; border: 0; padding: 4px; color: #0a0a0a; cursor: pointer; line-height: 0; border-radius: 8px; transition: transform .15s; }
+.ac-star svg { width: clamp(40px, 4vw, 58px); height: auto; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linejoin: round; transition: fill .15s; }
+.ac-star.on svg { fill: #0a0a0a; }
+.ac-star:hover { transform: translateY(-2px); }
+.ac-star:disabled { cursor: default; transform: none; }
+.ac-star:focus-visible { outline: 2px solid #0a0a0a; outline-offset: 1px; }
+@media (prefers-reduced-motion: no-preference) { html:not(.still) .ac-star.on svg { animation: av-pop .3s cubic-bezier(.3,1.6,.5,1); } }
+.ac-more { display: flex; gap: 10px; align-items: stretch; }
+.ac-more[hidden] { display: none; }
+.ac-more textarea { flex: 1; min-width: 0; min-height: 54px; background: rgba(255,255,255,.35); border: 1.5px solid #0a0a0a; border-radius: 18px; color: #0a0a0a; font: 500 15px/1.4 var(--sans); padding: 14px 16px; resize: vertical; }
+.ac-more textarea::placeholder { color: rgba(10,10,10,.62); }
+.ac-more textarea:hover, .ac-more textarea:focus { background: rgba(255,255,255,.55); border-color: #0a0a0a; outline: none; }
+.ac-more .ed-btn { align-self: flex-end; }
+.ac-msg { font: 600 14px/1.4 var(--sans); color: #0a0a0a; }
+.ac-msg:empty { display: none; }
+.ac-form.ac-ok .ac-q { font-size: clamp(34px, 3.4vw, 56px); }
+@media (max-width: 1180px) { .ac-more { flex-direction: column; } .ac-more .ed-btn { align-self: stretch; justify-content: center; } }
