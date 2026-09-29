@@ -182,6 +182,7 @@
       window.open(gcalUrl(e), '_blank', 'noopener');
     } else location.href = `${API}/ics/${encodeURIComponent(e.id)}`;
   }
+  let curEvent = null;
   function calendar(e) {
     const r = range(e), where = [e.Lieu, e.Commune].filter(Boolean).join(', ');
     const g = $('#cal-google'), menu = $('#ev-cal').closest('.menu');
@@ -201,7 +202,8 @@
     };
   }
   const closeCalMenu = () => { $('#ev-cal-menu').hidden = true; $('#ev-cal').setAttribute('aria-expanded', 'false'); };
-  $('#ev-cal').addEventListener('click', ev => { ev.stopPropagation(); const m = $('#ev-cal-menu'); m.hidden = !m.hidden; $('#ev-cal').setAttribute('aria-expanded', String(!m.hidden)); });
+  const touch = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+  $('#ev-cal').addEventListener('click', ev => { ev.stopPropagation(); if (touch && curEvent) { addToPhone(curEvent); return; } const m = $('#ev-cal-menu'); m.hidden = !m.hidden; $('#ev-cal').setAttribute('aria-expanded', String(!m.hidden)); });
   document.addEventListener('click', ev => { if (!ev.target.closest('.menu')) closeCalMenu(); });
   $('#cal-google').addEventListener('click', closeCalMenu);
 
@@ -233,7 +235,7 @@
     $('#ev-desc').textContent = e.Description || '';
     $('#ev-desc').hidden = !e.Description;
     bindHeart('#ev-heart', e);
-    calendar(e); closeCalMenu();
+    curEvent = e; calendar(e); closeCalMenu();
     $('#ev-msg').textContent = '';
     // Billetterie (Festik ou autre) : bouton « Prendre ma place » si l'événement a un lien
     const tk = $('#ev-ticket'), link = String(e.Billetterie || '').trim();
@@ -501,6 +503,9 @@
       const track = el('div', 'track'); r.evs.forEach(e => track.appendChild(poster(e)));
       all.addEventListener('click', () => { const o = sec.classList.toggle('open'); all.setAttribute('aria-expanded', String(o)); all.textContent = o ? 'Réduire' : `Voir tout (${r.evs.length})`; fitAll(); });
       sec.appendChild(head); sec.appendChild(track); box.appendChild(sec);
+      // Quand tout tient déjà à l'écran, « Voir tout » et les flèches ne servent à rien : on les cache
+      const fits = () => sec.classList.toggle('fits', !sec.classList.contains('open') && track.scrollWidth <= track.clientWidth + 4);
+      if ('ResizeObserver' in window) new ResizeObserver(fits).observe(track); else fits();
     });
   }
 
@@ -871,7 +876,7 @@
     const root = document.documentElement, meta = document.querySelector('meta[name="theme-color"]');
     const paint = () => {
       const light = root.getAttribute('data-theme') === 'light';
-      $('#theme-foot').textContent = light ? 'Thème : clair' : 'Thème : sombre';
+      if ($('#theme-foot')) $('#theme-foot').textContent = light ? 'Thème : clair' : 'Thème : sombre';
       $('#theme-top').setAttribute('aria-label', light ? 'Passer en mode sombre' : 'Passer en mode clair');
       if (meta) meta.content = light ? '#F4F1EA' : '#050505';
     };
@@ -881,7 +886,7 @@
       try { localStorage.setItem('lasave_theme', light ? 'light' : 'dark'); } catch (_) {}
       paint();
     };
-    $('#theme-top').addEventListener('click', flip); $('#theme-foot').addEventListener('click', flip);
+    $('#theme-top').addEventListener('click', flip); if ($('#theme-foot')) $('#theme-foot').addEventListener('click', flip);
     paint();
   }
   bindTheme();

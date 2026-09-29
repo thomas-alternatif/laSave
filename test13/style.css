@@ -1324,3 +1324,8 @@ main { padding-top: clamp(10px, 4vw, 64px); }
 .fd-add.ok svg { transform: rotate(90deg); transition: transform .35s; }
 [data-theme="light"] .fd-add { border-color: rgba(22,22,22,.2); background: rgba(22,22,22,.05); color: #161616; }
 @media (hover: hover) and (pointer: fine) { .fd-add { display: none; } }
+
+/* ════ v40 : on enlève ce qui ne sert à rien ════ */
+.row-sec.fits .row-side { display: none; }
+.flow-mid .flow-count { display: none; }
+@media (hover: hover) and (pointer: fine) { .orgs-hint { visibility: hidden; min-width: 40px; } }
