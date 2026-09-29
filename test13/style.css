@@ -1240,3 +1240,19 @@ main { padding-top: clamp(10px, 4vw, 64px); }
   .duo { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 720px) { .duo .propose-block .glow.dark { width: 100%; } }
+
+/* ════ v33 : un cadre noir, deux cartes posées dessus (lettre en blanc, « Vous organisez ? » en or) ════ */
+.duo { background: #0a0a0a; border-radius: var(--rad); padding: clamp(10px, 1.3vw, 18px); gap: clamp(10px, 1.3vw, 18px); box-shadow: 0 30px 70px rgba(0,0,0,.35); }
+.duo > section { border-radius: calc(var(--rad) - 8px); }
+.duo .propose-block { border-radius: calc(var(--rad) - 8px); }
+/* Carte blanche de la lettre (même en mode sombre) */
+.duo .lettre { background: #ffffff !important; color: #0a0a0a; }
+.duo .lettre-title, .duo .lettre-label { color: #0a0a0a; }
+.duo .lettre-lead, .duo .lettre-note { color: #5a564e; }
+.duo .lettre-row input[type="email"], .duo .lettre-row input[type="email"]:hover, .duo .lettre-row input[type="email"]:focus { background: #f3f1ec; color: #0a0a0a; border: 1px solid rgba(10,10,10,.14); }
+.duo .lettre-row input[type="email"]:focus { border-color: #0a0a0a; }
+.duo .lettre-row input::placeholder { color: #8d887e; }
+.duo .lettre-msg.ok { color: #1e7a34; }
+.duo .lettre-msg.err { color: #b3261e; }
+.duo .lettre-stamp { filter: drop-shadow(0 6px 12px rgba(0,0,0,.18)); }
+[data-theme="light"] .duo { box-shadow: 0 30px 70px rgba(60,40,15,.25); }
