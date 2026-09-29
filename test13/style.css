@@ -1317,3 +1317,10 @@ main { padding-top: clamp(10px, 4vw, 64px); }
 }
 @keyframes fd-flip { 0% { transform: rotateX(-100deg); opacity: 0; } 55% { opacity: 1; } 75% { transform: rotateX(12deg); } 100% { transform: none; opacity: 1; } }
 @keyframes fd-fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+/* v39 : bouton « + » pour ajouter à l'agenda du téléphone (mobile uniquement) */
+.fd-add { flex: none; display: grid; place-items: center; width: 34px; height: 34px; margin-left: 2px; border-radius: 50%; border: 1px solid rgba(255,255,255,.28); background: rgba(255,255,255,.08); color: #fff; cursor: pointer; -webkit-tap-highlight-color: transparent; transition: background .2s, color .2s, border-color .2s, transform .2s; }
+.fd-add:active { transform: scale(.9); }
+.fd-add.ok { background: #FFA823; border-color: #FFA823; color: #0a0a0a; }
+.fd-add.ok svg { transform: rotate(90deg); transition: transform .35s; }
+[data-theme="light"] .fd-add { border-color: rgba(22,22,22,.2); background: rgba(22,22,22,.05); color: #161616; }
+@media (hover: hover) and (pointer: fine) { .fd-add { display: none; } }

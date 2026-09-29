@@ -172,12 +172,22 @@
     return { s: ymd(d), f: ymd(end), allDay: true };
   }
   const shareUrl = e => `${API}/e/${encodeURIComponent(e.id)}?s=site`;
+  const gcalUrl = (e, r = range(e)) => 'https://calendar.google.com/calendar/render?action=TEMPLATE&text=' + encodeURIComponent(e.Titre || 'Événement') + '&dates=' + r.s + '/' + r.f + '&details=' + encodeURIComponent((e.Description || '').slice(0, 800) + '\n\n' + shareUrl(e)) + '&location=' + encodeURIComponent([e.Lieu, e.Commune].filter(Boolean).join(', ')) + (r.allDay ? '' : '&ctz=Europe/Paris');
+  // Ajout direct à l'agenda du téléphone : Calendrier sur iPhone (fichier .ics), Google Agenda sur Android
+  const isApple = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  function addToPhone(e) {
+    if (!range(e)) return;
+    if (!isApple && /Android/i.test(navigator.userAgent)) {
+      try { navigator.sendBeacon(API + '/stat', new Blob([JSON.stringify({ t: 'agenda', id: e.id, c: 'google' })], { type: 'text/plain' })); } catch (_) {}
+      window.open(gcalUrl(e), '_blank', 'noopener');
+    } else location.href = `${API}/ics/${encodeURIComponent(e.id)}`;
+  }
   function calendar(e) {
     const r = range(e), where = [e.Lieu, e.Commune].filter(Boolean).join(', ');
     const g = $('#cal-google'), menu = $('#ev-cal').closest('.menu');
     menu.hidden = !r;
     if (!r) return;
-    g.href = 'https://calendar.google.com/calendar/render?action=TEMPLATE&text=' + encodeURIComponent(e.Titre || 'Événement') + '&dates=' + r.s + '/' + r.f + '&details=' + encodeURIComponent((e.Description || '').slice(0, 800) + '\n\n' + shareUrl(e)) + '&location=' + encodeURIComponent(where) + (r.allDay ? '' : '&ctz=Europe/Paris');
+    g.href = gcalUrl(e, r);
     $('#cal-ics').onclick = () => {
       const esc = s => String(s || '').replace(/([,;\\])/g, '\\$1').replace(/\n/g, '\\n');
       const dt = r.allDay ? `DTSTART;VALUE=DATE:${r.s}\r\nDTEND;VALUE=DATE:${r.f}` : `DTSTART;TZID=Europe/Paris:${r.s}\r\nDTEND;TZID=Europe/Paris:${r.f}`;
@@ -418,7 +428,11 @@
       const txt = el('span', 'fd-txt');
       txt.append(el('b', null, jour), el('small', null, [e.Heure ? hour(e) : '', rel].filter(Boolean).join(' · ')));
       const sr = el('span', 'sr', `${d.getDate()} ${d.toLocaleDateString('fr-FR', { month: 'long' })}`);
-      box.replaceChildren(cal, txt, sr);
+      const add = el('button', 'fd-add'); add.type = 'button';
+      add.setAttribute('aria-label', `Ajouter « ${e.Titre || 'cet événement'} » à mon agenda`);
+      add.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>';
+      add.addEventListener('click', ev => { ev.stopPropagation(); add.classList.add('ok'); addToPhone(e); setTimeout(() => add.classList.remove('ok'), 1600); });
+      box.replaceChildren(cal, txt, add, sr);
       play();
     }
     // Rejoue l'effet quand la date arrive à l'écran (sinon il se joue hors de vue)

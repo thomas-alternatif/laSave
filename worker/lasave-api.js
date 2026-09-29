@@ -523,7 +523,7 @@ function sameText(a, b) { // comparaison à temps constant
 
 /* ── Statistiques (Workers Analytics Engine, liaison « STATS ») ──
    Chaque ligne : blob1 = type, blob2 = id de l'événement, blob3 = canal / détail. Aucune donnée personnelle. */
-const STAT_TYPES = ['lien', 'apercu', 'kit', 'kit_action', 'fiche', 'jyvais', 'visite', 'newsletter'];
+const STAT_TYPES = ['lien', 'apercu', 'kit', 'kit_action', 'fiche', 'jyvais', 'visite', 'newsletter', 'agenda'];
 const SOURCES = ['direct', 'interne', 'partage', 'google', 'facebook', 'instagram', 'recherche', 'mairie', 'autre'];
 const CANAUX = ['wa', 'sms', 'fb', 'mail', 'lien', 'copie', 'legende', 'story', 'post', 'site', 'mailpub', 'invitation', 'qr'];
 const ROBOTS = /facebookexternalhit|facebookcatalog|WhatsApp|Twitterbot|TelegramBot|Slackbot|Discordbot|LinkedInBot|Pinterest|SkypeUriPreview|Applebot|iMessage|Googlebot|bingbot|redditbot|vkShare|Embedly|Viber/i;
@@ -589,8 +589,35 @@ async function route(req, env, ctx) {
     return new Response(res.body, { headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'public, max-age=60', ...cors(req) } });
   }
 
-  // Page de partage : aperçu (titre, image) pour Facebook/WhatsApp puis redirection vers le site
+  // Fichier agenda (.ics) d'un événement : sur iPhone, il s'ouvre directement dans Calendrier
   let sm;
+  if (m === 'GET' && (sm = p.match(/^\/ics\/(rec[A-Za-z0-9]{14})$/))) {
+    const id = sm[1];
+    let ev = null;
+    if (KV) { const snap = await getSnap(env, ctx).catch(() => null); ev = snap && snap.events.find(e => e.id === id) || null; }
+    else { try { const r = await at(env, `${T_EVENTS}/${id}`); if (r.fields.Statut === 'Publié') ev = r.fields; } catch {} }
+    if (!ev || !/^\d{4}-\d{2}-\d{2}$/.test(ev.Date || '')) return Response.redirect(SITE, 302);
+    const ymd = s => s.replace(/-/g, ''), pad = n => String(n).padStart(2, '0');
+    let dt;
+    const hm = String(ev.Heure || '').match(/^(\d{1,2})[:h](\d{2})?/);
+    if (hm) {
+      const s = new Date(`${ev.Date}T${pad(hm[1])}:${hm[2] || '00'}:00Z`), f = new Date(s.getTime() + 2 * 3600e3);
+      const loc = x => `${x.getUTCFullYear()}${pad(x.getUTCMonth() + 1)}${pad(x.getUTCDate())}T${pad(x.getUTCHours())}${pad(x.getUTCMinutes())}00`;
+      dt = `DTSTART;TZID=Europe/Paris:${loc(s)}\r\nDTEND;TZID=Europe/Paris:${loc(f)}`;
+    } else {
+      const end = new Date((ev['Date de fin'] || ev.Date) + 'T12:00:00Z'); end.setUTCDate(end.getUTCDate() + 1);
+      dt = `DTSTART;VALUE=DATE:${ymd(ev.Date)}\r\nDTEND;VALUE=DATE:${end.toISOString().slice(0, 10).replace(/-/g, '')}`;
+    }
+    const esc = s => String(s || '').replace(/([,;\\])/g, '\\$1').replace(/\r?\n/g, '\\n');
+    const where = [ev.Lieu, ev.Commune].filter(Boolean).join(', ');
+    const lien = `${API_ORIGIN}/e/${id}?s=site`;
+    const tz = 'BEGIN:VTIMEZONE\r\nTZID:Europe/Paris\r\nBEGIN:DAYLIGHT\r\nTZOFFSETFROM:+0100\r\nTZOFFSETTO:+0200\r\nTZNAME:CEST\r\nDTSTART:19700329T020000\r\nRRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=-1SU\r\nEND:DAYLIGHT\r\nBEGIN:STANDARD\r\nTZOFFSETFROM:+0200\r\nTZOFFSETTO:+0100\r\nTZNAME:CET\r\nDTSTART:19701025T030000\r\nRRULE:FREQ=YEARLY;BYMONTH=10;BYDAY=-1SU\r\nEND:STANDARD\r\nEND:VTIMEZONE\r\n';
+    const ics = `BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//laSave//FR\r\nCALSCALE:GREGORIAN\r\nMETHOD:PUBLISH\r\n${hm ? tz : ''}BEGIN:VEVENT\r\nUID:${id}@la-save.fr\r\nDTSTAMP:${new Date().toISOString().replace(/[-:]/g, '').slice(0, 15)}Z\r\n${dt}\r\nSUMMARY:${esc(ev.Titre || 'Événement')}\r\nLOCATION:${esc(where)}\r\nDESCRIPTION:${esc(String(ev.Description || '').slice(0, 800) + '\n\n' + lien)}\r\nURL:${lien}\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n`;
+    stat(env, 'agenda', id, 'ics');
+    return new Response(ics, { headers: { 'Content-Type': 'text/calendar; charset=utf-8', 'Content-Disposition': `inline; filename="lasave-${id}.ics"`, 'Cache-Control': 'public, max-age=300' } });
+  }
+
+  // Page de partage : aperçu (titre, image) pour Facebook/WhatsApp puis redirection vers le site
   if (m === 'GET' && (sm = p.match(/^\/e\/(rec[A-Za-z0-9]{14})$/))) {
     const id = sm[1], home = 'https://la-save.fr';
     const canal = CANAUX.includes(url.searchParams.get('s')) ? url.searchParams.get('s') : '';
@@ -722,6 +749,7 @@ async function route(req, env, ctx) {
     const b = await body();
     const type = ['kit', 'kit_action'].includes(b.t) ? b.t : null;
     if (type && isId(b.id)) stat(env, type, b.id, CANAUX.includes(b.c) ? b.c : '');
+    if (b.t === 'agenda' && isId(b.id)) stat(env, 'agenda', b.id, b.c === 'google' ? 'google' : 'ics');
     // Visite du site (une par session) : page « site » ou « test », et provenance
     if (b.t === 'visite' && ['site', 'test'].includes(b.id)) stat(env, 'visite', b.id, SOURCES.includes(b.c) ? b.c : 'autre');
     return new Response(null, { status: 204, headers: cors(req) });
