@@ -409,16 +409,16 @@
       const n = Math.round((d - t0) / 864e5), fin = e['Date de fin'] ? new Date(e['Date de fin'] + 'T12:00:00') : null;
       const rel = n < 0 ? (fin && fin >= t0 ? 'En ce moment' : '') : n === 0 ? 'Aujourd’hui' : n === 1 ? 'Demain' : `Dans ${n} jours`;
       const jour = d.toLocaleDateString('fr-FR', { weekday: 'long' });
-      const date = d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
-      const key = [rel, jour, date, e.Heure || ''].join('|');
+      const mois = d.toLocaleDateString('fr-FR', { month: 'short' }).replace('.', '');
+      const key = [rel, jour, d.getDate(), mois, e.Heure || ''].join('|');
       if (key === lastDate) return; lastDate = key;
-      const line = (cls, txt) => { const l = el('span', cls); [...txt].forEach((ch, i) => { const c = el('span', 'fd-ch', ch === ' ' ? '\u00a0' : ch); c.style.setProperty('--i', i); l.appendChild(c); }); return l; };
-      const big = el('span', 'fd-big'); big.appendChild(line('fd-l', jour + ' ' + date));
-      const parts = [];
-      if (rel) parts.push(el('span', 'fd-rel', rel));
-      parts.push(big);
-      if (e.Heure) parts.push(el('span', 'fd-h', hour(e)));
-      box.replaceChildren(...parts);
+      // Petite page de calendrier (mois + jour) qui se tourne, et le jour de la semaine à côté
+      const cal = el('span', 'fd-cal'); cal.setAttribute('aria-hidden', 'true');
+      cal.append(el('span', 'fd-m', mois), el('span', 'fd-d', String(d.getDate())));
+      const txt = el('span', 'fd-txt');
+      txt.append(el('b', null, jour), el('small', null, [e.Heure ? hour(e) : '', rel].filter(Boolean).join(' · ')));
+      const sr = el('span', 'sr', `${d.getDate()} ${d.toLocaleDateString('fr-FR', { month: 'long' })}`);
+      box.replaceChildren(cal, txt, sr);
       play();
     }
     // Rejoue l'effet quand la date arrive à l'écran (sinon il se joue hors de vue)
