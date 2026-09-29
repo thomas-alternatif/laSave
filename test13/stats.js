@@ -35,6 +35,19 @@
     } catch (e) { msg.className = 's-msg err'; msg.textContent = e.status === 429 ? 'Trop d’essais, réessayez dans quelques minutes.' : e.message; }
   });
 
+  $('#s-test').addEventListener('submit', async ev => {
+    ev.preventDefault();
+    const msg = $('#s-test-msg'), btn = ev.target.querySelector('button');
+    msg.className = 's-msg'; msg.textContent = 'Envoi…'; btn.disabled = true;
+    try {
+      const d = await call('/admin/test-mail', { method: 'POST', body: JSON.stringify({ to: $('#s-test-mail').value.trim() }) });
+      msg.textContent = `Envoyé${d.titre ? ` (avec « ${d.titre} »)` : ''}. Regardez aussi dans les spams.`;
+    } catch (e) {
+      msg.className = 's-msg err';
+      msg.textContent = e.status === 404 && !e.message.includes('événement') ? 'Mettez à jour le code du Worker dans Cloudflare pour activer le test.' : e.message;
+    } finally { btn.disabled = false; }
+  });
+
   document.querySelectorAll('.s-tabs button').forEach(b => b.addEventListener('click', () => {
     document.querySelectorAll('.s-tabs button').forEach(x => x.classList.toggle('on', x === b));
     jours = +b.dataset.j; load();

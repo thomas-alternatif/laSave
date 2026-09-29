@@ -77,6 +77,18 @@
         <div class="s-table-wrap"><table class="s-table" id="s-table"></table></div>
       </section>
 
+      <section class="s-card">
+        <div class="s-cmeta"><b class="s-stamp">Mail de test</b><span>Mail « C’est en ligne » reçu par les organisateurs</span></div>
+        <form id="s-test" class="s-form">
+          <label for="s-test-mail">Envoyer un exemple à</label>
+          <div class="s-row">
+            <input id="s-test-mail" type="email" autocomplete="email" required placeholder="vous@exemple.fr" />
+            <button class="s-btn" type="submit">Envoyer le test</button>
+          </div>
+          <p class="s-msg" id="s-test-msg" role="status"></p>
+        </form>
+      </section>
+
       <section class="s-card s-note">
         <p><b>Encore plus de détails ?</b> Les pays, les appareils et les pages les plus vues sont dans <a href="https://dash.cloudflare.com/?to=/:account/web-analytics" target="_blank" rel="noopener">Cloudflare Web Analytics</a>, sans cookies.</p>
       </section>
@@ -84,6 +96,6 @@
 
     <p class="s-err" id="s-err" hidden></p>
   </main>
-  <script src="stats.js?v=3"></script>
+  <script src="stats.js?v=4"></script>
 </body>
 </html>

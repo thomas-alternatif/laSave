@@ -774,6 +774,20 @@ async function route(req, env, ctx) {
       if (KV) await markDirty(); // le site se met à jour dans la minute
       return json(req, { ok: true });
     }
+    // Mail de test : le vrai mail « C'est en ligne » avec un événement publié, envoyé à l'adresse choisie
+    if (m === 'POST' && p === '/admin/test-mail') {
+      if (!env.BREVO_KEY) return json(req, { error: "La clé Brevo n'est pas configurée." }, 500);
+      const b = await body(), to = String(b.to || '').trim();
+      if (!isEmail(to)) return json(req, { error: 'Adresse e-mail invalide.' }, 400);
+      const list = KV ? (await getSnap(env, ctx)).events : [];
+      const auj = new Date().toISOString().slice(0, 10);
+      const ev = list.find(e => e.id === b.id) || list.find(e => e.Photo?.length && (e.Date || '') >= auj) || list.find(e => e.Photo?.length) || list[0];
+      if (!ev) return json(req, { error: 'Aucun événement publié pour faire le test.' }, 404);
+      const f = { ...ev, 'Message aux organisateurs': "Ceci est un mail de test : c'est ce que reçoit un organisateur quand son événement est publié." };
+      const mail = publishedMail(f, ev.id);
+      await sendMail(env, { to, ...mail, subject: '[Test] ' + mail.subject });
+      return json(req, { ok: true, titre: ev.Titre || '' });
+    }
     // Statistiques des N derniers jours
     if (m === 'GET' && p === '/admin/stats') {
       const jours = Math.min(90, Math.max(1, parseInt(url.searchParams.get('jours'), 10) || 30));
