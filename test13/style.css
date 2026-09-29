@@ -1183,3 +1183,41 @@ main { padding-top: clamp(10px, 4vw, 64px); }
 /* v30 : aide sous un champ du formulaire */
 .field { align-content: start; }
 .field small { display: block; margin-top: -2px; font-size: 12px; line-height: 1.4; color: var(--texte-2); }
+
+/* ════ v31 : lettre du mois (newsletter) ════ */
+.lettre { --nl-a: rgba(201,85,224,.30); --nl-b: rgba(255,168,35,.22);
+  background: radial-gradient(70% 90% at 100% 0%, var(--nl-a), transparent 62%), radial-gradient(60% 80% at 0% 100%, var(--nl-b), transparent 60%), var(--panel) !important;
+  padding: clamp(34px, 5.5vw, 84px) clamp(22px, 5vw, 76px); }
+[data-theme="light"] .lettre { --nl-a: rgba(201,85,224,.16); --nl-b: rgba(255,168,35,.18); }
+.lettre-in { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); gap: clamp(28px, 5vw, 80px); align-items: end; max-width: 1260px; margin: 0 auto; }
+.lettre-txt { min-width: 0; }
+.lettre-stamp { position: static; transform: rotate(-4deg); margin: 0 0 clamp(22px, 2.6vw, 34px) 4px; filter: drop-shadow(0 6px 14px rgba(0,0,0,.35)); }
+.lettre-stamp span { font-size: clamp(16px, 1.8vw, 24px); }
+.lettre-title { font: 800 clamp(40px, 6.4vw, 104px)/.88 var(--display); font-stretch: 72%; text-transform: uppercase; letter-spacing: -.005em; text-wrap: balance; }
+.lettre-lead { margin-top: clamp(16px, 2vw, 24px); max-width: 52ch; font-size: clamp(15px, 1.2vw, 17px); color: var(--texte-2); }
+.lettre-form { min-width: 0; display: grid; gap: 10px; }
+.lettre-label { font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--texte); }
+.lettre-row { display: flex; gap: 10px; }
+.lettre-row input[type="email"] { flex: 1; min-width: 0; min-height: 56px; border-radius: 99px; padding: 0 22px; font-size: 16px; background: rgba(255,255,255,.07); border: 1px solid var(--ligne); }
+.lettre-row input[type="email"]:hover { background: rgba(255,255,255,.1); }
+.lettre-row input[type="email"]:focus { background: rgba(255,255,255,.1); border-color: var(--or); }
+[data-theme="light"] .lettre-row input[type="email"], [data-theme="light"] .lettre-row input[type="email"]:hover, [data-theme="light"] .lettre-row input[type="email"]:focus { background: #fff; }
+.lettre-row .glow { flex: none; min-height: 56px; padding: 0 28px; font-size: 15px; }
+.lettre-msg { min-height: 1.4em; font-size: 14px; font-weight: 600; }
+.lettre-msg:empty { min-height: 0; }
+.lettre-msg.ok { color: #7fd68b; }
+.lettre-msg.err { color: #ff9b85; }
+[data-theme="light"] .lettre-msg.ok { color: #1e7a34; }
+[data-theme="light"] .lettre-msg.err { color: #b3261e; }
+.lettre-note { font-size: 12.5px; color: var(--texte-2); }
+.lettre-note a { color: inherit; }
+.lettre.inscrit .lettre-row { display: none; }
+@media (max-width: 900px) {
+  .lettre-in { grid-template-columns: minmax(0, 1fr); align-items: start; }
+}
+@media (max-width: 520px) {
+  .lettre-row { flex-direction: column; }
+  .lettre-row .glow { width: 100%; }
+}
+.lettre-title { line-height: .92; }
+.lettre.inscrit .lettre-label { display: none; }

@@ -697,6 +697,28 @@
     });
   }
 
+  /* ── Lettre du mois : inscription à la newsletter ── */
+  function setupLettre() {
+    const form = $('#nl-form'); if (!form) return;
+    const input = $('#nl-email'), msg = $('#nl-msg'), btn = $('#nl-send'), bt = btn.querySelector('.glow-t');
+    const say = (t, cls) => { msg.textContent = t; msg.className = 'lettre-msg' + (cls ? ' ' + cls : ''); };
+    input.addEventListener('input', () => { input.removeAttribute('aria-invalid'); if (msg.classList.contains('err')) say(''); });
+    form.addEventListener('submit', async ev => {
+      ev.preventDefault();
+      const email = input.value.trim();
+      if (!/^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(email)) { input.setAttribute('aria-invalid', 'true'); input.focus(); return say('Vérifiez votre adresse e-mail, elle semble incomplète.', 'err'); }
+      btn.disabled = true; bt.textContent = 'Inscription…'; say('');
+      try {
+        const d = await api('/newsletter', { method: 'POST', body: JSON.stringify({ email, website: $('#nl-website').value, src: location.pathname.includes('/test') ? 'test' : 'site' }) });
+        $('#lettre').classList.add('inscrit');
+        say(d.nouveau === false ? 'Vous êtes déjà inscrit, à bientôt dans votre boîte mail !' : 'C’est noté ! Un mail de bienvenue vient de partir (pensez à regarder dans les spams).', 'ok');
+      } catch (e) {
+        say(e.status === 429 ? 'Trop d’essais en peu de temps, réessayez dans quelques minutes.' : e.message, 'err');
+      }
+      btn.disabled = false; bt.textContent = 'Je m’inscris';
+    });
+  }
+
   /* ── Votre avis ── */
   function setupAvis() {
     const stars = $('#stars'); let note = 0;
@@ -725,7 +747,7 @@
 
   /* ── Navigation entre les pages ── */
   const LEGAL = { mentions: 'Mentions légales', confidentialite: 'Confidentialité', cookies: 'Cookies', accessibilite: 'Accessibilité' };
-  const HOME_ANCHORS = ['rendez-vous', 'envies', 'organisateurs', 'top', 'contenu'];
+  const HOME_ANCHORS = ['rendez-vous', 'envies', 'organisateurs', 'lettre', 'top', 'contenu'];
   let pendingEvent = null;
   function route() {
     const h = decodeURIComponent(location.hash.slice(1));
@@ -782,7 +804,8 @@
     setTimeout(() => {
       intro.classList.add('done');
       setTimeout(() => {
-        if ($('#view-home').hidden === false && !/^#event-/.test(location.hash) && !HOME_ANCHORS.includes(location.hash.slice(1))) window.scrollTo({ top: 0, behavior: 'instant' });
+        if (goLettre && $('#view-home').hidden === false) $('#lettre').scrollIntoView({ behavior: 'instant' });
+        else if ($('#view-home').hidden === false && !/^#event-/.test(location.hash) && !HOME_ANCHORS.includes(location.hash.slice(1))) window.scrollTo({ top: 0, behavior: 'instant' });
         intro.classList.add('out'); document.body.classList.remove('intro-on');
         setTimeout(() => intro.remove(), quick ? 350 : 1300);
       }, quick ? 0 : 380);
@@ -824,10 +847,12 @@
 
   /* ── Démarrage : toujours ouvrir sur « À la une » ── */
   try { if ('scrollRestoration' in history) history.scrollRestoration = 'manual'; } catch (_) {}
+  const goLettre = location.hash === '#lettre'; // lien direct vers l'inscription à la lettre (depuis un mail, une affiche…)
   { const h0 = location.hash.slice(1); if (HOME_ANCHORS.includes(h0)) history.replaceState(null, '', location.pathname + location.search); }
   window.scrollTo({ top: 0, behavior: 'instant' });
   setupForm();
   setupAvis();
+  setupLettre();
   bindMotion();
   route();
   (async () => {

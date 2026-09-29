@@ -84,6 +84,7 @@
       [somme(r => r.type === 'lien'), 'Clics sur ces liens', 'Personnes arrivées grâce à un partage'],
       [somme(r => r.type === 'kit'), 'Kits ouverts', 'Organisateurs qui ont préparé un partage'],
       [somme(r => r.type === 'jyvais'), '« J’y vais »', 'Clics sur le bouton des fiches'],
+      [somme(r => r.type === 'newsletter'), 'Inscrits à la lettre', d.inscrits != null ? `Nouveaux sur la période · ${fr(d.inscrits)} au total` : 'Nouveaux inscrits sur la période'],
     ];
     const k = $('#s-kpis'); k.replaceChildren();
     kpi.forEach(([n, t, s]) => { const c = el('div', 's-kpi'); c.append(el('b', null, fr(n)), el('span', null, t), el('small', null, s)); k.appendChild(c); });

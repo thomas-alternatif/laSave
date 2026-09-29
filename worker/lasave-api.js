@@ -340,6 +340,57 @@ async function notifyPublished(env, rec) {
   if (KV) await KV.put('mailpub:' + rec.id, new Date().toISOString());
 }
 
+/* ── Newsletter : les inscrits vont dans une liste Brevo (créée toute seule la première fois) ── */
+const NL_NOM = 'Newsletter laSave';
+const brevo = async (env, path, opts = {}) => {
+  const r = await fetch('https://api.brevo.com/v3' + path, { ...opts, headers: { 'api-key': env.BREVO_KEY, 'Content-Type': 'application/json', Accept: 'application/json' } });
+  const d = r.status === 204 ? {} : await r.json().catch(() => ({}));
+  if (!r.ok) throw Object.assign(new Error('Brevo ' + r.status + ' ' + (d.code || '') + ' ' + (d.message || '')), { status: 502, brevo: r.status, code: d.code });
+  return { status: r.status, d };
+};
+async function nlListe(env) {
+  if (env.NEWSLETTER_LIST) return +env.NEWSLETTER_LIST;
+  const k = KV && await KV.get('nl-liste'); if (k) return +k;
+  let l = ((await brevo(env, '/contacts/lists?limit=50')).d.lists || []).find(x => x.name === NL_NOM);
+  if (!l) {
+    let dossier = ((await brevo(env, '/contacts/folders?limit=10')).d.folders || [])[0]?.id;
+    if (!dossier) dossier = (await brevo(env, '/contacts/folders', { method: 'POST', body: JSON.stringify({ name: 'laSave' }) })).d.id;
+    l = (await brevo(env, '/contacts/lists', { method: 'POST', body: JSON.stringify({ name: NL_NOM, folderId: dossier }) })).d;
+  }
+  if (KV) await KV.put('nl-liste', String(l.id));
+  return +l.id;
+}
+const nlSig = async (env, email) => (await hmac(env, 'nl.' + email.toLowerCase())).slice(0, 24);
+function bienvenueMail(stop) {
+  const S = "'Instrument Sans','Helvetica Neue',Helvetica,Arial,sans-serif", D = "Archivo,'Arial Narrow','Helvetica Neue',Arial,sans-serif";
+  const html = `<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="dark"><title>Bienvenue dans la lettre de laSave</title>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,500..900&family=Instrument+Sans:wght@400;600&display=swap" rel="stylesheet"></head>
+<body style="margin:0;padding:0;background:#050505;">
+<div style="display:none;max-height:0;overflow:hidden;opacity:0;">Chaque début de mois, les sorties de la vallée de la Save dans votre boîte mail.</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#050505;"><tr><td align="center" style="padding:30px 12px 44px;">
+<table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px;">
+  <tr><td style="padding:4px 6px 22px;"><a href="${SITE}"><img src="${SITE}/test7/logo.png" width="118" alt="laSave" style="display:block;width:118px;height:auto;border:0;"></a></td></tr>
+  <tr><td style="background:#0e0e0e;border-radius:26px;padding:26px 26px 30px;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="font-family:${S};font-size:12px;font-weight:600;color:#f4f3ef;">C’est noté</td><td align="right" style="font-family:${S};font-size:12px;color:#a3a19b;">La lettre de laSave</td></tr><tr><td colspan="2" style="padding-top:12px;border-bottom:1px solid #262626;font-size:0;line-height:0;">&nbsp;</td></tr></table>
+    <div style="padding-top:26px;font-family:${D};font-stretch:75%;font-size:56px;line-height:.95;font-weight:800;text-transform:uppercase;color:#FFA823;">Bienvenue&nbsp;!</div>
+    <p style="margin:18px 0 0;font-family:${S};font-size:16px;line-height:1.6;color:#d6d4ce;">Merci pour votre inscription. Chaque début de mois, vous recevrez les sorties de la vallée de la Save : concerts, fêtes, spectacles, marchés… et quelques nouvelles des villages.</p>
+    <p style="margin:14px 0 0;font-family:${S};font-size:16px;line-height:1.6;color:#d6d4ce;">En attendant la prochaine lettre, tout l’agenda est déjà en ligne.</p>
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-top:24px;"><tr><td style="border-radius:99px;background:#FFA823;"><a href="${SITE}" style="display:inline-block;padding:14px 26px;font-family:${S};font-size:15px;font-weight:600;color:#141210;text-decoration:none;border-radius:99px;">Voir l’agenda</a></td></tr></table>
+  </td></tr>
+  <tr><td align="center" style="padding:30px 16px 0;font-family:${S};font-size:12px;line-height:1.8;color:#77756f;">
+    Mairie de Saint-Paul-sur-Save — Commission culture<br>
+    <a href="${SITE}" style="color:#f4f3ef;text-decoration:none;font-weight:600;">la-save.fr</a><br>
+    Vous recevez ce mail car vous vous êtes inscrit à la lettre de laSave.<br><a href="${stop}" style="color:#a3a19b;">Se désinscrire</a>
+  </td></tr>
+</table></td></tr></table></body></html>`;
+  const text = `Bienvenue !\n\nMerci pour votre inscription à la lettre de laSave. Chaque début de mois, vous recevrez les sorties de la vallée de la Save.\n\nL'agenda : ${SITE}\n\nSe désinscrire : ${stop}`;
+  return { subject: 'Bienvenue dans la lettre de laSave', html, text };
+}
+const pageSimple = (titre, texte) => new Response(`<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>${titre} · laSave</title></head>
+<body style="margin:0;min-height:100vh;display:grid;place-items:center;background:#050505;color:#f4f3ef;font:16px/1.6 'Helvetica Neue',Arial,sans-serif;padding:24px;box-sizing:border-box;">
+<main style="max-width:440px;text-align:center;"><h1 style="font-size:28px;margin:0 0 12px;">${titre}</h1><p style="color:#d6d4ce;margin:0 0 24px;">${texte}</p><a href="${SITE}" style="display:inline-block;padding:13px 24px;border-radius:99px;background:#FFA823;color:#141210;font-weight:600;text-decoration:none;">Retour à l’agenda</a></main></body></html>`,
+  { headers: { 'Content-Type': 'text/html; charset=utf-8', 'X-Robots-Tag': 'noindex' } });
+
 /* ── copie locale des données (KV) : quelques appels Airtable par jour au lieu d'un par visite ── */
 const SNAP_MAX_AGE = 24 * 3600e3;   // au-delà, on relit Airtable (en arrière-plan)
 const DIRTY_DELAY = 60e3;           // après une publication, on relit au plus une fois par minute
@@ -472,7 +523,7 @@ function sameText(a, b) { // comparaison à temps constant
 
 /* ── Statistiques (Workers Analytics Engine, liaison « STATS ») ──
    Chaque ligne : blob1 = type, blob2 = id de l'événement, blob3 = canal / détail. Aucune donnée personnelle. */
-const STAT_TYPES = ['lien', 'apercu', 'kit', 'kit_action', 'fiche', 'jyvais', 'visite'];
+const STAT_TYPES = ['lien', 'apercu', 'kit', 'kit_action', 'fiche', 'jyvais', 'visite', 'newsletter'];
 const SOURCES = ['direct', 'interne', 'partage', 'google', 'facebook', 'instagram', 'recherche', 'mairie', 'autre'];
 const CANAUX = ['wa', 'sms', 'fb', 'mail', 'lien', 'copie', 'legende', 'story', 'post', 'site', 'mailpub', 'invitation', 'qr'];
 const ROBOTS = /facebookexternalhit|facebookcatalog|WhatsApp|Twitterbot|TelegramBot|Slackbot|Discordbot|LinkedInBot|Pinterest|SkypeUriPreview|Applebot|iMessage|Googlebot|bingbot|redditbot|vkShare|Embedly|Viber/i;
@@ -676,6 +727,34 @@ async function route(req, env, ctx) {
     return new Response(null, { status: 204, headers: cors(req) });
   }
 
+  // Newsletter : inscription (une adresse e-mail, rien d'autre)
+  if (m === 'POST' && p === '/newsletter') {
+    const b = await body();
+    if (b.website) return json(req, { ok: true }); // pot de miel anti-robot
+    const email = String(b.email || '').trim().toLowerCase();
+    if (!isEmail(email)) return json(req, { error: 'Cette adresse e-mail ne semble pas valide.' }, 400);
+    if (await tooMany(req, 'nl', 5, 3600)) return slowDown(req);
+    if (!env.BREVO_KEY) return json(req, { error: 'Les inscriptions ouvrent très bientôt.' }, 503);
+    let r;
+    try { r = await brevo(env, '/contacts', { method: 'POST', body: JSON.stringify({ email, listIds: [await nlListe(env)], updateEnabled: true }) }); }
+    catch (e) { console.error('newsletter', e.message); return json(req, { error: 'L’inscription n’a pas marché, réessayez dans un moment.' }, 502); }
+    const nouveau = r.status === 201;
+    if (nouveau) {
+      stat(env, 'newsletter', 'site', ['site', 'test'].includes(b.src) ? b.src : 'site');
+      const stop = `${API_ORIGIN}/newsletter/stop?e=${encodeURIComponent(email)}&t=${await nlSig(env, email)}`;
+      ctx.waitUntil(sendMail(env, { to: email, ...bienvenueMail(stop), replyTo: 'contact@la-save.fr' }).catch(e => console.error('bienvenue', e.message)));
+    }
+    return json(req, { ok: true, nouveau });
+  }
+  // Newsletter : désinscription en un clic (lien signé dans les mails)
+  if (m === 'GET' && p === '/newsletter/stop') {
+    const email = String(url.searchParams.get('e') || '').toLowerCase();
+    if (!isEmail(email) || url.searchParams.get('t') !== await nlSig(env, email)) return pageSimple('Lien incomplet', 'Ce lien de désinscription n’est pas valide. Écrivez-nous à contact@la-save.fr et on s’en occupe.');
+    try { await brevo(env, `/contacts/lists/${await nlListe(env)}/contacts/remove`, { method: 'POST', body: JSON.stringify({ emails: [email] }) }); }
+    catch (e) { if (e.brevo !== 400 && e.brevo !== 404) return pageSimple('Oups', 'La désinscription n’a pas marché. Réessayez plus tard, ou écrivez-nous à contact@la-save.fr.'); }
+    return pageSimple('C’est fait', 'Vous ne recevrez plus la lettre de laSave. L’agenda reste bien sûr ouvert à tous.');
+  }
+
   // Compteur de vues / likes (calculés côté serveur)
   let mm;
   if (m === 'POST' && (mm = p.match(/^\/events\/(rec\w+)\/(view|like)$/))) {
@@ -798,7 +877,10 @@ async function route(req, env, ctx) {
           env.DB.prepare("SELECT type, id, canal, SUM(n) AS n FROM stats WHERE jour >= ?1 AND NOT (type = 'visite' AND id = 'test') GROUP BY type, id, canal").bind(depuis).all(),
           env.DB.prepare("SELECT jour, type, SUM(n) AS n FROM stats WHERE jour >= ?1 AND NOT (type = 'visite' AND id = 'test') GROUP BY jour, type ORDER BY jour").bind(depuis).all(),
         ]);
-        return json(req, { jours, parEvenement: a.results || [], parJour: b.results || [], source: 'd1' });
+        // Nombre total d'inscrits à la newsletter (liste Brevo), si elle existe déjà
+        let inscrits = null;
+        try { const id = env.NEWSLETTER_LIST || (KV && await KV.get('nl-liste')); if (id && env.BREVO_KEY) { const d = (await brevo(env, `/contacts/lists/${id}`)).d; inscrits = d.uniqueSubscribers ?? d.totalSubscribers ?? null; } } catch {}
+        return json(req, { jours, parEvenement: a.results || [], parJour: b.results || [], source: 'd1', inscrits });
       }
       const where = `WHERE timestamp > NOW() - INTERVAL '${jours}' DAY`;
       const [parEvenement, parJour] = await Promise.all([
