@@ -38,7 +38,7 @@ const ADMIN_STATUTS = ['Publié','Archivé','En attente'];
 
 // E-mails
 const MAIL_FROM = { name: 'laSave · Mairie de Saint-Paul-sur-Save', email: 'agenda@la-save.fr' };
-const MAIL_ADMIN = 'agenda.de.la.save@gmail.com';
+const MAIL_ADMIN = 'agenda@la-save.fr';
 const SITE = 'https://la-save.fr';
 
 /* ── utilitaires ── */
