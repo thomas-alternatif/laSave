@@ -1283,3 +1283,8 @@ main { padding-top: clamp(10px, 4vw, 64px); }
 @media (max-width: 1180px) and (min-width: 901px) { .duo .lettre-row { flex-direction: column; } .duo .lettre-row .ed-btn { justify-content: center; } }
 @media (max-width: 900px) { .duo > .ed-card { min-height: 0; } .ed-title { font-size: clamp(52px, 15vw, 84px); } }
 @media (max-width: 520px) { .duo .lettre-row .ed-btn { width: 100%; justify-content: center; } .ed-btn { width: 100%; justify-content: center; } }
+
+/* v35 : titre de la lettre, avec un effet surligneur sur le début */
+.lettre .ed-title { font-size: clamp(40px, 3.9vw, 72px); line-height: .9; text-wrap: balance; }
+.ed-hl { color: inherit; background: linear-gradient(100deg, rgba(255,168,35,0) .4%, #FFA823 1.4%, #FFB84A 50%, #FFA823 98.6%, rgba(255,168,35,0) 99.6%) 0 60% / 100% 78% no-repeat; padding: 0 .1em; margin: 0 -.06em; -webkit-box-decoration-break: clone; box-decoration-break: clone; border-radius: .08em; }
+@media (max-width: 900px) { .lettre .ed-title { font-size: clamp(42px, 11vw, 64px); } }
