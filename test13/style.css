@@ -1293,6 +1293,3 @@ main { padding-top: clamp(10px, 4vw, 64px); }
 .lettre .ed-title { font-size: clamp(46px, 5.6vw, 104px); line-height: .84; }
 @media (max-width: 900px) { .lettre .ed-title { font-size: clamp(52px, 15vw, 84px); } }
 .lettre .ed-hl { background-size: 100% 64%; background-position: 0 72%; }
-.lettre .ed-hl { color: #ffffff; background-size: 100% 80%; background-position: 0 62%; }
-.lettre .ed-hl { background-size: 100% 104%; background-position: 0 40%; }
-.lettre .ed-title { line-height: .98; } .lettre .ed-hl { background-size: 100% 90%; background-position: 0 58%; }
