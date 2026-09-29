@@ -37,7 +37,7 @@ const EVENT_SUBMIT = ['Titre','Catégorie','Commune','Date','Date de fin','Heure
 const ADMIN_STATUTS = ['Publié','Archivé','En attente'];
 
 // E-mails
-const MAIL_FROM = { name: 'laSave · Agenda de la Save', email: 'agenda@la-save.fr' };
+const MAIL_FROM = { name: 'Agenda de laSave', email: 'agenda@la-save.fr' };
 const MAIL_ADMIN = 'agenda@la-save.fr';
 const SITE = 'https://la-save.fr';
 
