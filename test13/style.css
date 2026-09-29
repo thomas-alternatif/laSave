@@ -1221,3 +1221,22 @@ main { padding-top: clamp(10px, 4vw, 64px); }
 }
 .lettre-title { line-height: .92; }
 .lettre.inscrit .lettre-label { display: none; }
+
+/* ════ v32 : lettre du mois et « Vous organisez ? » côte à côte, une moitié chacun ════ */
+.duo { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--vgap); margin: 0 var(--side) var(--vgap); align-items: stretch; }
+.duo > section { margin: 0; border-radius: var(--rad); overflow: hidden; position: relative; }
+.duo > .propose { display: flex; }
+.duo .propose-block { flex: 1; flex-direction: column; align-items: flex-start; justify-content: space-between; padding: clamp(30px, 3.6vw, 56px); }
+.duo .propose-title, .duo .lettre-title { font-size: clamp(38px, 4.4vw, 78px); line-height: .9; }
+.duo .lettre { padding: clamp(30px, 3.6vw, 56px); display: flex; }
+.duo .lettre-in { grid-template-columns: minmax(0, 1fr); align-items: start; align-content: space-between; gap: clamp(22px, 2.6vw, 34px); width: 100%; margin: 0; }
+.duo .lettre-lead { font-size: 15px; }
+.duo .propose-block .glow.dark { width: auto; }
+@media (max-width: 1100px) and (min-width: 901px) {
+  .duo .lettre-row { flex-direction: column; }
+  .duo .lettre-row .glow { width: 100%; }
+}
+@media (max-width: 900px) {
+  .duo { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 720px) { .duo .propose-block .glow.dark { width: 100%; } }
