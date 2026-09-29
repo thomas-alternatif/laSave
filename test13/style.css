@@ -1289,3 +1289,7 @@ main { padding-top: clamp(10px, 4vw, 64px); }
 .ed-hl { color: inherit; background: linear-gradient(100deg, rgba(255,168,35,0) .4%, #FFA823 1.4%, #FFB84A 50%, #FFA823 98.6%, rgba(255,168,35,0) 99.6%) 0 60% / 100% 78% no-repeat; padding: 0 .1em; margin: 0 -.06em; -webkit-box-decoration-break: clone; box-decoration-break: clone; border-radius: .08em; }
 @media (max-width: 900px) { .lettre .ed-title { font-size: clamp(42px, 11vw, 64px); } }
 .ed-sub { margin-top: calc(clamp(18px, 2vw, 26px) * -.55); font: 600 clamp(17px, 1.5vw, 22px)/1.3 var(--sans); color: #0a0a0a; }
+/* v36 : les deux titres à la même taille */
+.lettre .ed-title { font-size: clamp(46px, 5.6vw, 104px); line-height: .84; }
+@media (max-width: 900px) { .lettre .ed-title { font-size: clamp(52px, 15vw, 84px); } }
+.lettre .ed-hl { background-size: 100% 64%; background-position: 0 72%; }
