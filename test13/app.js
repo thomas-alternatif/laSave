@@ -399,6 +399,27 @@
         c.setAttribute('aria-hidden', a > 2 ? 'true' : 'false');
       });
       $('#flow-count').textContent = `${cur + 1} / ${cards.length}`;
+      showDate(list[cur]);
+    }
+    // Date de l'événement du milieu, sous la carte : les lettres remontent une à une
+    let lastDate = '';
+    function showDate(e) {
+      const box = $('#flow-date'); if (!box || !e || !e.Date) return;
+      const d = new Date(e.Date + 'T12:00:00'), t0 = today(); t0.setHours(12);
+      const n = Math.round((d - t0) / 864e5), fin = e['Date de fin'] ? new Date(e['Date de fin'] + 'T12:00:00') : null;
+      const rel = n < 0 ? (fin && fin >= t0 ? 'En ce moment' : '') : n === 0 ? 'Aujourd’hui' : n === 1 ? 'Demain' : `Dans ${n} jours`;
+      const jour = d.toLocaleDateString('fr-FR', { weekday: 'long' });
+      const date = d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' });
+      const key = [rel, jour, date, e.Heure || ''].join('|');
+      if (key === lastDate) return; lastDate = key;
+      const line = (cls, txt) => { const l = el('span', cls); [...txt].forEach((ch, i) => { const c = el('span', 'fd-ch', ch === ' ' ? '\u00a0' : ch); c.style.setProperty('--i', i); l.appendChild(c); }); return l; };
+      const big = el('span', 'fd-big'); big.appendChild(line('fd-l', jour + ' ' + date));
+      const parts = [];
+      if (rel) parts.push(el('span', 'fd-rel', rel));
+      parts.push(big);
+      if (e.Heure) parts.push(el('span', 'fd-h', hour(e)));
+      box.replaceChildren(...parts);
+      box.classList.remove('go'); void box.offsetWidth; box.classList.add('go');
     }
     flowRender = render;
     function go(i) { cur = (i + cards.length) % cards.length; render(); }
