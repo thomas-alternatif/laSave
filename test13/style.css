@@ -1317,3 +1317,10 @@ main { padding-top: clamp(10px, 4vw, 64px); }
 @media (max-width: 720px) { .flow-date { min-height: 80px; } .fd-l { font-size: clamp(26px, 8vw, 40px); } .flow-ctrl { gap: 10px; padding-inline: 12px; } }
 .flow-ctrl { position: relative; z-index: 120; margin-top: clamp(26px, 3vw, 44px); }
 #view-home > section.flow { padding-bottom: clamp(24px, 3.4vw, 56px); }
+/* v38 : effet plus discret — les lettres glissent doucement vers le haut */
+@media (prefers-reduced-motion: no-preference) {
+  html:not(.still) .flow-date.go .fd-ch { animation: fd-soft .5s cubic-bezier(.2,.7,.2,1) both; animation-delay: calc(var(--i) * 12ms); }
+  html:not(.still) .flow-date.go .fd-rel { animation: fd-fade .4s ease both; }
+  html:not(.still) .flow-date.go .fd-h { animation: fd-fade .4s ease .15s both; }
+}
+@keyframes fd-soft { from { transform: translateY(.18em); opacity: 0; } to { transform: none; opacity: 1; } }
