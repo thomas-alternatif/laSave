@@ -1387,3 +1387,14 @@ main { padding-top: clamp(10px, 4vw, 64px); }
 /* v44 : étoiles à l'orange du site (contour noir pour rester lisibles sur la carte) */
 .ac-star svg { fill: none; }
 .ac-star.on svg { fill: #FFA823; stroke: #0a0a0a; }
+
+/* ════ v45 : couleurs harmonisées avec laSave, au plus lisible ════
+   Lettre : blanc + surligneur orange (#FFA823), texte noir.
+   Avis : bleu du site (#5C96AB), texte noir, étoiles orange cerclées de noir (orange et bleu se répondent). */
+.duo > .avis-card.ed-card { background: #5C96AB; }
+.avis-card::after { background: #0a0a0a; opacity: .1; }
+.ac-more textarea { background: rgba(255,255,255,.6); }
+.ac-more textarea:hover, .ac-more textarea:focus { background: #fff; }
+.ac-more textarea::placeholder { color: #3d4a50; }
+.ac-star.on svg { fill: #FFA823; stroke: #0a0a0a; }
+.duo .lettre-row input::placeholder { color: #6b665c; }
