@@ -419,7 +419,13 @@
       parts.push(big);
       if (e.Heure) parts.push(el('span', 'fd-h', hour(e)));
       box.replaceChildren(...parts);
-      box.classList.remove('go'); void box.offsetWidth; box.classList.add('go');
+      play();
+    }
+    // Rejoue l'effet quand la date arrive à l'écran (sinon il se joue hors de vue)
+    function play() { const box = $('#flow-date'); if (!box) return; box.classList.remove('go'); void box.offsetWidth; box.classList.add('go'); }
+    if ('IntersectionObserver' in window && $('#flow-date')) {
+      let vu = false;
+      new IntersectionObserver(es => es.forEach(x => { if (x.isIntersecting && !vu) { vu = true; play(); } else if (!x.isIntersecting) vu = false; }), { threshold: .6 }).observe($('#flow-date'));
     }
     flowRender = render;
     function go(i) { cur = (i + cards.length) % cards.length; render(); }
