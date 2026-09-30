@@ -939,6 +939,37 @@
   }
   bindTheme();
 
+  /* ── Apparition douce des sections au défilement (ordinateur) ──
+     Les éléments ne sont masqués que par la feuille de style, sur grand écran et si les animations sont permises ;
+     chaque groupe se révèle quand il entre dans l'écran, puis les classes sont retirées (le style normal reprend). */
+  function setupReveal() {
+    if (reduce || !('IntersectionObserver' in window)) return;
+    const mark = (n, delay, fade) => { if (!n) return null; n.classList.add('rv'); if (fade) n.classList.add('rv-fade'); n.style.setProperty('--d', delay + 's'); return n; };
+    const groups = [];
+    const add = (trigger, items) => { items = items.filter(Boolean); if (trigger && items.length) groups.push({ trigger, items }); };
+    add($('#rendez-vous'), [mark($('#flow-title'), 0), mark($('#flow-stage'), .15, 1), mark($('.flow-ctrl'), .3, 1)]);
+    $$('#rows .row-sec').forEach(sec => add(sec, [mark(sec.querySelector('.row-block'), 0), ...[...sec.querySelectorAll('.track > *')].slice(0, 6).map((c, i) => mark(c, .12 + i * .08))]));
+    add($('#organisateurs'), [mark($('#orgs-title'), 0), mark($('#orgs-row'), .15, 1), mark($('.orgs-ctrl'), .3, 1)]);
+    add($('.bento'), $$('.bento > .bx').map((b, i) => mark(b, i * .12)));
+    add($('.foot'), [mark($('.foot'), 0, 1)]);
+    const reveal = (g, anim) => {
+      io.unobserve(g.trigger);
+      if (anim) g.items.forEach(n => n.classList.add('in'));
+      setTimeout(() => g.items.forEach(n => n.classList.remove('rv', 'rv-fade', 'in')), anim ? 2000 : 0);
+    };
+    const io = new IntersectionObserver(entries => entries.forEach(en => {
+      const g = groups.find(x => x.trigger === en.target); if (!g) return;
+      if (en.isIntersecting) reveal(g, true);
+      else if (en.boundingClientRect.top < 0) reveal(g, false); // déjà dépassé (lien direct plus bas) : on l'affiche sans effet
+    }), { rootMargin: '0px 0px -12% 0px' });
+    groups.forEach(g => io.observe(g.trigger));
+    // un saut de page (lien direct, « Newsletter » dans le menu) peut dépasser des sections sans qu'elles aient été vues : on les affiche sans effet
+    let raf = 0;
+    const sweep = () => { raf = 0; groups.filter(g => g.items.some(n => n.classList.contains('rv') && !n.classList.contains('in'))).forEach(g => { if (g.trigger.getBoundingClientRect().bottom < 0) reveal(g, false); }); };
+    window.addEventListener('scroll', () => { if (!raf) raf = requestAnimationFrame(sweep); }, { passive: true });
+    document.documentElement.classList.add('rv-on');
+  }
+
   /* ── Démarrage : toujours ouvrir sur « À la une » ── */
   try { if ('scrollRestoration' in history) history.scrollRestoration = 'manual'; } catch (_) {}
   const goLettre = location.hash === '#lettre'; // lien direct vers l'inscription à la lettre (depuis un mail, une affiche…)
@@ -959,6 +990,7 @@
     buildRows(UP);
     buildOrgs(ORGAS);
     fitAll();
+    setupReveal();
     endIntro();
     if (pendingEvent) { const e = ALL.find(x => x.id === pendingEvent); pendingEvent = null; if (e && !$('#view-home').hidden) openEvent(e); }
   })();
