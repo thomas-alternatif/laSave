@@ -1510,3 +1510,11 @@ main { padding-top: clamp(10px, 4vw, 64px); }
   .hero-foot .hero-line { background: rgba(255,255,255,.3); }
   .hero-foot .hero-num { font-size: 13px; }
 }
+
+/* ════ v55 : une sur mobile pleine largeur, sans bandes noires en haut et en bas ════ */
+@media (max-width: 720px) {
+  #view-home > section.hero { margin: calc(-1 * clamp(10px, 4vw, 64px)) 0 0; border-radius: 0; height: 100svh; min-height: 560px; }
+  .hero-bg { inset: 0; -webkit-mask-image: none; mask-image: none; }
+  .hero-ref { display: none; }
+  .hero-shade { background: linear-gradient(180deg, rgba(5,5,5,.5) 0%, rgba(5,5,5,0) 22%), linear-gradient(0deg, rgba(5,5,5,.94) 0%, rgba(5,5,5,.82) 28%, rgba(5,5,5,.4) 46%, rgba(5,5,5,0) 64%); }
+}
