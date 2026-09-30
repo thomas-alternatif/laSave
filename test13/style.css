@@ -1655,3 +1655,7 @@ main { padding-top: clamp(10px, 4vw, 64px); }
   .epi { margin-bottom: 44px; padding-inline: 28px; }
   .epi p { font-size: 23px; }
 }
+
+/* v69 : épigraphe sans signature, petit trait doré dessous */
+.epi blockquote::after { content: ""; display: block; width: 28px; height: 1px; margin: 22px auto 0; background: var(--or); opacity: .8; }
+@media (max-width: 720px) { .epi blockquote::after { margin-top: 18px; } }
