@@ -1403,3 +1403,58 @@ main { padding-top: clamp(10px, 4vw, 64px); }
 .duo > .lettre.ed-card { position: relative; overflow: hidden; isolation: isolate; }
 .duo > .lettre.ed-card::after { content: ''; position: absolute; z-index: -1; right: -14%; bottom: -18%; width: 62%; aspect-ratio: 1; transform: rotate(-12deg); pointer-events: none;
   background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect x='2' y='5' width='20' height='14' rx='2.2' fill='%230a0a0a' fill-opacity='.08'/%3E%3Cpath d='m2.8 6.2 9.2 7 9.2-7' fill='none' stroke='%23fff' stroke-width='1.3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/contain no-repeat; }
+
+/* ════ v47 : bento façon inspi — lettre (large), avis (petit), proposer (pleine largeur avec photo) ════ */
+.bento { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(10px, 1.2vw, 16px); padding: clamp(10px, 1.2vw, 16px); margin: 0 var(--side) var(--vgap); background: #0a0a0a; border-radius: var(--rad); box-shadow: 0 30px 70px rgba(0,0,0,.35); }
+.bx { position: relative; display: flex; flex-direction: column; gap: 18px; min-width: 0; padding: clamp(22px, 2.4vw, 34px); border-radius: calc(var(--rad) - 8px); color: #0a0a0a; overflow: hidden; }
+.bx-lettre { grid-column: span 2; background: #ffffff; }
+.bx-avis { background: #5C96AB; }
+.bx-propose { grid-column: 1 / -1; background: var(--or); display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); grid-template-rows: 1fr auto; column-gap: clamp(20px, 3vw, 44px); row-gap: 18px; }
+.bx-title { margin: 0; font: 900 clamp(40px, 4.4vw, 76px)/.9 var(--display); font-stretch: 62%; text-transform: uppercase; letter-spacing: -.005em; color: #0a0a0a; text-wrap: balance; }
+.bx-title.sm { font-size: clamp(34px, 3vw, 48px); }
+/* surligneur façon feutre, sous le texte : le mot reste bien lisible */
+.bx-hl { color: inherit; background: linear-gradient(transparent 56%, #FFA823 56%, #FFA823 94%, transparent 94%); padding: 0 .06em; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+.bx-txt { display: flex; flex-direction: column; gap: 14px; align-items: flex-start; }
+.bx-sub { max-width: 48ch; font: 500 clamp(15px, 1.15vw, 17px)/1.5 var(--sans); color: #2b2925; }
+.bx-tags { margin-top: auto; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.bx-tags span { display: inline-flex; align-items: center; min-height: 30px; padding: 0 13px; border: 1.5px solid #0a0a0a; border-radius: 99px; font: 600 11px/1 var(--sans); letter-spacing: .08em; text-transform: uppercase; color: #0a0a0a; }
+.bx-tags a { margin-left: auto; font: 500 12.5px/1 var(--sans); color: #0a0a0a; }
+.bx-plus { display: grid !important; place-items: center; width: 42px; height: 42px; border-radius: 50%; border: 2px solid #0a0a0a; text-decoration: none; transition: background .2s, color .2s; }
+.bx-plus:hover { background: #0a0a0a; color: var(--or) !important; }
+/* Lettre */
+.bx-lettre .lettre-form { display: grid; gap: 8px; max-width: 620px; }
+.bx-lettre .lettre-row { display: flex; gap: 10px; }
+.bx-lettre .lettre-row input[type="email"] { flex: 1; min-width: 0; min-height: 56px; padding: 0 22px; border-radius: 99px; border: 1.5px solid rgba(10,10,10,.18); background: #f3f1ec; color: #0a0a0a; font-size: 16px; }
+.bx-lettre .lettre-row input[type="email"]:hover { background: #efece5; }
+.bx-lettre .lettre-row input[type="email"]:focus { border-color: #0a0a0a; background: #fff; outline: none; }
+.bx-lettre .lettre-row input::placeholder { color: #6b665c; }
+.bx-lettre .lettre-row .ed-btn { flex: none; }
+.bx-lettre .lettre-msg { font: 600 14px/1.4 var(--sans); }
+.bx-lettre .lettre-msg:empty { display: none; }
+.bx-lettre .lettre-msg.ok { color: #1e7a34; }
+.bx-lettre .lettre-msg.err { color: #b3261e; }
+.bx-lettre.inscrit .lettre-row { display: none; }
+/* Avis, en petit */
+.bx-avis .ac-form { gap: 10px; }
+.bx-avis .ac-q { font: 600 15px/1.3 var(--sans); text-transform: none; letter-spacing: 0; min-height: 0; }
+.bx-avis .ac-form.ac-ok .ac-q { font: 900 clamp(30px, 2.6vw, 40px)/1 var(--display); font-stretch: 62%; text-transform: uppercase; }
+.bx-avis .ac-star svg { width: clamp(34px, 2.8vw, 44px); }
+.bx-avis .ac-more { flex-direction: column; }
+.bx-avis .ac-more .ed-btn { align-self: flex-start; }
+.bx-avis .ac-more textarea { min-height: 70px; }
+/* Proposer : texte à gauche, photo à droite, pastilles en bas */
+.bx-propose .bx-txt { grid-column: 1; grid-row: 1; justify-content: flex-start; }
+.bx-propose .bx-photo { grid-column: 2; grid-row: 1 / span 2; min-height: 260px; border-radius: calc(var(--rad) - 14px); background: #0a0a0a url(/images/hero-chapiteau.webp) center/cover no-repeat; }
+.bx-propose .bx-tags { grid-column: 1; grid-row: 2; }
+.bx-propose .bx-title { font-size: clamp(40px, 5vw, 88px); }
+.bx-propose .bx-sub { color: #1c1a16; }
+@media (max-width: 1100px) and (min-width: 901px) { .bx-lettre .lettre-row { flex-direction: column; } .bx-lettre .lettre-row .ed-btn { justify-content: center; } }
+@media (max-width: 900px) {
+  .bento { grid-template-columns: minmax(0, 1fr); }
+  .bx-lettre, .bx-propose { grid-column: auto; }
+  .bx-propose { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto; }
+  .bx-propose .bx-photo { grid-column: 1; grid-row: 1; min-height: 190px; }
+  .bx-propose .bx-txt { grid-row: 2; } .bx-propose .bx-tags { grid-row: 3; }
+  .bx-title { font-size: clamp(40px, 12vw, 64px); }
+}
+@media (max-width: 520px) { .bx-lettre .lettre-row { flex-direction: column; } .bx .ed-btn { width: 100%; justify-content: center; } .bx-avis .ac-more .ed-btn { align-self: stretch; } }
