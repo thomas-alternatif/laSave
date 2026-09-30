@@ -956,7 +956,7 @@
     const mark = (n, delay, kind) => { if (!n) return null; n.classList.add('rv'); if (kind) n.classList.add('rv-' + kind); n.style.setProperty('--d', delay + 's'); return n; };
     const groups = [];
     const add = (trigger, items) => { items = items.filter(Boolean); if (trigger && items.length) groups.push({ trigger, items }); };
-    add($('#rendez-vous'), [mark($('#flow-title'), 0), mark($('#flow-stage'), .2, 'fade'), mark($('.flow-ctrl'), .45, 'fade')]);
+    add($('#rendez-vous'), [mark($('.epi'), 0, 'fade'), mark($('#flow-title'), .25), mark($('#flow-stage'), .45, 'fade'), mark($('.flow-ctrl'), .7, 'fade')]);
     $$('#rows .row-sec').forEach(sec => add(sec, [
       mark(sec.querySelector('.row-block'), 0, 'wipe'), mark(sec.querySelector('.row-title'), .28), mark(sec.querySelector('.stamp'), .6, 'pop'),
       ...[...sec.querySelectorAll('.track > *')].slice(0, 6).map((c, i) => mark(c, .4 + i * .09, 'zoom'))]));
