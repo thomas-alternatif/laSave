@@ -1473,3 +1473,9 @@ main { padding-top: clamp(10px, 4vw, 64px); }
 }
 @keyframes bx-spin { to { transform: rotate(360deg); } }
 @media (max-width: 900px) { .bx-propose .bx-photo { align-self: stretch; } }
+
+/* v49 : découpe en arches (inspi « 3/3 »), deux étoiles, sans anneau */
+.bx-cut { -webkit-mask: none; mask: none; clip-path: url(#bx-arches); }
+.bx-ring { display: none; }
+.bx-star { width: 12%; right: auto; left: 60.5%; top: auto; bottom: 8%; }
+.bx-star2 { width: 8%; left: 25%; bottom: auto; top: 30%; animation-direction: reverse; }
