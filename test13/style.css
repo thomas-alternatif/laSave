@@ -1567,3 +1567,12 @@ main { padding-top: clamp(10px, 4vw, 64px); }
   #view-home { --gap-sec: max(110px, calc(100svh - 640px)); }
   #view-home #rendez-vous, #view-home #rows .row-sec, #view-home #rows .row-sec:last-child, #view-home #organisateurs, #view-home .bento { margin-bottom: var(--gap-sec); }
 }
+
+/* ════ v63 : barre du haut — opaque, toujours au-dessus du contenu, noire aussi sur la une (ordinateur) ════ */
+.flow, .orgs { isolation: isolate; } /* les boutons du carrousel (z-index élevé) ne passent plus par-dessus la barre */
+.top.solid, .top.on-page { background: rgba(10, 10, 10, .97); }
+[data-theme="light"] .top.solid, [data-theme="light"] .top.on-page { background: rgba(255, 255, 255, .97); }
+@media (min-width: 901px) {
+  .top { padding-block: 14px; transition: background .3s, top .35s ease; }
+  .top:not(.solid):not(.on-page) { left: var(--side); right: var(--side); padding-inline: var(--pad); border-radius: calc(var(--rad) - 6px); background: rgba(10, 10, 10, .97); backdrop-filter: blur(18px) saturate(1.3); -webkit-backdrop-filter: blur(18px) saturate(1.3); }
+}
