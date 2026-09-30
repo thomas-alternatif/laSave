@@ -1555,3 +1555,9 @@ main { padding-top: clamp(10px, 4vw, 64px); }
   html.rv-on:not(.still) .rv.rv-fade { translate: none; }
   html.rv-on:not(.still) .rv.in { opacity: 1; translate: 0 0; transition: opacity 1.1s cubic-bezier(.16, 1, .3, 1) var(--d, 0s), translate 1.2s cubic-bezier(.16, 1, .3, 1) var(--d, 0s); }
 }
+
+/* ════ v61 : ordinateur — assez d'espace entre les grandes parties pour ne jamais voir la suivante ════ */
+@media (min-width: 901px) {
+  #view-home { --gap-sec: max(110px, calc(100svh - 640px)); }
+  #view-home #rendez-vous, #view-home #rows .row-sec, #view-home #rows .row-sec:last-child, #view-home #organisateurs, #view-home .bento { margin-bottom: var(--gap-sec); }
+}

@@ -961,7 +961,7 @@
       const g = groups.find(x => x.trigger === en.target); if (!g) return;
       if (en.isIntersecting) reveal(g, true);
       else if (en.boundingClientRect.top < 0) reveal(g, false); // déjà dépassé (lien direct plus bas) : on l'affiche sans effet
-    }), { rootMargin: '0px 0px -12% 0px' });
+    }), { rootMargin: '0px 0px -20% 0px' });
     groups.forEach(g => io.observe(g.trigger));
     // un saut de page (lien direct, « Newsletter » dans le menu) peut dépasser des sections sans qu'elles aient été vues : on les affiche sans effet
     let raf = 0;
