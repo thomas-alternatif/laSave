@@ -1645,17 +1645,13 @@ main { padding-top: clamp(10px, 4vw, 64px); }
   .tix { font-size: 11.5px; }
 }
 
-/* v68 : épigraphe sous la une */
-.epi { margin: 0 auto 72px; padding-inline: 24px; max-width: 680px; text-align: center; }
+/* v70 : citation en pied de la section « rendez-vous » (fine ligne + petite phrase centrée) */
+.epi { margin: 96px auto 0; padding-inline: 24px; max-width: 560px; text-align: center; }
+.epi-line { display: block; width: min(340px, 62%); height: 1px; margin: 0 auto 26px; background: var(--ligne); }
 .epi blockquote { margin: 0; }
-.epi p { margin: 0; font: italic 400 clamp(24px, 2.6vw, 36px)/1.22 var(--serif); letter-spacing: -.005em; color: var(--texte); text-wrap: balance; }
-.epi figcaption { margin-top: 18px; font: 500 12.5px/1 var(--sans); letter-spacing: .18em; text-transform: uppercase; color: var(--texte-2); }
-.epi figcaption::before { content: ""; display: block; width: 28px; height: 1px; margin: 0 auto 14px; background: var(--or); opacity: .8; }
+.epi p { margin: 0; font: 400 14.5px/1.7 var(--sans); letter-spacing: .02em; color: var(--texte-2); text-wrap: balance; }
 @media (max-width: 720px) {
-  .epi { margin-bottom: 44px; padding-inline: 28px; }
-  .epi p { font-size: 23px; }
+  .epi { margin-top: 64px; padding-inline: 28px; }
+  .epi-line { margin-bottom: 20px; }
+  .epi p { font-size: 14px; }
 }
-
-/* v69 : épigraphe sans signature, petit trait doré dessous */
-.epi blockquote::after { content: ""; display: block; width: 28px; height: 1px; margin: 22px auto 0; background: var(--or); opacity: .8; }
-@media (max-width: 720px) { .epi blockquote::after { margin-top: 18px; } }
