@@ -1518,3 +1518,34 @@ main { padding-top: clamp(10px, 4vw, 64px); }
   .hero-ref { display: none; }
   .hero-shade { background: linear-gradient(180deg, rgba(5,5,5,.5) 0%, rgba(5,5,5,0) 22%), linear-gradient(0deg, rgba(5,5,5,.94) 0%, rgba(5,5,5,.82) 28%, rgba(5,5,5,.4) 46%, rgba(5,5,5,0) 64%); }
 }
+
+/* ════ v56 : mobile plus léger — moins de cadres, moins d'étiquettes, espacements réguliers ════ */
+@media (max-width: 720px) {
+  /* les rubriques ne sont plus dans un cadre noir : bloc coloré + cartes, directement sur le fond */
+  .row-sec { background: none; border-radius: 0; margin: 0 0 34px; padding: 0 16px; overflow: visible; }
+  .row-sec:last-child { margin-bottom: 34px; }
+  .row-sec .track { margin: 0 -16px; padding: 0 16px 4px; scroll-padding-left: 16px; }
+  .row-block { margin-bottom: 16px; padding: 18px 18px 16px; }
+  /* le tampon devient une simple ligne de texte dans le bloc coloré */
+  .row-block .stamp, .bx-head .stamp { position: static; display: block; transform: none; filter: none; margin: 0 0 8px; }
+  .row-block .stamp span, .bx-head .stamp span { display: inline-block; padding: 0; border-radius: 0; background: none !important; box-shadow: none; outline: 0; clip-path: none; white-space: normal; font: 700 11px/1.3 var(--sans); font-style: normal; font-stretch: normal; letter-spacing: .12em; text-transform: uppercase; color: var(--encre) !important; opacity: .8; }
+  .row-block-text, .bx-head .row-block-text { padding-top: 0; }
+  .row-block { padding-top: 18px; }
+  .bx-head .stamp-i { width: 1.15em; height: 1.15em; }
+
+  /* les trois cartes du bas : sans cadre noir autour */
+  .bento { background: none; box-shadow: none; padding: 0; margin: 0 16px 34px; gap: 14px; border-radius: 0; }
+  .bx { padding: 20px 18px; gap: 14px; }
+  /* étiquettes : du simple texte, plus de pastilles */
+  .bx-tags { gap: 4px 0; }
+  .bx-tags span { min-height: 0; padding: 0; border: 0; border-radius: 0; font: 500 12.5px/1.4 var(--sans); letter-spacing: 0; text-transform: none; opacity: .75; }
+  .bx-tags span + span::before { content: '·'; margin: 0 8px; }
+  .bx-tags a { margin-left: 10px; font-size: 12.5px; opacity: .75; }
+  .bx-propose .bx-plus { display: none !important; }
+
+  /* respirations plus courtes entre les grandes parties */
+  .flow { padding-block: 44px 28px; }
+  .orgs { padding-block: 40px 44px; }
+  .orgs-title { margin-bottom: 8px; }
+  .foot { padding: 34px 16px 36px; gap: 10px; margin-bottom: 10px; }
+}
