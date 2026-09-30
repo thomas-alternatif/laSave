@@ -1656,3 +1656,61 @@ main { padding-top: clamp(10px, 4vw, 64px); }
   .epi-line { margin-bottom: 22px; }
   .epi p { font-size: 16.5px; }
 }
+
+/* v72 : fin de page — une seule demande en grand (la lettre), proposer en second, l'avis en ligne discrète */
+.heart-n[hidden] { display: none; }
+
+.bx-lettre { grid-column: 1 / -1; }
+.bx-copy, .bx-act { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+.bx-act .bx-tags { margin-top: 6px; }
+@media (min-width: 901px) {
+  .bx-lettre { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr); column-gap: clamp(28px, 4vw, 72px); align-items: center; }
+  .bx-lettre .bx-act { justify-content: center; }
+  .bx-lettre .lettre-form { max-width: none; }
+}
+
+/* proposer un événement : bloc secondaire, simple contour */
+.bx-propose { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,.22); }
+.bx-propose .bx-title { color: #fff; font-size: clamp(30px, 3.4vw, 56px); }
+.bx-propose .bx-sub { color: rgba(255,255,255,.78); }
+.bx-propose .bx-tags span { border-color: rgba(255,255,255,.45); color: #fff; }
+.bx-propose .bx-tags a, .bx-propose .bx-plus { color: #fff; border-color: #fff; }
+.bx-propose .bx-plus:hover { background: #fff; color: #0a0a0a !important; }
+.bx-propose .ed-btn { background: var(--or); color: #0a0a0a; }
+.bx-propose .ed-btn:hover { background: #d8bd86; }
+.bx-propose .ed-btn:focus-visible { outline-color: var(--or); }
+
+/* l'avis : une ligne sous le bento, sans cadre */
+#view-home .bento { margin-bottom: clamp(44px, 7svh, 84px); }
+#view-home > section.avis-line { background: none; border-radius: 0; padding: 0; overflow: visible; margin: 0 var(--side) var(--gap-sec, var(--vgap)); text-align: center; }
+.avis-line .ac-form { display: grid; justify-items: center; gap: 12px; }
+.avis-line .ac-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 4px 20px; }
+.avis-line .ac-q { margin: 0; min-height: 0; font: 500 15px/1.3 var(--sans); text-transform: none; letter-spacing: 0; color: var(--texte-2); }
+.avis-line .ac-stars { margin: 0; gap: 0; }
+.avis-line .ac-star { padding: 8px; color: var(--texte-2); }
+.avis-line .ac-star svg { width: 28px; fill: none; stroke: currentColor; stroke-width: 1.6; }
+.avis-line .ac-star.on svg { fill: var(--or); stroke: var(--or); }
+.avis-line .ac-star:hover { color: var(--or); }
+.avis-line .ac-star:focus-visible { outline-color: var(--or); }
+.avis-line .ac-more { flex-direction: column; align-items: stretch; width: min(520px, 100%); }
+.avis-line .ac-more textarea { min-height: 78px; background: transparent; border: 1px solid var(--ligne); color: var(--texte); }
+.avis-line .ac-more textarea::placeholder { color: var(--texte-2); }
+.avis-line .ac-more textarea:hover, .avis-line .ac-more textarea:focus { background: transparent; border-color: var(--texte-2); }
+.avis-line .ac-more .ed-btn { align-self: center; background: var(--or); color: #0a0a0a; }
+.avis-line .ac-more .ed-btn:hover { background: #d8bd86; }
+.avis-line .ac-msg { color: var(--texte-2); }
+.avis-line .ac-msg.err { color: #ff8a80; }
+[data-theme="light"] .avis-line .ac-msg.err { color: #b3261e; }
+.avis-line .ac-form.ac-ok .ac-q { font: 600 17px/1.3 var(--sans); color: var(--texte); }
+
+/* raccourcis sous le titre des rendez-vous */
+.qpick { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin: -48px auto 44px; padding-inline: 16px; }
+.qpick[hidden] { display: none; }
+.qchip { display: inline-flex; align-items: center; gap: 9px; min-height: 44px; padding: 0 20px; border-radius: 99px; border: 1px solid var(--ligne); background: transparent; color: var(--texte); font: 500 14.5px/1 var(--sans); letter-spacing: .01em; cursor: pointer; transition: border-color .2s, background .2s, color .2s; }
+.qchip[hidden] { display: none; }
+.qchip b { font-weight: 600; font-size: 12.5px; color: var(--texte-2); font-variant-numeric: tabular-nums; }
+.qchip:hover { border-color: var(--texte-2); }
+.qchip:focus-visible { outline: 2px solid var(--or); outline-offset: 3px; }
+.qchip[aria-pressed="true"] { border-color: var(--or); background: rgba(200,169,110,.14); }
+.qchip[aria-pressed="true"] b { color: var(--texte); }
+@media (max-width: 720px) { .qpick { margin-top: -18px; margin-bottom: 30px; } }

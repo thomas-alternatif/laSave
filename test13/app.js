@@ -100,7 +100,7 @@
   function syncHearts(e) {
     heartBinds.filter(b => b.e === e).forEach(({ btn }) => {
       btn.setAttribute('aria-pressed', String(isLiked(e.id)));
-      const n = btn.querySelector('.heart-n'); if (n) n.textContent = e.Likes || 0;
+      const n = btn.querySelector('.heart-n'); if (n) { n.textContent = e.Likes || 0; n.hidden = (e.Likes || 0) < 3; } // un « 0 » décourage : le nombre n'apparaît qu'à partir de 3
       btn.setAttribute('aria-label', `J'y vais, ${e.Likes || 0} personne${(e.Likes || 0) > 1 ? 's' : ''}`);
     });
   }
@@ -378,7 +378,7 @@
     const limit = new Date(today()); limit.setDate(limit.getDate() + 30);
     const list = events.filter(e => e.Date && new Date(e.Date) <= limit && !['Conférence / Atelier', 'Sport / Loisir'].includes(e['Catégorie'])).slice(0, 16);
     if (!list.length) { stage.appendChild(el('p', 'empty', 'Aucun événement daté dans les 30 prochains jours.')); $('.flow-ctrl').hidden = true; return; }
-    let cur = Math.min(2, list.length - 1);
+    let cur = Math.min(2, list.length - 1), chipSync = null;
     const cards = list.map((e, i) => {
       const c = el('div', 'fcard');
       c.setAttribute('role', 'button'); c.tabIndex = -1;
@@ -412,6 +412,7 @@
       });
       $('#flow-count').textContent = `${cur + 1} / ${cards.length}`;
       showDate(list[cur]);
+      if (chipSync) chipSync();
     }
     // Date de l'événement du milieu, sous la carte : les lettres remontent une à une
     let lastDate = '';
@@ -463,6 +464,28 @@
     stage.addEventListener('pointerdown', ev => { sx = ev.clientX; });
     stage.addEventListener('pointerup', ev => { if (sx == null) return; const d = ev.clientX - sx; sx = null; if (Math.abs(d) > 40) { go(cur + (d < 0 ? 1 : -1)); tick(); } });
     window.addEventListener('resize', render);
+    // Raccourcis « Ce week-end » / « Gratuit » : le carrousel saute au prochain événement concerné (un clic de plus passe au suivant)
+    {
+      const t0 = today(), dow = t0.getDay(), fin = new Date(t0); fin.setDate(fin.getDate() + ((7 - dow) % 7));
+      const weekend = e => {
+        const d = new Date(e.Date + 'T12:00:00'); if (d < t0 || d > fin) return false;
+        const w = d.getDay(); return w === 6 || w === 0 || (w === 5 && parseInt(String(e.Heure || '0'), 10) >= 17);
+      };
+      const free = e => /^\s*(gratuit|entr[ée]e libre|libre)\b/i.test(String(e.Tarif || ''));
+      const sets = { weekend: list.map((e, i) => weekend(e) ? i : -1).filter(i => i >= 0), free: list.map((e, i) => free(e) ? i : -1).filter(i => i >= 0) };
+      const bar = $('#qpick'), btns = $$('#qpick .qchip');
+      if (bar && btns.length) {
+        let any = false;
+        btns.forEach(b => {
+          const s = sets[b.dataset.q] || [];
+          if (!s.length) { b.hidden = true; return; }
+          any = true; b.querySelector('b').textContent = s.length;
+          b.addEventListener('click', () => { const nxt = s.find(i => i > cur) ?? s[0]; go(nxt); tick(); });
+        });
+        bar.hidden = !any;
+        chipSync = () => btns.forEach(b => { const s = sets[b.dataset.q] || []; b.setAttribute('aria-pressed', String(s.includes(cur))); });
+      }
+    }
     render();
     // Défilement automatique : continue même sous la souris ; s'arrête seulement au clavier ou avec l'interrupteur
     let paused = motion.still, hold = false, timer = null;
@@ -956,12 +979,13 @@
     const mark = (n, delay, kind) => { if (!n) return null; n.classList.add('rv'); if (kind) n.classList.add('rv-' + kind); n.style.setProperty('--d', delay + 's'); return n; };
     const groups = [];
     const add = (trigger, items) => { items = items.filter(Boolean); if (trigger && items.length) groups.push({ trigger, items }); };
-    add($('#rendez-vous'), [mark($('#flow-title'), 0), mark($('#flow-stage'), .2, 'fade'), mark($('.flow-ctrl'), .45, 'fade'), mark($('.epi'), .9, 'wipe')]);
+    add($('#rendez-vous'), [mark($('#flow-title'), 0), mark($('#qpick'), .18, 'fade'), mark($('#flow-stage'), .3, 'fade'), mark($('.flow-ctrl'), .5, 'fade'), mark($('.epi'), .9, 'wipe')]);
     $$('#rows .row-sec').forEach(sec => add(sec, [
       mark(sec.querySelector('.row-block'), 0, 'wipe'), mark(sec.querySelector('.row-title'), .28), mark(sec.querySelector('.stamp'), .6, 'pop'),
       ...[...sec.querySelectorAll('.track > *')].slice(0, 6).map((c, i) => mark(c, .4 + i * .09, 'zoom'))]));
     add($('#organisateurs'), [mark($('#orgs-title'), 0), mark($('#orgs-row'), .2, 'zoom'), mark($('.orgs-ctrl'), .5, 'fade')]);
     add($('.bento'), [...$$('.bento > .bx').map((b, i) => mark(b, i * .14, 'zoom')), mark($('.bx-head'), .4, 'wipe'), mark($('.bx-head .row-title'), .68), mark($('.bx-head .stamp'), .95, 'pop')]);
+    add($('#avis-line'), [mark($('#avis-line'), 0, 'fade')]);
     add($('.foot'), [mark($('.foot'), 0, 'fade')]);
     groups.forEach(g => { g.wait = Math.max(...g.items.map(n => parseFloat(n.style.getPropertyValue('--d')) || 0)); });
     const clean = g => g.items.forEach(n => { [...n.classList].filter(c => c === 'in' || c.startsWith('rv')).forEach(c => n.classList.remove(c)); });
