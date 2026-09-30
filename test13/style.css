@@ -1479,3 +1479,4 @@ main { padding-top: clamp(10px, 4vw, 64px); }
 .bx-ring { display: none; }
 .bx-star { width: 12%; right: auto; left: 60.5%; top: auto; bottom: 8%; }
 .bx-star2 { width: 8%; left: 25%; bottom: auto; top: 30%; animation-direction: reverse; }
+.bx-propose .bx-photo { aspect-ratio: 2.3 / 1; }
