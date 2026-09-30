@@ -1645,13 +1645,14 @@ main { padding-top: clamp(10px, 4vw, 64px); }
   .tix { font-size: 11.5px; }
 }
 
-/* v70 : citation en pied de la section « rendez-vous » (fine ligne + petite phrase centrée) */
-.epi { margin: 96px auto 0; padding-inline: 24px; max-width: 560px; text-align: center; }
-.epi-line { display: block; width: min(340px, 62%); height: 1px; margin: 0 auto 26px; background: var(--ligne); }
+/* v70/v71 : citation en pied de la section « rendez-vous » (fine ligne + petite phrase centrée, lisible sur le fond flou) */
+.epi { margin: 96px auto 0; padding-inline: 24px; max-width: 600px; text-align: center; }
+.epi-line { display: block; width: min(340px, 62%); height: 1px; margin: 0 auto 28px; background: var(--texte); opacity: .4; }
 .epi blockquote { margin: 0; }
-.epi p { margin: 0; font: 400 14.5px/1.7 var(--sans); letter-spacing: .02em; color: var(--texte-2); text-wrap: balance; }
+.epi p { margin: 0; font: 500 17.5px/1.65 var(--sans); letter-spacing: .015em; color: var(--texte); text-wrap: balance; text-shadow: 0 1px 18px rgba(0,0,0,.4); }
+[data-theme="light"] .epi p { text-shadow: 0 1px 18px rgba(255,255,255,.55); }
 @media (max-width: 720px) {
   .epi { margin-top: 64px; padding-inline: 28px; }
-  .epi-line { margin-bottom: 20px; }
-  .epi p { font-size: 14px; }
+  .epi-line { margin-bottom: 22px; }
+  .epi p { font-size: 16.5px; }
 }
