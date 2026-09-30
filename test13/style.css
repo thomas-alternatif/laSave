@@ -1489,3 +1489,24 @@ main { padding-top: clamp(10px, 4vw, 64px); }
 .bx-head { --c: #C955E0; background: #C955E0; } /* pas de style en ligne : la politique de sécurité du site les bloque */
 .bx-defs { position: absolute; width: 0; height: 0; }
 .stamp-i { display: inline-block; width: 1.05em; height: 1.05em; vertical-align: -.16em; margin-right: .32em; }
+
+/* ════ v54 : une sur mobile — plus lisible, plus simple ════ */
+@media (max-width: 720px) {
+  /* le bas de la photo est assombri d'un seul tenant : le texte se lit toujours */
+  .hero-shade { background: linear-gradient(0deg, rgba(5,5,5,.96) 0%, rgba(5,5,5,.88) 30%, rgba(5,5,5,.45) 48%, rgba(5,5,5,0) 66%); }
+  /* date : sans trait, en doré, plus nette */
+  .hero .kicker { color: var(--or); font-size: 15px; font-weight: 600; letter-spacing: .01em; text-shadow: 0 1px 12px rgba(0,0,0,.7); }
+  .hero .kicker-line { display: none; }
+  /* titre : un peu plus petit, 3 lignes au plus */
+  .hero-title { font-size: clamp(38px, 11.6vw, 54px); line-height: .92; margin: 10px 0 22px; max-width: none; text-shadow: none; }
+  /* boutons : « Voir » plein et large, cœur rond à côté */
+  .hero-actions { flex-wrap: nowrap; gap: 12px; }
+  .hero .hero-actions #hero-open { flex: 1; min-height: 52px; padding: 0 22px; font-size: 16px; font-weight: 600; color: var(--encre); border: 0; background: var(--or); box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none; justify-content: space-between; }
+  .hero .hero-actions #hero-open::before { display: none; }
+  .hero .hero-actions #hero-open .glow-i { opacity: 1; }
+  .hero .hero-actions #hero-heart { flex: none; min-width: 52px; height: 52px; padding: 0 14px; gap: 6px; border-radius: 99px; border: 1.5px solid rgba(255,255,255,.4); background: rgba(5,5,5,.35); color: #fff; font-size: 14px; font-weight: 600; }
+  .hero .hero-actions #hero-heart[aria-pressed="true"] { background: var(--or); border-color: var(--or); color: var(--encre); }
+  /* pied : barre et compteur plus visibles */
+  .hero-foot .hero-line { background: rgba(255,255,255,.3); }
+  .hero-foot .hero-num { font-size: 13px; }
+}
