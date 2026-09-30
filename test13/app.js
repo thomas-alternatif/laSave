@@ -430,11 +430,19 @@
       const txt = el('span', 'fd-txt');
       txt.append(el('b', null, jour), el('small', null, [e.Heure ? hour(e) : '', rel].filter(Boolean).join(' · ')));
       const sr = el('span', 'sr', `${d.getDate()} ${d.toLocaleDateString('fr-FR', { month: 'long' })}`);
-      const add = el('button', 'fd-add'); add.type = 'button';
-      add.setAttribute('aria-label', `Ajouter « ${e.Titre || 'cet événement'} » à mon agenda`);
-      add.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>';
-      add.addEventListener('click', ev => { ev.stopPropagation(); add.classList.add('ok'); addToPhone(e); setTimeout(() => add.classList.remove('ok'), 1600); });
-      box.replaceChildren(cal, txt, add, sr);
+      // Sur téléphone, toute la date est un bouton qui ouvre directement l'agenda : Calendrier (Apple) ou Google Agenda, avec leurs couleurs
+      const os = !touch ? '' : isApple ? 'apple' : /Android/i.test(navigator.userAgent) ? 'google' : 'other';
+      box.dataset.os = os;
+      if (os) {
+        const app = { apple: 'Calendrier', google: 'Google Agenda', other: 'mon agenda' }[os];
+        const act = el('span', 'fd-act', `Ajouter à ${app}`);
+        txt.appendChild(act);
+        const tap = el('button', 'fd-tap'); tap.type = 'button';
+        tap.setAttribute('aria-label', `Ajouter « ${e.Titre || 'cet événement'} » à ${app}`);
+        tap.append(cal, txt);
+        tap.addEventListener('click', ev => { ev.stopPropagation(); act.textContent = 'Ouverture…'; tap.classList.add('ok'); addToPhone(e); setTimeout(() => { act.textContent = `Ajouter à ${app}`; tap.classList.remove('ok'); }, 1800); });
+        box.replaceChildren(tap, sr);
+      } else box.replaceChildren(cal, txt, sr);
       play();
     }
     // Rejoue l'effet quand la date arrive à l'écran (sinon il se joue hors de vue)

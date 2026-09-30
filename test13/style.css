@@ -1576,3 +1576,31 @@ main { padding-top: clamp(10px, 4vw, 64px); }
   .top { padding-block: 14px; transition: background .3s, top .35s ease; }
   .top:not(.solid):not(.on-page) { left: var(--side); right: var(--side); padding-inline: var(--pad); border-radius: calc(var(--rad) - 6px); background: rgba(10, 10, 10, .74); backdrop-filter: blur(22px) saturate(1.4); -webkit-backdrop-filter: blur(22px) saturate(1.4); }
 }
+
+/* ════ v65 : sur téléphone, la date ouvre directement l'agenda (look Apple ou Google selon l'appareil) ════ */
+.fd-tap { display: flex; align-items: center; gap: 12px; padding: 4px 10px 4px 4px; margin: 0; border: 0; border-radius: 16px; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; -webkit-tap-highlight-color: transparent; transition: transform .2s, background .2s; }
+.fd-tap:active { transform: scale(.97); background: rgba(255,255,255,.07); }
+.fd-act { font: 600 11.5px/1.1 var(--sans); margin-top: 2px; }
+.fd-act::before { content: '+'; margin-right: .3em; font-weight: 700; }
+/* Apple : tuile blanche, mois en rouge, chiffre fin, police du système */
+.flow-date[data-os="apple"] { --sys: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif; }
+.flow-date[data-os="apple"] .fd-cal { width: 44px; border-radius: 10px; background: #fff; box-shadow: 0 6px 16px rgba(0,0,0,.35), 0 0 0 .5px rgba(0,0,0,.08); }
+.flow-date[data-os="apple"] .fd-m { background: none; color: #FF3B30; font: 600 9.5px/1 var(--sys); letter-spacing: .05em; padding: 6px 0 0; }
+.flow-date[data-os="apple"] .fd-d { font: 300 26px/1 var(--sys); font-stretch: normal; color: #111; padding: 1px 0 6px; }
+.flow-date[data-os="apple"] .fd-txt b, .flow-date[data-os="apple"] .fd-txt small, .flow-date[data-os="apple"] .fd-act { font-family: var(--sys); }
+.flow-date[data-os="apple"] .fd-act { color: #0A84FF; }
+/* Google : tuile blanche, bandeau bleu, chiffre bleu, liseré aux quatre couleurs */
+.flow-date[data-os="google"] { --gg: 'Google Sans', 'Product Sans', Roboto, system-ui, sans-serif; }
+.flow-date[data-os="google"] .fd-cal { width: 44px; border-radius: 8px; background: #fff; }
+.flow-date[data-os="google"] .fd-m { background: #4285F4; color: #fff; font: 500 9.5px/1 var(--gg); letter-spacing: .06em; padding: 4px 0 3px; }
+.flow-date[data-os="google"] .fd-d { font: 500 22px/1 var(--gg); font-stretch: normal; color: #1a73e8; padding: 3px 0 5px; }
+.flow-date[data-os="google"] .fd-cal::after { content: ''; display: block; height: 3px; background: linear-gradient(90deg, #4285F4 0 25%, #EA4335 25% 50%, #FBBC04 50% 75%, #34A853 75%); }
+.flow-date[data-os="google"] .fd-txt b, .flow-date[data-os="google"] .fd-txt small, .flow-date[data-os="google"] .fd-act { font-family: var(--gg); }
+.flow-date[data-os="google"] .fd-act { color: #8AB4F8; }
+.flow-date[data-os="other"] .fd-act { color: #FFA823; }
+[data-theme="light"] .fd-tap:active { background: rgba(22,22,22,.06); }
+[data-theme="light"] .flow-date[data-os="apple"] .fd-act { color: #007AFF; }
+[data-theme="light"] .flow-date[data-os="google"] .fd-act { color: #1a73e8; }
+[data-theme="light"] .flow-date[data-os="other"] .fd-act { color: #b36b00; }
+.fd-tap.ok .fd-act { opacity: .8; }
+.fd-tap.ok .fd-act::before { content: none; }
