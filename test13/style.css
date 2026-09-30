@@ -1604,3 +1604,43 @@ main { padding-top: clamp(10px, 4vw, 64px); }
 [data-theme="light"] .flow-date[data-os="other"] .fd-act { color: #b36b00; }
 .fd-tap.ok .fd-act { opacity: .8; }
 .fd-tap.ok .fd-act::before { content: none; }
+
+/* ════ v67 : mobile — plus d'air, apparitions douces, cibles tactiles et textes plus confortables ════ */
+@media (max-width: 900px) {
+  /* apparitions au défilement (version légère) */
+  html.rv-on:not(.still) .rv { opacity: 0; translate: 0 26px; }
+  html.rv-on:not(.still) .rv-fade { translate: none; }
+  html.rv-on:not(.still) .rv-wipe { opacity: 1; translate: none; clip-path: inset(-60px 100% -60px -60px); }
+  html.rv-on:not(.still) .rv-pop { translate: 0 6px; scale: .88; }
+  html.rv-on:not(.still) .rv-zoom { translate: 0 30px; scale: .98; }
+  html.rv-on:not(.still) .rv.in { opacity: 1; translate: 0 0; scale: 1; transition: opacity .8s ease-out var(--d, 0s), translate .9s cubic-bezier(.16, 1, .3, 1) var(--d, 0s), scale .9s cubic-bezier(.16, 1, .3, 1) var(--d, 0s); }
+  html.rv-on:not(.still) .rv-wipe.in { clip-path: inset(-60px -60px -60px -60px); transition: clip-path .9s cubic-bezier(.65, 0, .15, 1) var(--d, 0s); }
+}
+@media (max-width: 720px) {
+  /* un vrai vide entre les grandes parties */
+  #view-home { --gap-sec: clamp(64px, 11svh, 110px); }
+  #view-home #rendez-vous, #view-home #rows .row-sec, #view-home #rows .row-sec:last-child, #view-home #organisateurs, #view-home .bento { margin-bottom: var(--gap-sec); }
+  .row-sec { padding: 28px 20px 32px; }
+  .row-sec .track { margin: 0 -20px; padding: 0 20px 4px; scroll-padding-left: 20px; }
+  .row-block { margin-bottom: 28px; }
+  .bento { gap: 14px; padding: 14px; }
+  .bx { padding: 28px 24px; gap: 22px; }
+  .flow { padding-block: 56px 36px; }
+  .orgs { padding-block: 48px 52px; }
+  .foot { padding: 52px 20px 56px; }
+
+  /* cibles tactiles plus grandes */
+  .theme-btn { width: 42px; height: 42px; }
+  .top-cta.glow { min-height: 42px; }
+  .flow-ctrl .circle.sm { width: 44px; height: 44px; }
+  .see-all { padding: 13px 4px; margin: -13px 4px -13px 0; }
+  .foot-links a, .foot #motion, .foot button { padding: 13px 8px; }
+  .bx-tags a { padding: 10px 0; margin-top: 0; }
+
+  /* textes utiles : 12 px au minimum */
+  .poster-date { font-size: 12.5px; letter-spacing: .1em; }
+  .poster small, .fcard small, .hcard small { font-size: 12.5px; }
+  .org-name { font-size: 12px; }
+  .flow-count { font-size: 12px; }
+  .tix { font-size: 11.5px; }
+}
