@@ -944,18 +944,22 @@
      chaque groupe se révèle quand il entre dans l'écran, puis les classes sont retirées (le style normal reprend). */
   function setupReveal() {
     if (reduce || !('IntersectionObserver' in window)) return;
-    const mark = (n, delay, fade) => { if (!n) return null; n.classList.add('rv'); if (fade) n.classList.add('rv-fade'); n.style.setProperty('--d', delay + 's'); return n; };
+    // kind : '' (monte en fondu), fade (fondu seul), wipe (balayage de gauche à droite), pop (petit grossissement), zoom (monte en grossissant)
+    const mark = (n, delay, kind) => { if (!n) return null; n.classList.add('rv'); if (kind) n.classList.add('rv-' + kind); n.style.setProperty('--d', delay + 's'); return n; };
     const groups = [];
     const add = (trigger, items) => { items = items.filter(Boolean); if (trigger && items.length) groups.push({ trigger, items }); };
-    add($('#rendez-vous'), [mark($('#flow-title'), 0), mark($('#flow-stage'), .15, 1), mark($('.flow-ctrl'), .3, 1)]);
-    $$('#rows .row-sec').forEach(sec => add(sec, [mark(sec.querySelector('.row-block'), 0), ...[...sec.querySelectorAll('.track > *')].slice(0, 6).map((c, i) => mark(c, .12 + i * .08))]));
-    add($('#organisateurs'), [mark($('#orgs-title'), 0), mark($('#orgs-row'), .15, 1), mark($('.orgs-ctrl'), .3, 1)]);
-    add($('.bento'), $$('.bento > .bx').map((b, i) => mark(b, i * .12)));
-    add($('.foot'), [mark($('.foot'), 0, 1)]);
+    add($('#rendez-vous'), [mark($('#flow-title'), 0), mark($('#flow-stage'), .2, 'fade'), mark($('.flow-ctrl'), .45, 'fade')]);
+    $$('#rows .row-sec').forEach(sec => add(sec, [
+      mark(sec.querySelector('.row-block'), 0, 'wipe'), mark(sec.querySelector('.row-title'), .28), mark(sec.querySelector('.stamp'), .6, 'pop'),
+      ...[...sec.querySelectorAll('.track > *')].slice(0, 6).map((c, i) => mark(c, .4 + i * .09, 'zoom'))]));
+    add($('#organisateurs'), [mark($('#orgs-title'), 0), mark($('#orgs-row'), .2, 'zoom'), mark($('.orgs-ctrl'), .5, 'fade')]);
+    add($('.bento'), [...$$('.bento > .bx').map((b, i) => mark(b, i * .14, 'zoom')), mark($('.bx-head'), .4, 'wipe'), mark($('.bx-head .row-title'), .68), mark($('.bx-head .stamp'), .95, 'pop')]);
+    add($('.foot'), [mark($('.foot'), 0, 'fade')]);
+    groups.forEach(g => { g.wait = Math.max(...g.items.map(n => parseFloat(n.style.getPropertyValue('--d')) || 0)); });
+    const clean = g => g.items.forEach(n => { [...n.classList].filter(c => c === 'in' || c.startsWith('rv')).forEach(c => n.classList.remove(c)); });
     const reveal = (g, anim) => {
       io.unobserve(g.trigger);
-      if (anim) g.items.forEach(n => n.classList.add('in'));
-      setTimeout(() => g.items.forEach(n => n.classList.remove('rv', 'rv-fade', 'in')), anim ? 2000 : 0);
+      if (anim) { g.items.forEach(n => n.classList.add('in')); setTimeout(() => clean(g), g.wait * 1000 + 2000); } else clean(g);
     };
     const io = new IntersectionObserver(entries => entries.forEach(en => {
       const g = groups.find(x => x.trigger === en.target); if (!g) return;
