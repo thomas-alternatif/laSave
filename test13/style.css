@@ -1458,3 +1458,18 @@ main { padding-top: clamp(10px, 4vw, 64px); }
   .bx-title { font-size: clamp(40px, 12vw, 64px); }
 }
 @media (max-width: 520px) { .bx-lettre .lettre-row { flex-direction: column; } .bx .ed-btn { width: 100%; justify-content: center; } .bx-avis .ac-more .ed-btn { align-self: stretch; } }
+
+/* ════ v48 : photo de « Vous organisez » découpée en cercles qui se chevauchent (inspi affiches), avec une étoile et un anneau ════ */
+.bx-propose .bx-photo { position: relative; align-self: center; min-height: 0; aspect-ratio: 2.1 / 1; background: none; border-radius: 0; }
+.bx-cut { position: absolute; inset: 0; background: #0a0a0a url(/images/hero-chapiteau.webp) center/cover no-repeat;
+  --d: 47.6%; /* diamètre d'un cercle = hauteur, en % de la largeur (1 / 2.1) */
+  -webkit-mask: radial-gradient(closest-side, #000 98%, transparent 100%) 0 0 / var(--d) 100% no-repeat, radial-gradient(closest-side, #000 98%, transparent 100%) 50% 0 / var(--d) 100% no-repeat, radial-gradient(closest-side, #000 98%, transparent 100%) 100% 0 / var(--d) 100% no-repeat;
+          mask: radial-gradient(closest-side, #000 98%, transparent 100%) 0 0 / var(--d) 100% no-repeat, radial-gradient(closest-side, #000 98%, transparent 100%) 50% 0 / var(--d) 100% no-repeat, radial-gradient(closest-side, #000 98%, transparent 100%) 100% 0 / var(--d) 100% no-repeat; }
+.bx-deco { position: absolute; pointer-events: none; }
+.bx-star { width: 13%; aspect-ratio: 1; right: 20%; top: -4%; fill: none; stroke: #fff; stroke-width: 3.2; stroke-linecap: round; filter: drop-shadow(0 4px 10px rgba(0,0,0,.18)); }
+.bx-ring { width: 11%; aspect-ratio: 1; left: 22%; bottom: -3%; border-radius: 50%; background: radial-gradient(circle, transparent 30%, #fff 31%); filter: drop-shadow(0 4px 10px rgba(0,0,0,.18)); }
+@media (prefers-reduced-motion: no-preference) {
+  html:not(.still) .bx-star { animation: bx-spin 18s linear infinite; }
+}
+@keyframes bx-spin { to { transform: rotate(360deg); } }
+@media (max-width: 900px) { .bx-propose .bx-photo { align-self: stretch; } }
