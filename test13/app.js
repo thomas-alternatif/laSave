@@ -330,8 +330,9 @@
 
   /* ── 1. À la une ── */
   function buildHero(events) {
+    // Seuls les événements cochés « À la une » passent ici ; si aucun n'est coché, on montre les 3 prochains pour ne pas laisser la une vide
     let feats = events.filter(e => e['À la une'] && photoOf(e));
-    if (feats.length < 4) feats = feats.concat(events.filter(e => !feats.includes(e) && photoOf(e))).slice(0, 6);
+    if (!feats.length) feats = events.filter(e => photoOf(e)).slice(0, 3);
     const hero = $('.hero');
     if (!feats.length) { $$('.hero-arr, .hero-foot, #hero-open, #hero-heart').forEach(n => { n.hidden = true; }); return; }
     if (feats.length < 2) $$('.hero-arr, .hero-foot').forEach(n => { n.hidden = true; });
