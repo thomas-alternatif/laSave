@@ -841,6 +841,15 @@ async function route(req, env, ctx) {
   /* ── Bouton Airtable « Envoyer la confirmation » ──
      Une automatisation Airtable appelle cette adresse quand la case est cochée sur une fiche. Aucun mot de passe :
      on relit la fiche dans Airtable, et le mail ne part que si la case y est bien cochée et l'événement publié. */
+  // Relecture d'Airtable demandée par l'automatisation Airtable (Statut passé à « Publié »). Sans mot de passe : ne fait que rafraîchir la copie publique.
+  if (m === 'POST' && p === '/hook/refresh') {
+    if (!KV) return json(req, { error: 'Stockage KV non relié' }, 400);
+    if (await tooMany(req, 'hookrefresh', 60, 3600)) return slowDown(req);
+    if (await KV.get('lock')) return json(req, { ok: true, message: 'Relecture déjà en cours.' });
+    await KV.put('lock', '1', { expirationTtl: 30 });
+    try { const snap = await buildSnap(env); return json(req, { ok: true, events: snap.events.length, message: 'Site mis à jour.' }); }
+    catch (e) { return json(req, { ok: false, error: 'Airtable injoignable, réessayez.' }, 502); }
+  }
   if (m === 'POST' && p === '/hook/confirm') {
     if (await tooMany(req, 'hookconf', 40, 3600)) return slowDown(req);
     const id = String((await body()).id || '');
