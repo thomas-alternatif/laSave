@@ -484,6 +484,32 @@ async function getSnap(env, ctx) {
   return snap; // en cas de panne Airtable, on continue de servir la dernière copie
 }
 async function markDirty() { const snap = await KV.get('snap', 'json'); if (snap) { snap.dirty = true; await KV.put('snap', JSON.stringify(snap)); } }
+
+/* Mail « C'est en ligne » demandé depuis Airtable : part seulement si la case est cochée ET que l'événement est vraiment visible sur le site.
+   Sinon la case reste cochée et le mail partira à la prochaine mise en ligne (/hook/refresh). */
+async function tryConfirm(env, rec, liveEvents) {
+  const id = rec.id, f = rec.fields || {};
+  const ecrire = async (texte, decoche) => {
+    const fields = { [F_CONF_TXT]: texte }; if (decoche) fields[F_CONF] = false;
+    try { await at(env, `${T_EVENTS}/${id}`, { method: 'PATCH', body: JSON.stringify({ fields }) }); }
+    catch (e) { console.error('confirmation : écriture Airtable', e.message); }
+    return { envoye: false, texte };
+  };
+  if (!f[F_CONF]) return { envoye: false, texte: "La case n'est pas cochée." };
+  if (f.Statut !== 'Publié' || !liveEvents.some(e => e.id === id)) return { ...(await ecrire("En attente : le mail partira dès que l'événement sera en ligne sur le site.", false)), attente: true };
+  const to = firstEmail(f['Contact privé']);
+  if (!isEmail(to)) return ecrire('Pas envoyée : aucune adresse e-mail dans « Contact privé ».', true);
+  if (!env.BREVO_KEY) return ecrire("Pas envoyée : la clé d'envoi (Brevo) n'est pas configurée.", true);
+  try {
+    if (KV) { try { await keepPhotos([f], { n: 1 }); } catch {} }
+    await sendMail(env, { to, toName: f.Organisation, ...publishedMail(f, id) });
+  } catch (e) { console.error('confirmation : envoi', e.message); return ecrire("Échec de l'envoi : décochez puis recochez la case pour réessayer.", true); }
+  if (KV) await KV.put('mailpub:' + id, new Date().toISOString());
+  const now = new Date(), tz = { timeZone: 'Europe/Paris' };
+  const quand = `${now.toLocaleDateString('fr-FR', { ...tz, day: '2-digit', month: '2-digit', year: 'numeric' })} à ${now.toLocaleTimeString('fr-FR', { ...tz, hour: '2-digit', minute: '2-digit' })}`;
+  const r = await ecrire(`Envoyée le ${quand} à ${to}`, true);
+  return { ...r, envoye: true };
+}
 // Compteurs « J'y vais » / vues en attente de recopie dans Airtable
 async function getCounts() { return (await KV.get('counts', 'json')) || {}; }
 function withCounts(events, counts) {
@@ -847,33 +873,28 @@ async function route(req, env, ctx) {
     if (await tooMany(req, 'hookrefresh', 60, 3600)) return slowDown(req);
     if (await KV.get('lock')) return json(req, { ok: true, message: 'Relecture déjà en cours.' });
     await KV.put('lock', '1', { expirationTtl: 30 });
-    try { const snap = await buildSnap(env); return json(req, { ok: true, events: snap.events.length, message: 'Site mis à jour.' }); }
-    catch (e) { return json(req, { ok: false, error: 'Airtable injoignable, réessayez.' }, 502); }
+    let snap; try { snap = await buildSnap(env); } catch (e) { return json(req, { ok: false, error: 'Airtable injoignable, réessayez.' }, 502); }
+    let envoyes = 0; // confirmations cochées qui attendaient la mise en ligne
+    try {
+      const att = await listAll(env, T_EVENTS, '&filterByFormula=' + encodeURIComponent("AND({Envoyer la confirmation},{Statut}='Publié')"));
+      for (const rec of att) { if ((await tryConfirm(env, rec, snap.events)).envoye) envoyes++; }
+    } catch (e) { console.error('confirmations en attente', e.message); }
+    return json(req, { ok: true, events: snap.events.length, message: envoyes ? `Site mis à jour, ${envoyes} confirmation(s) envoyée(s).` : 'Site mis à jour.' });
   }
   if (m === 'POST' && p === '/hook/confirm') {
     if (await tooMany(req, 'hookconf', 40, 3600)) return slowDown(req);
     const id = String((await body()).id || '');
     if (!isId(id)) return json(req, { error: 'Requête invalide' }, 400);
     let rec; try { rec = await at(env, `${T_EVENTS}/${id}`); } catch { return json(req, { error: 'Événement introuvable' }, 404); }
-    const f = rec.fields || {};
-    if (!f[F_CONF]) return json(req, { ok: false, error: "La case n'est pas cochée." }, 409);
-    const fin = async (texte, envoye) => { // décoche la case et écrit le résultat dans la fiche
-      try { await at(env, `${T_EVENTS}/${id}`, { method: 'PATCH', body: JSON.stringify({ fields: { [F_CONF]: false, [F_CONF_TXT]: texte } }) }); }
-      catch (e) { console.error('confirmation : écriture Airtable', e.message); }
-      return json(req, { ok: !!envoye, message: texte }, envoye ? 200 : 422);
-    };
-    if (f.Statut !== 'Publié') return fin("Pas envoyée : publiez d'abord l'événement (Statut = Publié).");
-    const to = firstEmail(f['Contact privé']);
-    if (!isEmail(to)) return fin('Pas envoyée : aucune adresse e-mail dans « Contact privé ».');
-    if (!env.BREVO_KEY) return fin("Pas envoyée : la clé d'envoi (Brevo) n'est pas configurée.");
-    try {
-      if (KV) { try { await keepPhotos([f], { n: 1 }); } catch {} } // l'affiche doit rester visible dans le mail
-      await sendMail(env, { to, toName: f.Organisation, ...publishedMail(f, id) });
-    } catch (e) { console.error('confirmation : envoi', e.message); return fin("Échec de l'envoi : réessayez dans un instant."); }
-    if (KV) await KV.put('mailpub:' + id, new Date().toISOString());
-    const now = new Date(), tz = { timeZone: 'Europe/Paris' };
-    const quand = `${now.toLocaleDateString('fr-FR', { ...tz, day: '2-digit', month: '2-digit', year: 'numeric' })} à ${now.toLocaleTimeString('fr-FR', { ...tz, hour: '2-digit', minute: '2-digit' })}`;
-    return fin(`Envoyée le ${quand} à ${to}`, true);
+    if (!(rec.fields || {})[F_CONF]) return json(req, { ok: false, error: "La case n'est pas cochée." }, 409);
+    let live = KV ? ((await KV.get('snap', 'json')) || {}).events || [] : [];
+    // publié dans Airtable mais pas encore sur le site : on relit Airtable maintenant
+    if (rec.fields.Statut === 'Publié' && KV && !live.some(e => e.id === id) && !(await KV.get('lock'))) {
+      await KV.put('lock', '1', { expirationTtl: 30 });
+      try { live = (await buildSnap(env)).events; } catch (e) { console.error('relecture Airtable', e.message); }
+    }
+    const r = await tryConfirm(env, rec, live);
+    return json(req, { ok: r.envoye || !!r.attente, message: r.texte }, r.envoye || r.attente ? 200 : 422);
   }
 
   /* ── Admin ── */
