@@ -35,6 +35,7 @@ const ORGA_PUBLIC = ['Nom','Description courte','Description','Photo','Contact',
 // Champs acceptés depuis le formulaire « Ajouter un événement »
 const EVENT_SUBMIT = ['Titre','Catégorie','Commune','Date','Date de fin','Heure','Lieu','Description','Tarif','Récurrence','Période','Organisation','Contact','Contact privé','Message privé','Billetterie'];
 const ADMIN_STATUTS = ['Publié','Archivé','En attente'];
+const F_CONF = 'Envoyer la confirmation', F_CONF_TXT = 'Confirmation par mail'; // champs Airtable du bouton « envoyer la confirmation »
 
 // E-mails
 const MAIL_FROM = { name: 'Agenda de laSave', email: 'agenda@la-save.fr' };
@@ -835,6 +836,35 @@ async function route(req, env, ctx) {
     const d = await r.json().catch(() => ({}));
     if (!d?.success) return json(req, { error: 'Échec de l’envoi' }, 502);
     return json(req, { url: d.data.url });
+  }
+
+  /* ── Bouton Airtable « Envoyer la confirmation » ──
+     Une automatisation Airtable appelle cette adresse quand la case est cochée sur une fiche. Aucun mot de passe :
+     on relit la fiche dans Airtable, et le mail ne part que si la case y est bien cochée et l'événement publié. */
+  if (m === 'POST' && p === '/hook/confirm') {
+    if (await tooMany(req, 'hookconf', 40, 3600)) return slowDown(req);
+    const id = String((await body()).id || '');
+    if (!isId(id)) return json(req, { error: 'Requête invalide' }, 400);
+    let rec; try { rec = await at(env, `${T_EVENTS}/${id}`); } catch { return json(req, { error: 'Événement introuvable' }, 404); }
+    const f = rec.fields || {};
+    if (!f[F_CONF]) return json(req, { ok: false, error: "La case n'est pas cochée." }, 409);
+    const fin = async (texte, envoye) => { // décoche la case et écrit le résultat dans la fiche
+      try { await at(env, `${T_EVENTS}/${id}`, { method: 'PATCH', body: JSON.stringify({ fields: { [F_CONF]: false, [F_CONF_TXT]: texte } }) }); }
+      catch (e) { console.error('confirmation : écriture Airtable', e.message); }
+      return json(req, { ok: !!envoye, message: texte }, envoye ? 200 : 422);
+    };
+    if (f.Statut !== 'Publié') return fin("Pas envoyée : publiez d'abord l'événement (Statut = Publié).");
+    const to = firstEmail(f['Contact privé']);
+    if (!isEmail(to)) return fin('Pas envoyée : aucune adresse e-mail dans « Contact privé ».');
+    if (!env.BREVO_KEY) return fin("Pas envoyée : la clé d'envoi (Brevo) n'est pas configurée.");
+    try {
+      if (KV) { try { await keepPhotos([f], { n: 1 }); } catch {} } // l'affiche doit rester visible dans le mail
+      await sendMail(env, { to, toName: f.Organisation, ...publishedMail(f, id) });
+    } catch (e) { console.error('confirmation : envoi', e.message); return fin("Échec de l'envoi : réessayez dans un instant."); }
+    if (KV) await KV.put('mailpub:' + id, new Date().toISOString());
+    const now = new Date(), tz = { timeZone: 'Europe/Paris' };
+    const quand = `${now.toLocaleDateString('fr-FR', { ...tz, day: '2-digit', month: '2-digit', year: 'numeric' })} à ${now.toLocaleTimeString('fr-FR', { ...tz, hour: '2-digit', minute: '2-digit' })}`;
+    return fin(`Envoyée le ${quand} à ${to}`, true);
   }
 
   /* ── Admin ── */
