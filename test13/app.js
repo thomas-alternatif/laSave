@@ -519,6 +519,7 @@
     RUBRIQUES.map(r => ({ ...r, evs: events.filter(e => r.cats.includes(e['Catégorie']) || (r.cats.includes('Autre') && !known.includes(e['Catégorie']))) })).forEach((r, k) => {
       if (!r.evs.length) return;
       const sec = el('section', 'row-sec'); sec.setAttribute('aria-labelledby', 'rub-' + k);
+      if (r.evs.length <= 3) sec.classList.add('few');
       sec.style.setProperty('--c', r.color);
       const head = el('div', 'row-block');
       const t = el('div', 'row-block-text');
@@ -1033,6 +1034,10 @@
     buildFlow(UP);
     buildRows(UP);
     buildOrgs(ORGAS);
+    // vrais chiffres dans les titres de section
+    { const n = UP.length, o = (ORGAS || []).length, ka = $('#kick-agenda'), ko = $('#kick-orgs');
+      if (ka && n >= 3) ka.textContent = `${n} événements à venir dans la vallée`;
+      if (ko && o >= 3) ko.textContent = `${o} associations et organisateurs`; }
     fitAll();
     setupReveal();
     endIntro();
