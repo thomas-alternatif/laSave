@@ -1020,6 +1020,13 @@
   route();
   (async () => {
     try { ALL = await api('/events'); } catch (e) { console.warn('events', e); }
+    // « Agenda mis à jour le … » : signe de fraîcheur dans le pied de page
+    api('/health').then(d => {
+      const t = d && d.copie && new Date(d.copie), n = $('#foot-maj');
+      if (!n || !t || isNaN(t)) return;
+      n.textContent = ' · Agenda mis à jour le ' + t.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', timeZone: 'Europe/Paris' });
+      n.hidden = false;
+    }).catch(() => {});
     try { ORGAS = await api('/orgas'); } catch (e) { console.warn('orgas', e); }
     UP = ALL.filter(isActive).sort((a, b) => sortKey(a) - sortKey(b));
     buildHero(UP);

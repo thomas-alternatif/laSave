@@ -1714,3 +1714,8 @@ main { padding-top: clamp(10px, 4vw, 64px); }
 .qchip[aria-pressed="true"] { border-color: var(--or); background: rgba(200,169,110,.14); }
 .qchip[aria-pressed="true"] b { color: var(--texte); }
 @media (max-width: 720px) { .qpick { margin-top: -18px; margin-bottom: 30px; } }
+
+/* v73 : titres de section qui disent ce qu'ils contiennent, pied de page rassurant */
+.kick { font-size: 11px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--texte-2); text-align: center; margin: 0 auto 14px; padding-inline: 16px; }
+.foot-meta { display: grid; gap: 4px; justify-items: center; font-size: 12px; line-height: 1.6; }
+.foot-meta a { text-decoration: underline; text-underline-offset: 3px; }
