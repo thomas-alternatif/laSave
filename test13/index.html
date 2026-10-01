@@ -14,7 +14,7 @@
   <link rel="icon" href="../favicon.ico" sizes="48x48" />
   <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
-  <link rel="stylesheet" href="style.css?v=74" />
+  <link rel="stylesheet" href="style.css?v=75" />
 </head>
 <body class="intro-on">
   <div class="backdrop" aria-hidden="true"><i></i><i></i></div>
@@ -75,6 +75,7 @@
           <div class="flow-mid"><p class="flow-date" id="flow-date" aria-live="polite"></p><span class="flow-count" id="flow-count"></span></div>
           <button class="circle sm" id="flow-next" type="button" aria-label="Événement suivant"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></button>
         </div>
+        <p class="ag-more"><a class="qchip" href="#agenda"><span>Tout l’agenda</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a></p>
         <figure class="epi">
           <span class="epi-line" aria-hidden="true"></span>
           <blockquote><p>Il n’y a pas de hasard,<br />il n’y a que des rendez-vous.</p></blockquote>
@@ -147,6 +148,36 @@
           </div>
           <p class="ac-msg" id="ac-msg" role="status" aria-live="polite"></p>
         </form>
+      </section>
+    </div>
+
+    <!-- ════════ TOUT L'AGENDA ════════ -->
+    <div class="view" id="view-agenda" hidden>
+      <section class="page ag" aria-labelledby="ag-title">
+        <header class="page-head">
+          <p class="kicker"><span class="kicker-line" aria-hidden="true"></span>Agenda local</p>
+          <h1 class="page-title" id="ag-title">Tout l’agenda</h1>
+          <p class="page-lede" id="ag-lede">Les sorties de la vallée de la Save, jour après jour.</p>
+        </header>
+        <div class="ag-filters" role="group" aria-label="Filtrer l’agenda">
+          <div class="ag-when" role="group" aria-label="Période">
+            <button class="qchip" type="button" data-w="all" aria-pressed="true"><span>Tout</span></button>
+            <button class="qchip" type="button" data-w="today" aria-pressed="false"><span>Aujourd’hui</span></button>
+            <button class="qchip" type="button" data-w="weekend" aria-pressed="false"><span>Ce week-end</span></button>
+            <button class="qchip" type="button" data-w="week" aria-pressed="false"><span>7 jours</span></button>
+            <button class="qchip" type="button" data-w="month" aria-pressed="false"><span>Ce mois-ci</span></button>
+          </div>
+          <div class="ag-sel">
+            <label class="sr" for="ag-commune">Commune</label>
+            <select id="ag-commune"><option value="">Toutes les communes</option></select>
+            <label class="sr" for="ag-cat">Catégorie</label>
+            <select id="ag-cat"><option value="">Toutes les catégories</option></select>
+            <button class="qchip" type="button" id="ag-free" aria-pressed="false"><span>Gratuit</span></button>
+            <button class="ag-reset" type="button" id="ag-reset" hidden>Tout effacer</button>
+          </div>
+        </div>
+        <p class="ag-count" id="ag-count" role="status" aria-live="polite"></p>
+        <div id="ag-list"></div>
       </section>
     </div>
 
@@ -373,6 +404,7 @@
     <p>Un service de la mairie de Saint-Paul-sur-Save</p>
     <p class="foot-meta"><span>9 route de Cox, 31530 Saint-Paul-sur-Save · 05 61 85 43 77</span><span><a href="mailto:contact@la-save.fr">contact@la-save.fr</a><span id="foot-maj" hidden></span></span></p>
     <p class="foot-links">
+      <a href="#agenda">Tout l’agenda</a>
       <a href="#mentions">Mentions légales</a>
       <a href="#confidentialite">Confidentialité</a>
       <a href="#accessibilite">Accessibilité : partiellement conforme</a>
@@ -434,7 +466,7 @@
 
   <!-- ════════ AVIS ════════ -->
 
-  <script src="app.js?v=38" defer></script>
+  <script src="app.js?v=39" defer></script>
 <!-- Cloudflare Web Analytics (sans cookies) --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "75911b4b41574e2cafe93d48df5d8ae0"}'></script>
 <script src="visite.js?v=1" defer></script>
 </body>

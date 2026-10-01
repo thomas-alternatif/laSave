@@ -872,6 +872,95 @@
     });
   }
 
+  /* ── Page « Tout l'agenda » : liste par jour avec filtres ── */
+  const AG = { when: 'all', commune: '', cat: '', free: false };
+  const ymd = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  const addDays = (k, n) => { const d = new Date(k + 'T12:00:00'); d.setDate(d.getDate() + n); return ymd(d); };
+  const isFree = e => /^\s*(gratuit|entr[ée]e libre|libre)\b/i.test(String(e.Tarif || ''));
+  const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+  const evStart = e => String(e.Date || '').slice(0, 10);
+  const evEnd = e => { const s = evStart(e), f = String(e['Date de fin'] || '').slice(0, 10); return f && f > s ? f : s; };
+  function agRange(w) {
+    const t = ymd(new Date()), dow = new Date(t + 'T12:00:00').getDay(); // 0 = dimanche
+    if (w === 'today') return [t, t];
+    if (w === 'week') return [t, addDays(t, 6)];
+    if (w === 'month') { const d = new Date(); return [t, ymd(new Date(d.getFullYear(), d.getMonth() + 1, 0))]; }
+    if (w === 'weekend') { const sun = addDays(t, (7 - dow) % 7), fri = addDays(sun, -2); return [fri > t ? fri : t, sun]; }
+    return null;
+  }
+  function agMatch(e, rng) {
+    if (AG.commune && e.Commune !== AG.commune) return false;
+    if (AG.cat && e['Catégorie'] !== AG.cat) return false;
+    if (AG.free && !isFree(e)) return false;
+    if (!rng) return true;
+    const s = evStart(e); if (!s) return false; // les rendez-vous réguliers sans date n'apparaissent que dans « Tout »
+    if (!(s <= rng[1] && evEnd(e) >= rng[0])) return false;
+    if (AG.when === 'weekend' && s === evEnd(e) && new Date(s + 'T12:00:00').getDay() === 5 && (parseInt(e.Heure, 10) || 0) < 17) return false; // le vendredi compte à partir de 17 h
+    return true;
+  }
+  function agItem(e) {
+    const li = el('li'), b = el('button', 'ag-item'); b.type = 'button';
+    const th = el('span', 'ag-thumb'); th.setAttribute('aria-hidden', 'true'); bg(th, photoOf(e)); b.appendChild(th);
+    const m = el('span', 'ag-main');
+    const s = evStart(e), en = evEnd(e);
+    let when = e.Date ? hour(e) : (e['Jour/Période'] || e['Période'] || e['Récurrence'] || '');
+    if (s && en > s) when += (when ? ' · ' : '') + 'jusqu’au ' + fmt(en, { day: 'numeric', month: 'short' });
+    if (when) m.appendChild(el('span', 'ag-time', when));
+    m.appendChild(tel('b', 'ag-name', e.Titre || 'Événement'));
+    const meta = [e.Commune, e.Tarif].filter(Boolean).join(' · ');
+    if (meta) m.appendChild(el('span', 'ag-meta', meta));
+    b.appendChild(m);
+    const c = el('span', 'ag-cat', e['Catégorie'] || ''); c.style.setProperty('--c', catOf(e)[0]); if (e['Catégorie']) b.appendChild(c);
+    b.addEventListener('click', () => openEvent(e));
+    li.appendChild(b); return li;
+  }
+  function agFill(sel, items, label) {
+    sel.replaceChildren(new Option(label, ''));
+    items.forEach(([v, n]) => sel.appendChild(new Option(`${v} (${n})`, v)));
+  }
+  function agSetup() {
+    const count = key => { const m = new Map(); UP.forEach(e => { const v = e[key]; if (v) m.set(v, (m.get(v) || 0) + 1); }); return m; };
+    agFill($('#ag-commune'), [...count('Commune')].sort((a, b) => a[0].localeCompare(b[0], 'fr')), 'Toutes les communes');
+    const cats = count('Catégorie'), order = Object.keys(CATS);
+    agFill($('#ag-cat'), [...cats].sort((a, b) => (order.indexOf(a[0]) + 1 || 99) - (order.indexOf(b[0]) + 1 || 99)), 'Toutes les catégories');
+    $$('#view-agenda [data-w]').forEach(b => b.addEventListener('click', () => { AG.when = b.dataset.w; renderAgenda(); }));
+    $('#ag-commune').addEventListener('change', ev => { AG.commune = ev.target.value; renderAgenda(); });
+    $('#ag-cat').addEventListener('change', ev => { AG.cat = ev.target.value; renderAgenda(); });
+    $('#ag-free').addEventListener('click', () => { AG.free = !AG.free; renderAgenda(); });
+    $('#ag-reset').addEventListener('click', () => { Object.assign(AG, { when: 'all', commune: '', cat: '', free: false }); $('#ag-commune').value = ''; $('#ag-cat').value = ''; renderAgenda(); });
+  }
+  function renderAgenda() {
+    const root = $('#ag-list'); if (!root || !Array.isArray(UP)) return;
+    const rng = agRange(AG.when), t = ymd(new Date());
+    const dated = [], reg = [];
+    UP.forEach(e => { if (agMatch(e, rng)) (evStart(e) ? dated : reg).push(e); });
+    const k = e => { const s = evStart(e); return s < t ? t : s; };
+    dated.sort((a, b) => k(a).localeCompare(k(b)) || (parseInt(a.Heure, 10) || 0) - (parseInt(b.Heure, 10) || 0) || String(a.Titre).localeCompare(String(b.Titre), 'fr'));
+    reg.sort((a, b) => String(a.Titre).localeCompare(String(b.Titre), 'fr'));
+    root.replaceChildren();
+    const section = (heading, list) => {
+      const s = el('section', 'ag-day'); s.appendChild(el('h2', 'ag-day-t', heading));
+      const ul = el('ul', 'ag-items'); list.forEach(e => ul.appendChild(agItem(e))); s.appendChild(ul); root.appendChild(s);
+    };
+    const groups = new Map(); dated.forEach(e => { const g = k(e); (groups.get(g) || groups.set(g, []).get(g)).push(e); });
+    groups.forEach((list, g) => {
+      let hd = cap(fmt(g + 'T12:00:00', { weekday: 'long', day: 'numeric', month: 'long' }));
+      if (g === t) hd = 'Aujourd’hui · ' + hd; else if (g === addDays(t, 1)) hd = 'Demain · ' + hd;
+      section(hd, list);
+    });
+    if (reg.length) section('Rendez-vous réguliers', reg);
+    const n = dated.length + reg.length;
+    if (!n) {
+      const p = el('p', 'ag-empty', 'Rien ne correspond à ces filtres pour le moment. '); const r = el('button', 'ag-reset', 'Tout effacer'); r.type = 'button';
+      r.addEventListener('click', () => $('#ag-reset').click()); p.appendChild(r); root.appendChild(p);
+    }
+    $('#ag-count').textContent = `${n} événement${n > 1 ? 's' : ''}`;
+    $$('#view-agenda [data-w]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.w === AG.when)));
+    $('#ag-free').setAttribute('aria-pressed', String(AG.free));
+    $('#ag-reset').hidden = AG.when === 'all' && !AG.commune && !AG.cat && !AG.free;
+    const l = $('#ag-lede'); if (l) l.textContent = `${UP.length} événement${UP.length > 1 ? 's' : ''} à venir dans la vallée de la Save, jour après jour.`;
+  }
+
   /* ── Navigation entre les pages ── */
   const LEGAL = { mentions: 'Mentions légales', confidentialite: 'Confidentialité', cookies: 'Cookies', accessibilite: 'Accessibilité' };
   const HOME_ANCHORS = ['rendez-vous', 'envies', 'organisateurs', 'lettre', 'top', 'contenu'];
@@ -880,6 +969,7 @@
     const h = decodeURIComponent(location.hash.slice(1));
     let view = 'home';
     if (h === 'partager' || h === 'proposer') view = 'partager';
+    else if (h === 'agenda') view = 'agenda';
     else if (LEGAL[h]) view = 'legal';
     const was = $$('.view').find(v => !v.hidden);
     $$('.view').forEach(v => { v.hidden = v.id !== 'view-' + view; });
@@ -890,9 +980,11 @@
       Object.keys(LEGAL).forEach(k => { $('#tab-' + k).hidden = k !== h; const a = $(`[data-tab="${k}"]`); if (k === h) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
       $('#legal-title').textContent = LEGAL[h];
       document.title = `${LEGAL[h]} · laSave`;
-    } else if (view === 'partager') document.title = 'Proposer un événement · laSave';
+    } else if (view === 'agenda') document.title = 'Tout l’agenda · laSave';
+    else if (view === 'partager') document.title = 'Proposer un événement · laSave';
     else document.title = 'laSave · Agenda de la Save';
     const changed = was && was.id !== 'view-' + view;
+    if (view === 'agenda') renderAgenda();
     if (view === 'home') {
       flowRender(); fitAll();
       const m = h.match(/^event-(rec\w+)$/);
@@ -1034,6 +1126,7 @@
     buildFlow(UP);
     buildRows(UP);
     buildOrgs(ORGAS);
+    agSetup(); renderAgenda();
     // vrais chiffres dans les titres de section
     { const n = UP.length, o = (ORGAS || []).length, ka = $('#kick-agenda'), ko = $('#kick-orgs');
       if (ka && n >= 3) ka.textContent = `${n} événements à venir dans la vallée`;
