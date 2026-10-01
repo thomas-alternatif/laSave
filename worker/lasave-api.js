@@ -487,7 +487,7 @@ async function markDirty() { const snap = await KV.get('snap', 'json'); if (snap
 
 /* Mail « C'est en ligne » demandé depuis Airtable : part seulement si la case est cochée ET que l'événement est vraiment visible sur le site.
    Sinon la case reste cochée et le mail partira à la prochaine mise en ligne (/hook/refresh). */
-async function tryConfirm(env, rec, liveEvents) {
+async function tryConfirm(env, rec, liveEvents, lien = false) {
   const id = rec.id, f = rec.fields || {};
   const ecrire = async (texte, decoche) => {
     const fields = { [F_CONF_TXT]: texte }; if (decoche) fields[F_CONF] = false;
@@ -495,7 +495,9 @@ async function tryConfirm(env, rec, liveEvents) {
     catch (e) { console.error('confirmation : écriture Airtable', e.message); }
     return { envoye: false, texte };
   };
-  if (!f[F_CONF]) return { envoye: false, texte: "La case n'est pas cochée." };
+  if (!lien && !f[F_CONF]) return { envoye: false, texte: "La case n'est pas cochée." };
+  if (lien && f.Statut !== 'Publié') return { envoye: false, texte: "Pas envoyée : l'événement n'est pas encore publié (Statut = Publié)." };
+  if (lien && !liveEvents.some(e => e.id === id)) return { envoye: false, texte: "Pas envoyée : l'événement n'apparaît pas encore sur le site, réessayez dans une minute." };
   if (f.Statut !== 'Publié' || !liveEvents.some(e => e.id === id)) return { ...(await ecrire("En attente : le mail partira dès que l'événement sera en ligne sur le site.", false)), attente: true };
   const to = firstEmail(f['Contact privé']);
   if (!isEmail(to)) return ecrire('Pas envoyée : aucune adresse e-mail dans « Contact privé ».', true);
@@ -867,6 +869,30 @@ async function route(req, env, ctx) {
   /* ── Bouton Airtable « Envoyer la confirmation » ──
      Une automatisation Airtable appelle cette adresse quand la case est cochée sur une fiche. Aucun mot de passe :
      on relit la fiche dans Airtable, et le mail ne part que si la case y est bien cochée et l'événement publié. */
+  // Liens cliquables depuis une fiche Airtable (champs formule) : pas besoin d'automatisation Airtable payante
+  if (m === 'GET' && (p === '/lien/maj' || p === '/lien/confirmer')) {
+    if (!KV) return pageSimple('Indisponible', 'Le stockage du site n’est pas relié.');
+    if (await tooMany(req, 'lien', 60, 3600)) return pageSimple('Doucement', 'Trop de demandes, réessayez dans quelques minutes.');
+    const id = String(url.searchParams.get('id') || '');
+    if (p === '/lien/confirmer' && !isId(id)) return pageSimple('Lien incomplet', 'Ce lien n’est pas valide.');
+    let snap = (await KV.get('snap', 'json')) || {};
+    const relire = async () => { // relit Airtable (une seule fois à la fois)
+      if (await KV.get('lock')) return false;
+      await KV.put('lock', '1', { expirationTtl: 30 });
+      snap = await buildSnap(env); return true;
+    };
+    try { await relire(); } catch (e) { return pageSimple('Airtable injoignable', 'Réessayez dans un instant.'); }
+    if (p === '/lien/maj') {
+      let envoyes = 0;
+      try { const att = await listAll(env, T_EVENTS, '&filterByFormula=' + encodeURIComponent("AND({Envoyer la confirmation},{Statut}='Publié')")); for (const rec of att) { if ((await tryConfirm(env, rec, snap.events || [])).envoye) envoyes++; } } catch {}
+      return pageSimple('Site mis à jour', 'L’agenda est à jour.' + (envoyes ? ` ${envoyes} confirmation(s) envoyée(s).` : '') + ' Vous pouvez fermer cet onglet.');
+    }
+    let rec; try { rec = await at(env, `${T_EVENTS}/${id}`); } catch { return pageSimple('Introuvable', 'Cet événement n’existe pas.'); }
+    const deja = await KV.get('mailpub:' + id);
+    if (deja) return pageSimple('Déjà envoyée', 'La confirmation est déjà partie le ' + new Date(deja).toLocaleDateString('fr-FR', { timeZone: 'Europe/Paris' }) + '.');
+    const r = await tryConfirm(env, rec, snap.events || [], true);
+    return pageSimple(r.envoye ? 'Confirmation envoyée' : 'Pas envoyée', r.texte + ' Vous pouvez fermer cet onglet.');
+  }
   // Relecture d'Airtable demandée par l'automatisation Airtable (Statut passé à « Publié »). Sans mot de passe : ne fait que rafraîchir la copie publique.
   if (m === 'POST' && p === '/hook/refresh') {
     if (!KV) return json(req, { error: 'Stockage KV non relié' }, 400);
