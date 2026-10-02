@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://lasave-api.partage.workers.dev; base-uri 'self'; form-action 'none'" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="theme-color" content="#050505" />
+  <title>Archive des affiches · laSave</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,500..900&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="icon" href="../favicon.ico" sizes="48x48" />
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="kit.css?v=14" />
+  <link rel="stylesheet" href="archive.css?v=1" />
+</head>
+<body>
+  <header class="k-top">
+    <a href="./" aria-label="laSave, accueil"><img src="../test7/logo.png" alt="laSave" width="118" height="29" /></a>
+    <span>Administration</span>
+  </header>
+
+  <main class="k-wrap">
+    <section class="k-card" id="a-login">
+      <div class="k-meta"><b>Archive des affiches</b><span>Accès réservé</span></div>
+      <h2>Connexion</h2>
+      <p>Même mot de passe que l’administration du site.</p>
+      <form id="a-form" class="a-form">
+        <label for="a-pwd">Mot de passe</label>
+        <input id="a-pwd" type="password" autocomplete="current-password" required />
+        <button class="k-btn gold" type="submit">Se connecter</button>
+      </form>
+      <p class="k-err" id="a-err" hidden></p>
+    </section>
+
+    <section class="k-card" id="a-main" hidden>
+      <div class="k-meta"><b>Archive des affiches</b><span id="a-sum"></span></div>
+      <h2>Sauvegarder les affiches</h2>
+      <p>Toutes les affiches des événements d’un statut, réunies dans un seul fichier .zip, à ranger où vous voulez (votre Drive par exemple).</p>
+      <div class="a-tools">
+        <label for="a-statut">Événements</label>
+        <select id="a-statut">
+          <option value="Archivé">Archivés</option>
+          <option value="Publié">En ligne (y compris à venir)</option>
+          <option value="En attente">En attente</option>
+        </select>
+        <button class="k-btn gold" type="button" id="a-zip" disabled>Télécharger le .zip</button>
+      </div>
+      <p class="a-prog" id="a-prog" role="status" hidden></p>
+      <ul class="a-list" id="a-list"></ul>
+    </section>
+  </main>
+
+  <script src="archive.js?v=1"></script>
+</body>
+</html>

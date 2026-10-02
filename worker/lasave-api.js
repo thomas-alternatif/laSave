@@ -504,8 +504,68 @@ function withCounts(events, counts) {
   return events.map(e => counts[e.id] ? { ...e, Likes: counts[e.id].Likes ?? e.Likes, Vues: counts[e.id].Vues ?? e.Vues } : e);
 }
 // Tâche de nuit : recopie les compteurs (10 fiches par appel) puis relit Airtable
+/* ── Récapitulatif « Qui vient » : un seul mail à l'organisateur, 2 jours avant, à partir de 5 personnes ── */
+const RECAP_MIN = 5;
+async function rsvpRecap(env) {
+  if (!env.DB || !KV || !env.BREVO_KEY) return;
+  await rsvpTable(env.DB);
+  const jour = n => new Date(Date.now() + n * 864e5).toLocaleDateString('sv-SE', { timeZone: 'Europe/Paris' });
+  const [de, a] = [jour(1), jour(2)];
+  const snap = (await KV.get('snap', 'json')) || {};
+  const proches = (snap.events || []).filter(e => e.Date >= de && e.Date <= a);
+  if (!proches.length) return;
+  const sums = (await env.DB.prepare('SELECT ev, SUM(nb) AS total FROM rsvp GROUP BY ev HAVING SUM(nb) >= ?1').bind(RECAP_MIN).all()).results || [];
+  for (const e of proches) {
+    const sm = sums.find(x => x.ev === e.id);
+    if (!sm || await KV.get('mailrsvp:' + e.id)) continue;
+    try {
+      const rec = await at(env, `${T_EVENTS}/${e.id}`), f = rec.fields || {};
+      const to = firstEmail(f['Contact privé']);
+      if (!to) continue;
+      const rows = (await env.DB.prepare('SELECT prenom, nb FROM rsvp WHERE ev = ?1 ORDER BY at').bind(e.id).all()).results || [];
+      await sendMail(env, { to, toName: f.Organisation, ...rsvpMail(f, e.id, sm.total, rows, await rsvpKey(env, e.id)) });
+      await KV.put('mailrsvp:' + e.id, new Date().toISOString(), { expirationTtl: 40 * 86400 });
+    } catch (err) { console.error('récap rsvp', e.id, err.message); }
+  }
+}
+function rsvpMail(f, id, total, rows, k) {
+  const titre = f.Titre || 'Votre événement', quand = quandTexte(f);
+  const kitUrl = `${SITE}/test13/kit.html?id=${id}&k=${k}`;
+  const S = "'Helvetica Neue',Helvetica,Arial,sans-serif";
+  const noms = rows.slice(0, 40).map(r => escH(r.prenom) + (r.nb > 1 ? ` (+${r.nb - 1})` : ''));
+  const reste = rows.length - noms.length;
+  const subject = `${titre} : ${total} personnes viennent`;
+  const html = `<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="dark"><title>${escH(subject)}</title></head>
+<body bgcolor="#050505" style="margin:0;padding:0;background-color:#050505;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#050505" style="background-color:#050505;"><tr><td align="center" style="padding:30px 12px 44px;">
+<table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px;">
+<tr><td style="padding:4px 6px 20px;"><a href="${SITE}"><img src="${SITE}/test7/logo.png" width="118" alt="laSave" style="display:block;width:118px;height:auto;border:0;"></a></td></tr>
+<tr><td bgcolor="#0e0e0e" style="background-color:#0e0e0e;border-radius:26px;padding:28px 26px 30px;font-family:${S};">
+  <div style="font-size:12px;font-weight:600;color:#a3a19b;letter-spacing:.06em;text-transform:uppercase;">Point d’étape · ${escH(titre)}</div>
+  <div style="margin-top:16px;font-size:44px;line-height:1;font-weight:800;color:#FFA823;">${total} personnes</div>
+  <div style="margin-top:6px;font-size:20px;font-weight:700;color:#f4f3ef;">comptent venir.</div>
+  <p style="margin:18px 0 0;font-size:16px;line-height:1.6;color:#d6d4ce;">Bonjour${f.Organisation ? ' ' + escH(f.Organisation) : ''}, c’est bientôt (${escH(quand.charAt(0).toLowerCase() + quand.slice(1))}). Voici qui a répondu « Je viens » depuis votre invitation :</p>
+  <p style="margin:14px 0 0;font-size:16px;line-height:1.8;color:#f4f3ef;"><strong>${noms.join(' · ')}</strong>${reste > 0 ? ` <span style="color:#a3a19b;">et ${reste} autre${reste > 1 ? 's' : ''}</span>` : ''}</p>
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-top:24px;"><tr><td bgcolor="#FFA823" style="background-color:#FFA823;border-radius:99px;"><a href="${kitUrl}" style="display:inline-block;padding:14px 26px;font-size:15px;font-weight:600;color:#141210;text-decoration:none;border-radius:99px;">Voir la liste en direct</a></td></tr></table>
+  <p style="margin:22px 0 0;font-size:13px;line-height:1.6;color:#a3a19b;">C’est le seul mail que vous recevrez à ce sujet. La liste continue de se mettre à jour dans votre kit de partage.</p>
+</td></tr>
+<tr><td align="center" style="padding:26px 16px 0;font-family:${S};font-size:12px;line-height:1.8;color:#77756f;">Mairie de Saint-Paul-sur-Save — Commission culture<br><a href="${SITE}" style="color:#f4f3ef;text-decoration:none;font-weight:600;">la-save.fr</a></td></tr>
+</table></td></tr></table></body></html>`;
+  const text = `Bonjour${f.Organisation ? ' ' + f.Organisation : ''},
+
+${titre} (${quand}) : ${total} personnes comptent venir.
+
+${rows.slice(0, 40).map(r => r.prenom + (r.nb > 1 ? ` (+${r.nb - 1})` : '')).join(', ')}${reste > 0 ? ` et ${reste} autre(s)` : ''}
+
+La liste en direct : ${kitUrl}
+
+C'est le seul mail que vous recevrez à ce sujet.`;
+  return { subject, html, text };
+}
+
 async function nightly(env) {
   if (!KV) return;
+  try { await rsvpRecap(env); } catch (e) { console.error('récap rsvp', e.message); }
   const counts = await getCounts();
   const ids = Object.keys(counts).filter(id => isId(id) && !id.startsWith('recTMP')); // recTMP… : fiches de l'export de dépannage
   for (let i = 0; i < ids.length; i += 10) {
@@ -1009,6 +1069,23 @@ async function route(req, env, ctx) {
       if (!ADMIN_STATUTS.includes(statut)) return json(req, { error: 'statut' }, 400);
       const recs = await listAll(env, T_EVENTS, '&filterByFormula=' + encodeURIComponent(`{Statut}='${statut}'`));
       return json(req, recs); // l'admin voit tous les champs, y compris privés
+    }
+    // Affiches à sauvegarder : liste (avec les liens frais d'Airtable) puis téléchargement d'un fichier par le Worker
+    if (m === 'GET' && p === '/admin/affiches') {
+      const statut = url.searchParams.get('statut');
+      if (!ADMIN_STATUTS.includes(statut)) return json(req, { error: 'statut' }, 400);
+      const recs = await listAll(env, T_EVENTS, '&filterByFormula=' + encodeURIComponent(`{Statut}='${statut}'`) + '&fields%5B%5D=Titre&fields%5B%5D=Date&fields%5B%5D=Photo');
+      return json(req, recs.map(r => ({
+        id: r.id, titre: r.fields.Titre || '', date: r.fields.Date || '',
+        fichiers: (r.fields.Photo || []).map(a => ({ nom: a.filename || 'affiche', url: a.url, taille: a.size || 0, type: a.type || '' })),
+      })).sort((a, b) => String(a.date).localeCompare(String(b.date))), 200, { 'Cache-Control': 'no-store' });
+    }
+    if (m === 'GET' && p === '/admin/affiche') {
+      let h; try { h = new URL(url.searchParams.get('u') || ''); } catch { return json(req, { error: 'lien' }, 400); }
+      if (h.protocol !== 'https:' || !/(^|\.)airtableusercontent\.com$/.test(h.hostname)) return json(req, { error: 'lien' }, 400);
+      const r = await fetch(h.href);
+      if (!r.ok) return json(req, { error: 'Fichier introuvable (lien expiré ?), rechargez la liste.' }, 502);
+      return new Response(r.body, { headers: { 'Content-Type': r.headers.get('Content-Type') || 'application/octet-stream', 'Cache-Control': 'no-store', ...cors(req) } });
     }
     if (m === 'GET' && p === '/admin/code-requests') {
       const recs = await listAll(env, T_ORGAS, '&filterByFormula=' + encodeURIComponent("{Statut code}='Demandé'"));
