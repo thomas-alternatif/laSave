@@ -708,7 +708,7 @@ const ROUTES = [
   'POST /code — vérifier un code organisateur', 'POST /code/request — demander un code', 'POST /events — proposer un événement', 'POST /events/:id/(view|like) — vues et « J’y vais »',
   'POST /stat — « J’y vais » et vues', 'POST /avis — avis', 'POST /upload — affiche (ImgBB)', 'POST /newsletter · /newsletter/stop',
   'GET /lien/maj · /lien/confirmer?id= — pages de lien depuis Airtable', 'POST /hook/refresh · /hook/confirm — relecture et confirmations',
-  'POST /admin/login', 'GET /admin/overview · /admin/diag · /admin/stats · /admin/events · /admin/event/:id · /admin/kv · /admin/affiches · /admin/affiche · /admin/code-requests',
+  'POST /admin/login', 'GET /admin/overview · /admin/diag · /admin/stats · /admin/stats/brut · /admin/events · /admin/event/:id · /admin/kv · /admin/affiches · /admin/affiche · /admin/code-requests',
   'POST /admin/event/:id/fields · /admin/refresh · /admin/cache-clear · /admin/test-mail · /admin/sql · /admin/orgas/:id/(send-code|refuse)', 'PATCH /admin/events/:id — statut', 'GET /health',
 ];
 const OV_EV = ['Titre', 'Statut', 'Date', 'Date de fin', 'Récurrence', 'Commune', 'Organisation', 'Catégorie', 'Likes', 'Vues', 'Photo', 'Contact privé', 'Envoyer la confirmation', 'Confirmation par mail', 'À la une', 'Lieu', 'Heure'];
@@ -1129,7 +1129,7 @@ async function route(req, env, ctx) {
       let rsvp = {};
       if (env.DB) { try { await rsvpTable(env.DB); for (const x of (await env.DB.prepare('SELECT ev, COUNT(*) AS n, SUM(nb) AS total FROM rsvp GROUP BY ev').all()).results || []) rsvp[x.ev] = { n: x.n, total: x.total }; } catch {} }
       const snap = KV ? await KV.get('snap', 'json') : null;
-      return json(req, { ...ov, rsvp, copie: snap ? new Date(snap.at).toISOString() : null, enLigne: snap ? (snap.events || []).length : null, services: { kv: !!KV, d1: !!env.DB, brevo: !!env.BREVO_KEY, stats: !!(env.STATS || env.DB) } }, 200, { 'Cache-Control': 'no-store' });
+      return json(req, { ...ov, rsvp, copie: snap ? new Date(snap.at).toISOString() : null, enLigne: snap ? (snap.events || []).length : null, journal: KV ? ((await KV.get('jrnl', 'json')) || []).slice(0, 8) : [], services: { kv: !!KV, d1: !!env.DB, brevo: !!env.BREVO_KEY, stats: !!(env.STATS || env.DB) } }, 200, { 'Cache-Control': 'no-store' });
     }
     // Affiches à sauvegarder : liste (avec les liens frais d'Airtable) puis téléchargement d'un fichier par le Worker
     if (m === 'GET' && p === '/admin/affiches') {
@@ -1190,6 +1190,20 @@ async function route(req, env, ctx) {
       const mail = publishedMail(f, ev.id, await rsvpKey(env, ev.id));
       await sendMail(env, { to, ...mail, subject: '[Test] ' + mail.subject });
       return json(req, { ok: true, titre: ev.Titre || '' });
+    }
+    // Statistiques détaillées : toutes les lignes jour par jour (la page Statistiques calcule tout à partir de là)
+    if (m === 'GET' && p === '/admin/stats/brut') {
+      if (!env.DB) return json(req, { error: 'Base D1 non reliée' }, 400);
+      const jours = Math.min(180, Math.max(1, parseInt(url.searchParams.get('jours'), 10) || 60));
+      await statsTable(env.DB); await rsvpTable(env.DB);
+      const depuis = new Date(Date.now() + 2 * 3600e3 - (jours - 1) * 864e5).toISOString().slice(0, 10);
+      const [a, b] = await Promise.all([
+        env.DB.prepare('SELECT jour, type, id, canal, SUM(n) AS n FROM stats WHERE jour >= ?1 GROUP BY jour, type, id, canal ORDER BY jour').bind(depuis).all(),
+        env.DB.prepare('SELECT substr(at, 1, 10) AS jour, SUM(nb) AS n, COUNT(*) AS reponses FROM rsvp WHERE substr(at, 1, 10) >= ?1 GROUP BY jour').bind(depuis).all(),
+      ]);
+      let inscrits = null;
+      try { const id = env.NEWSLETTER_LIST || (KV && await KV.get('nl-liste')); if (id && env.BREVO_KEY) { const d = (await brevo(env, `/contacts/lists/${id}`)).d; inscrits = d.uniqueSubscribers ?? d.totalSubscribers ?? null; } } catch {}
+      return json(req, { jours, depuis, lignes: (a.results || []).slice(0, 20000), rsvp: b.results || [], inscrits }, 200, { 'Cache-Control': 'no-store' });
     }
     // Statistiques des N derniers jours
     if (m === 'GET' && p === '/admin/stats') {

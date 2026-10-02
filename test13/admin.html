@@ -12,7 +12,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,500..900&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="icon" href="../favicon.ico" sizes="48x48" />
   <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
-  <link rel="stylesheet" href="admin.css?v=2" />
+  <link rel="stylesheet" href="admin.css?v=3" />
 </head>
 <body>
   <!-- Connexion -->
@@ -53,14 +53,22 @@
 
       <!-- Vue d'ensemble -->
       <section class="d-sec" id="s-vue" hidden>
-        <h1 class="d-h1">Vue d’ensemble</h1>
-        <p class="d-sub" id="v-date"></p>
-        <h2 class="d-h2">À traiter</h2>
+        <div class="v-head">
+          <div><h1 class="d-h1">Vue d’ensemble</h1><p class="d-sub" id="v-date"></p></div>
+          <p class="v-pulse" id="v-pulse" role="status"></p>
+        </div>
         <ul class="d-todo" id="v-todo"></ul>
-        <h2 class="d-h2">Les 30 derniers jours <a class="d-more" href="stats.html">Détail des statistiques</a></h2>
+        <h2 class="d-h2">Les 30 derniers jours <span class="d-more-t">comparés aux 30 jours d’avant</span></h2>
         <div class="d-kpis" id="v-kpis"></div>
-        <h2 class="d-h2">Les 7 prochains jours</h2>
-        <div class="d-card"><ul class="d-next" id="v-next"></ul></div>
+        <div class="d-cols">
+          <div class="d-card"><h2 class="d-h2 in">Visites par jour <span class="d-light" id="v-chart-sum"></span></h2><div class="d-chart" id="v-chart"></div></div>
+          <div class="d-card"><h2 class="d-h2 in">Les 7 prochains jours</h2><ul class="d-next" id="v-next"></ul></div>
+        </div>
+        <div class="d-cols">
+          <div class="d-card"><h2 class="d-h2 in">L’agenda en chiffres</h2><div id="v-agenda"></div></div>
+          <div class="d-card"><h2 class="d-h2 in">Les plus consultés <span class="d-light">30 jours</span></h2><ul class="d-top5" id="v-top"></ul></div>
+        </div>
+        <div class="d-card"><h2 class="d-h2 in">Dernières actions <a class="d-more" href="#systeme">Journal complet</a></h2><ul class="d-journal" id="v-journal"></ul></div>
       </section>
 
       <!-- Événements -->
@@ -87,10 +95,39 @@
 
       <!-- Statistiques -->
       <section class="d-sec" id="s-stats" hidden>
-        <h1 class="d-h1">Statistiques <span class="d-light">30 jours</span></h1>
-        <div class="d-card"><h2 class="d-h2 in">Visites par jour</h2><div class="d-chart" id="t-chart"></div></div>
-        <div class="d-card"><h2 class="d-h2 in">Les événements les plus vus</h2><ul class="d-top5" id="t-top"></ul></div>
-        <p class="d-note"><a href="stats.html">Ouvrir les statistiques détaillées</a> : d’où viennent les visiteurs, canaux de partage, boutons du kit.</p>
+        <h1 class="d-h1">Statistiques</h1>
+        <div class="d-chips" id="t-per" role="tablist" aria-label="Période"></div>
+        <p class="d-sub" id="t-txt"></p>
+        <div class="d-kpis" id="t-kpis"></div>
+        <div class="d-card">
+          <h2 class="d-h2 in">Jour par jour <span class="d-light" id="t-chart-sum"></span></h2>
+          <div class="d-chips" id="t-metric" role="tablist" aria-label="Mesure"></div>
+          <div class="d-chart" id="t-chart"></div>
+        </div>
+        <div class="d-cols">
+          <div class="d-card"><h2 class="d-h2 in">Les bons réflexes</h2><ul class="d-health" id="t-ratios"></ul></div>
+          <div class="d-card"><h2 class="d-h2 in">Selon le jour de la semaine <span class="d-light" id="t-wd-m"></span></h2><div class="d-bars" id="t-wd"></div></div>
+        </div>
+        <div class="d-cols">
+          <div class="d-card"><h2 class="d-h2 in">D’où viennent les visiteurs</h2><div class="d-bars" id="t-sources"></div></div>
+          <div class="d-card"><h2 class="d-h2 in">Quelle version du site</h2><div class="d-bars" id="t-versions"></div><p class="d-note">« Test » = la nouvelle version (test13), pas encore en ligne.</p></div>
+        </div>
+        <div class="d-cols">
+          <div class="d-card"><h2 class="d-h2 in">Clics sur les liens partagés</h2><div class="d-bars" id="t-canaux"></div><p class="d-note">Par où les gens arrivent : WhatsApp, Facebook, mail, QR code…</p></div>
+          <div class="d-card"><h2 class="d-h2 in">Liens partagés (aperçus)</h2><div class="d-bars" id="t-apercus"></div><p class="d-note">Fois où un lien a été collé dans une messagerie ou un réseau social, qui en a affiché l’aperçu.</p></div>
+        </div>
+        <div class="d-cols">
+          <div class="d-card"><h2 class="d-h2 in">Boutons du kit de partage</h2><div class="d-bars" id="t-kit"></div></div>
+          <div class="d-card"><h2 class="d-h2 in">Ajouts au calendrier et lettre</h2><div class="d-bars" id="t-cal"></div><p class="d-note" id="t-nl"></p></div>
+        </div>
+        <div class="d-card flush">
+          <div class="d-bar t-tabbar"><h2 class="d-h2 in">Événement par événement</h2><input class="d-search" id="t-q" type="search" placeholder="Chercher un événement" aria-label="Chercher un événement" /></div>
+          <div class="d-scroll"><table class="d-table t-ev" id="t-ev"></table></div>
+          <p class="d-more-row"><button class="d-btn sm" type="button" id="t-more" hidden>Voir tous les événements</button></p>
+        </div>
+        <div class="d-card"><h2 class="d-h2 in">En ligne mais jamais ouverts <span class="d-light" id="t-zero-n"></span></h2><ul class="d-chiplist" id="t-zero"></ul></div>
+        <details class="d-card d-det"><summary>Tous les chiffres, jour par jour</summary><div class="d-scroll"><table class="d-table" id="t-days"></table></div></details>
+        <div class="d-tools"><button class="d-btn main" type="button" id="t-copy">Copier tous les chiffres pour Claude</button><a class="d-btn" href="stats.html">Ancienne page de statistiques</a></div>
       </section>
 
       <!-- Archives -->
@@ -182,7 +219,8 @@
   <!-- Fiche d'un événement -->
   <div class="d-sheet" id="d-sheet" hidden><div class="d-sheet-box" role="dialog" aria-modal="true" aria-label="Fiche de l’événement" id="d-sheet-box"></div></div>
 
-  <script src="admin.js?v=2"></script>
+  <script src="admin.js?v=3"></script>
   <script src="admin-sys.js?v=1"></script>
+  <script src="admin-stats.js?v=1"></script>
 </body>
 </html>

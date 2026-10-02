@@ -289,7 +289,7 @@
       const d = await call('/admin/sql', { method: 'POST', body: JSON.stringify({ q: $('#sql-q').value }) });
       info.textContent = pl(d.lignes.length, 'ligne', 'lignes');
       if (!d.lignes.length) return;
-      const t = el('table', 'd-table'), tr = el('tr'); d.colonnes.forEach(c => tr.append(el('th', '', c))); t.append(el('thead')).append(tr);
+      const t = el('table', 'd-table'), tr = el('tr'); d.colonnes.forEach(c => tr.append(el('th', '', c))); { const th0 = el('thead'); th0.append(tr); t.append(th0); }
       const tb = el('tbody'); d.lignes.forEach(r => { const x = el('tr'); d.colonnes.forEach(c => x.append(el('td', '', r[c] == null ? '' : String(r[c])))); tb.append(x); }); t.append(tb); out.append(t);
     } catch (e) { info.textContent = e.message; }
   });

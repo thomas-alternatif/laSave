@@ -13,7 +13,7 @@
   let token = ''; try { token = sessionStorage.getItem(KEY) || ''; } catch (_) {}
   const saveToken = t => { token = t; try { t ? sessionStorage.setItem(KEY, t) : sessionStorage.removeItem(KEY); } catch (_) {} };
 
-  let ov = null, stats = null, filtre = null, q = '';
+  let ov = null, filtre = null, q = '';
 
   /* ── réseau ── */
   async function call(path, opts = {}, raw = false) {
@@ -59,7 +59,7 @@
       saveToken(d.token); $('#d-pwd').value = ''; await start();
     } catch (e) { err.textContent = e.message; err.hidden = false; }
   });
-  $('#d-logout').addEventListener('click', () => { saveToken(''); ov = null; stats = null; showApp(false); });
+  $('#d-logout').addEventListener('click', () => { saveToken(''); ov = null; showApp(false); });
   $('#d-reload').addEventListener('click', async () => { await charger(true); msg('Données actualisées.'); });
 
   /* ── chargement ── */
@@ -67,7 +67,7 @@
     $('#d-reload').disabled = true;
     try {
       ov = await call('/admin/overview' + (frais ? '?frais=1' : ''));
-      if (frais) stats = null;
+      if (frais && window.LS) LS.rend.reset && LS.rend.reset();
     } catch (e) { if (e.status !== 401) msg(e.message, true); }
     $('#d-reload').disabled = false;
     if (!ov) return;
@@ -89,7 +89,7 @@
     $$('#d-nav a').forEach(a => { const on = a.dataset.s === s; a.classList.toggle('on', on); on ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current'); });
     document.title = TITRES[s] + ' · Tableau de bord · laSave';
     const actif = $('#d-nav a.on'); if (actif) { const nav = $('#d-nav'); nav.scrollLeft = actif.offsetLeft - (nav.clientWidth - actif.offsetWidth) / 2; }
-    ({ vue: rVue, evenements: rEvenements, organisateurs: rOrgas, stats: rStats, archives: rArchives, outils: () => {}, systeme: () => LS.rend.systeme && LS.rend.systeme(), raccourcis: () => LS.rend.raccourcis && LS.rend.raccourcis() })[s]();
+    ({ vue: () => LS.rend.vue && LS.rend.vue(), evenements: rEvenements, organisateurs: rOrgas, stats: () => LS.rend.stats && LS.rend.stats(), archives: rArchives, outils: () => {}, systeme: () => LS.rend.systeme && LS.rend.systeme(), raccourcis: () => LS.rend.raccourcis && LS.rend.raccourcis() })[s]();
   }
   window.addEventListener('hashchange', () => { afficher(); window.scrollTo({ top: 0 }); });
   const aller = (h, f) => { if (f) { filtre = f; q = ''; $('#e-q').value = ''; } if (location.hash === '#' + h) afficher(); else location.hash = h; };
@@ -103,47 +103,6 @@
       msg({ Publié: `« ${e.titre} » est publié. L’agenda se met à jour dans la minute.${e.contact ? ' Le mail « C’est en ligne » part à l’organisateur.' : ''}`, Archivé: `« ${e.titre} » est archivé.`, Refusé: `« ${e.titre} » est refusé.`, 'En attente': `« ${e.titre} » est remis en attente.` }[statut]);
       return true;
     } catch (er) { if (er.status !== 401) msg(er.message, true); if (bouton) bouton.disabled = false; return false; }
-  }
-
-  /* ── vue d'ensemble ── */
-  function carte(cls, nombre, texte, bouton, action) {
-    const li = el('li', cls); li.append(el('b', '', fr(nombre)), el('span', '', texte));
-    if (bouton) { const b = el('button', 'd-btn sm', bouton); b.type = 'button'; b.addEventListener('click', action); li.append(b); }
-    return li;
-  }
-  function rVue() {
-    $('#v-date').textContent = longue().replace(/^./, c => c.toUpperCase());
-    const todo = $('#v-todo'); todo.innerHTML = '';
-    const nA = compte('attente'), nP = compte('passes');
-    const conf = ov.events.filter(e => e.coche && /^En attente/.test(e.conf)).length;
-    const sans = ov.events.filter(e => cle(e) === 'enligne' && !e.photo && !recur(e)).length;
-    if (nA) todo.append(carte('', nA, nA > 1 ? 'événements attendent votre validation' : 'événement attend votre validation', 'Voir', () => aller('evenements', 'attente')));
-    if (ov.codes) todo.append(carte('', ov.codes, ov.codes > 1 ? 'demandes de code organisateur' : 'demande de code organisateur', 'Voir', () => aller('organisateurs')));
-    if (nP) todo.append(carte('', nP, nP > 1 ? 'événements passés encore en ligne' : 'événement passé encore en ligne', 'Archiver', () => aller('evenements', 'passes')));
-    if (conf) todo.append(carte('info', conf, conf > 1 ? 'confirmations par mail en attente d’envoi' : 'confirmation par mail en attente d’envoi', 'Mettre le site à jour', () => aller('outils')));
-    if (sans) todo.append(carte('info', sans, sans > 1 ? 'événements en ligne sans affiche' : 'événement en ligne sans affiche', 'Voir', () => aller('evenements', 'enligne')));
-    if (!todo.children.length) { const li = el('li', 'calme'); li.append(el('span', '', 'Tout est à jour : rien à valider, rien à archiver.')); todo.append(li); }
-
-    // 7 prochains jours
-    const a = today(), b7 = new Date(Date.now() + 7 * 864e5).toLocaleDateString('sv-SE', { timeZone: 'Europe/Paris' });
-    const next = ov.events.filter(e => cle(e) === 'enligne' && !recur(e) && e.date <= b7 && fin(e) >= a).sort((x, y) => (x.date < a ? a : x.date).localeCompare(y.date < a ? a : y.date));
-    const ul = $('#v-next'); ul.innerHTML = '';
-    if (!next.length) ul.append(el('li', 'd-vide', 'Rien de prévu dans les 7 prochains jours.'));
-    next.forEach(e => {
-      const li = el('li'), t = el('div'), v = venir(e.id);
-      t.append(el('b', '', e.titre || '(sans titre)'), el('small', '', sous(e)));
-      li.append(el('time', '', e.date < a ? 'En cours' : court(e.date)), t, el('span', 'd-venir' + (v ? ' on' : ''), v ? `${pl(v, 'personne vient', 'personnes viennent')}` : 'aucune réponse'));
-      ul.append(li);
-    });
-    chargerStats().then(kpis).catch(() => { $('#v-kpis').replaceChildren(el('p', 'd-note', 'Statistiques indisponibles pour le moment.')); });
-  }
-  async function chargerStats() { if (!stats) stats = await call('/admin/stats?jours=30'); return stats; }
-  const somme = (d, type) => d.parEvenement.filter(r => r.type === type).reduce((a, r) => a + (+r.n || 0), 0);
-  function kpis(d) {
-    const aVenir = ov.events.filter(e => cle(e) === 'enligne').reduce((a, e) => a + venir(e.id), 0);
-    const rows = [[somme(d, 'visite'), 'Visites'], [somme(d, 'fiche'), 'Fiches consultées'], [somme(d, 'lien'), 'Clics sur les liens partagés'], [somme(d, 'kit'), 'Kits de partage ouverts'], [somme(d, 'jyvais'), '« J’y vais » cliqués'], [aVenir, '« Je viens » reçus pour les événements à venir'], [d.inscrits != null ? d.inscrits : somme(d, 'newsletter'), d.inscrits != null ? 'Inscrits à la lettre' : 'Nouveaux inscrits à la lettre']];
-    const w = $('#v-kpis'); w.innerHTML = '';
-    rows.forEach(([n, t]) => { const k = el('div', 'd-kpi'); k.append(el('b', '', fr(n)), el('span', '', t)); w.append(k); });
   }
 
   /* ── événements ── */
@@ -236,27 +195,6 @@
     });
   }
 
-  /* ── statistiques ── */
-  async function rStats() {
-    let d; try { d = await chargerStats(); } catch (e) { $('#t-chart').textContent = e.message; return; }
-    // visites par jour
-    const par = {}; for (let i = 29; i >= 0; i--) par[new Date(Date.now() - i * 864e5).toISOString().slice(0, 10)] = 0;
-    d.parJour.forEach(r => { const k = String(r.jour).slice(0, 10); if (r.type === 'visite' && k in par) par[k] += +r.n || 0; });
-    const jours = Object.keys(par), vals = jours.map(j => par[j]), max = Math.max(1, ...vals);
-    const W = 640, H = 170, pad = 28, bw = (W - pad) / jours.length;
-    const barres = vals.map((v, i) => { const h = Math.round((H - 40) * v / max); return `<rect class="b" x="${(pad + i * bw + 1.5).toFixed(1)}" y="${H - 22 - h}" width="${(bw - 3).toFixed(1)}" height="${Math.max(v ? 2 : 0, h)}" rx="2"><title>${jours[i]} : ${v}</title></rect>`; }).join('');
-    const lab = (i, x, anchor) => `<text x="${x}" y="${H - 5}" text-anchor="${anchor}">${court(jours[i])}</text>`;
-    $('#t-chart').innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Visites par jour sur 30 jours"><line x1="${pad}" x2="${W}" y1="${H - 22}" y2="${H - 22}"/><text x="0" y="14">${max}</text>${barres}${lab(0, pad, 'start')}${lab(14, pad + 14.5 * bw, 'middle')}${lab(29, W, 'end')}</svg>`;
-    // événements les plus consultés
-    const parId = {};
-    d.parEvenement.forEach(r => { if (!r.id || !/^rec/.test(r.id)) return; const o = parId[r.id] = parId[r.id] || { fiche: 0, apercu: 0, lien: 0, kit: 0, jyvais: 0 }; if (r.type in o) o[r.type] += +r.n || 0; });
-    const titres = Object.fromEntries(ov.events.map(e => [e.id, e.titre]));
-    const top = Object.entries(parId).map(([id, o]) => ({ id, ...o })).filter(o => o.fiche + o.lien + o.jyvais > 0).sort((a, b) => b.fiche - a.fiche).slice(0, 8);
-    const ul = $('#t-top'); ul.innerHTML = '';
-    if (!top.length) ul.append(el('li', '', 'Pas encore de données sur la période.'));
-    top.forEach(o => { const li = el('li'); li.append(el('b', '', titres[o.id] || 'Événement retiré de la liste'), el('span', '', `${pl(o.fiche, 'fiche vue', 'fiches vues')} · ${pl(o.lien, 'clic de partage', 'clics de partage')} · ${fr(o.jyvais)} « J’y vais »`)); ul.append(li); });
-  }
-
   /* ── archives : sauvegarde des affiches ── */
   let listeAff = [];
   const mo = n => n >= 1e6 ? (n / 1e6).toFixed(1).replace('.', ',') + ' Mo' : Math.max(1, Math.round(n / 1e3)) + ' Ko';
@@ -327,7 +265,7 @@
     b.disabled = false;
   });
 
-  window.LS = { $, $$, el, fr, pl, call, msg, today, court, ilYa, dj, SITE, API, AIRTABLE, charger, changer, cle, recur, venir, sous, dateTexte, recompter, aller, get ov() { return ov; }, rend: {} };
+  window.LS = { $, $$, el, fr, pl, call, msg, today, court, ilYa, dj, SITE, API, AIRTABLE, compte, passe, fin, recur, FILTRES, charger, changer, cle, recur, venir, sous, dateTexte, recompter, aller, get ov() { return ov; }, rend: {} };
 
   async function start() { showApp(true); await charger(); }
   if (token) start().catch(() => showApp(false));
