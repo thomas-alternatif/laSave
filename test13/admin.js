@@ -80,7 +80,7 @@
   }
 
   /* ── navigation ── */
-  const TITRES = { vue: 'Vue d’ensemble', evenements: 'Événements', organisateurs: 'Organisateurs', stats: 'Statistiques', archives: 'Archives', outils: 'Outils' };
+  const TITRES = { vue: 'Vue d’ensemble', evenements: 'Événements', organisateurs: 'Organisateurs', stats: 'Statistiques', archives: 'Archives', outils: 'Outils', systeme: 'Système', raccourcis: 'Raccourcis' };
   function section() { const h = location.hash.slice(1); return TITRES[h] ? h : 'vue'; }
   function afficher() {
     if (!ov) return;
@@ -89,7 +89,7 @@
     $$('#d-nav a').forEach(a => { const on = a.dataset.s === s; a.classList.toggle('on', on); on ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current'); });
     document.title = TITRES[s] + ' · Tableau de bord · laSave';
     const actif = $('#d-nav a.on'); if (actif) { const nav = $('#d-nav'); nav.scrollLeft = actif.offsetLeft - (nav.clientWidth - actif.offsetWidth) / 2; }
-    ({ vue: rVue, evenements: rEvenements, organisateurs: rOrgas, stats: rStats, archives: rArchives, outils: rOutils })[s]();
+    ({ vue: rVue, evenements: rEvenements, organisateurs: rOrgas, stats: rStats, archives: rArchives, outils: () => {}, systeme: () => LS.rend.systeme && LS.rend.systeme(), raccourcis: () => LS.rend.raccourcis && LS.rend.raccourcis() })[s]();
   }
   window.addEventListener('hashchange', () => { afficher(); window.scrollTo({ top: 0 }); });
   const aller = (h, f) => { if (f) { filtre = f; q = ''; $('#e-q').value = ''; } if (location.hash === '#' + h) afficher(); else location.hash = h; };
@@ -181,7 +181,8 @@
     const h = el('li', 'col-h'); ['Date', 'Événement', 'Statut', 'J’y vais', 'Je viens', ''].forEach(t => h.append(el('span', '', t))); ul.append(h);
     liste.forEach(e => {
       const li = el('li'), t = el('div', 't'), k = cle(e);
-      t.append(el('b', '', e.titre || '(sans titre)'), el('small', '', sous(e)));
+      const tb = el('button', 'd-link', e.titre || '(sans titre)'); tb.type = 'button'; tb.title = 'Ouvrir la fiche'; tb.addEventListener('click', () => LS.rend.fiche && LS.rend.fiche(e));
+      t.append(tb, el('small', '', sous(e)));
       const pillTxt = k === 'passes' ? 'Passé' : e.statut || 'En attente', pill = el('span', 'd-pill p-' + pillTxt.replace(/\s/g, ''), pillTxt);
       const v = venir(e.id), acts = el('div', 'acts');
       const bt = (txt, cls, fn) => { const b = el('button', 'd-btn sm ' + cls, txt); b.type = 'button'; b.addEventListener('click', async () => { if (await changer(e, fn, b)) { await recompter(); } }); return b; };
@@ -204,19 +205,34 @@
   $('#e-q').addEventListener('input', ev => { q = ev.target.value.trim(); rEvenements(); });
 
   /* ── organisateurs ── */
-  async function rOrgas() {
-    const ul = $('#o-list'); ul.innerHTML = ''; ul.append(el('li', 'd-vide', 'Chargement…'));
-    let rows; try { rows = await call('/admin/code-requests'); } catch (e) { ul.replaceChildren(el('li', 'd-vide', e.message)); return; }
-    ul.innerHTML = '';
-    if (!rows.length) { ul.append(el('li', 'd-vide', 'Aucune demande de code en attente.')); return; }
-    ul.classList.add('d-orga');
-    rows.forEach(r => {
-      const li = el('li'), t = el('div', 't'); t.append(el('b', '', r.Nom || '(sans nom)'), el('small', '', r.Email || 'pas d’adresse'));
+  const ORGAS = 'https://airtable.com/appHgiuv0ClNd8qsV/tblgaldbDy7el5Qw1';
+  function rOrgas() {
+    const ul = $('#o-list'); ul.innerHTML = '';
+    const dem = ov.orgas.filter(o => o.statutCode === 'Demandé');
+    if (!dem.length) ul.append(el('li', 'd-vide', 'Aucune demande de code en attente.'));
+    const envoi = (o, act, ok, b) => async () => {
+      b.disabled = true;
+      try { await call(`/admin/orgas/${o.id}/${act}`, { method: 'POST' }); o.statutCode = act === 'refuse' ? 'Refusé' : 'Envoyé'; ov.codes = ov.orgas.filter(x => x.statutCode === 'Demandé').length; const bo = $('#b-org'); bo.textContent = ov.codes; bo.hidden = !ov.codes; msg(ok); rOrgas(); }
+      catch (e) { b.disabled = false; msg(e.message, true); }
+    };
+    dem.forEach(r => {
+      const li = el('li'), t = el('div', 't'); t.append(el('b', '', r.nom || '(sans nom)'), el('small', '', r.email || 'pas d’adresse'));
+      const acts = el('div', 'acts'), a = el('button', 'd-btn sm ok', 'Envoyer le code'), c = el('button', 'd-btn sm warn', 'Refuser'); a.type = c.type = 'button';
+      a.addEventListener('click', envoi(r, 'send-code', `Code envoyé à ${r.nom}.`, a)); c.addEventListener('click', envoi(r, 'refuse', `Demande de ${r.nom} refusée.`, c));
+      acts.append(a, c); li.append(t, acts); if (r.msg) li.append(el('p', 'msg', r.msg)); ul.append(li);
+    });
+    const all = $('#o-all'); all.innerHTML = '';
+    const liste = ov.orgas.filter(o => o.statutCode !== 'Demandé').sort((x, y) => x.nom.localeCompare(y.nom, 'fr'));
+    $('#o-n').textContent = `(${liste.length})`;
+    if (!liste.length) all.append(el('li', 'd-vide', 'Aucun organisateur.'));
+    liste.forEach(o => {
+      const li = el('li'), t = el('div', 't'); t.append(el('b', '', o.nom || '(sans nom)'), el('small', '', [o.email || 'pas d’adresse', o.code ? 'code ' + o.code : 'pas de code'].join(' · ')));
       const acts = el('div', 'acts');
-      const go = (txt, cls, act, ok) => { const b = el('button', 'd-btn sm ' + cls, txt); b.type = 'button'; b.addEventListener('click', async () => { b.disabled = true; try { await call(`/admin/orgas/${r.id}/${act}`, { method: 'POST' }); li.remove(); ov.codes = Math.max(0, ov.codes - 1); const bo = $('#b-org'); bo.textContent = ov.codes; bo.hidden = !ov.codes; msg(ok); if (!ul.children.length) ul.append(el('li', 'd-vide', 'Aucune demande de code en attente.')); } catch (e) { b.disabled = false; msg(e.message, true); } }); return b; };
-      acts.append(go('Envoyer le code', 'ok', 'send-code', `Code envoyé à ${r.Nom}.`), go('Refuser', 'warn', 'refuse', `Demande de ${r.Nom} refusée.`));
-      li.append(t, acts); if (r.Message) li.append(el('p', 'msg', r.Message));
-      ul.append(li);
+      const p1 = el('span', 'd-pill ' + (o.publie ? 'p-Publié' : 'p-Archivé'), o.publie ? 'Affiché sur le site' : 'Masqué'); acts.append(p1);
+      if (o.statutCode) acts.append(el('span', 'd-pill ' + (o.statutCode === 'Refusé' ? 'p-Refusé' : 'p-Enattente'), 'Code : ' + o.statutCode.toLowerCase()));
+      if (o.email) { const b = el('button', 'd-btn sm', 'Renvoyer le code'); b.type = 'button'; b.addEventListener('click', envoi(o, 'send-code', `Code renvoyé à ${o.nom}.`, b)); acts.append(b); }
+      const a = el('a', 'd-btn sm ghost', 'Airtable'); a.href = `${ORGAS}/${o.id}`; a.target = '_blank'; a.rel = 'noopener'; acts.append(a);
+      li.append(t, acts); all.append(li);
     });
   }
 
@@ -291,15 +307,12 @@
   });
 
   /* ── outils ── */
-  function rOutils() {
-    const ul = $('#u-health'); ul.innerHTML = '';
-    const ligne = (nom, ok, txt) => { const li = el('li'); li.append(el('span', '', nom), el('span', ok ? 'ok' : 'ko', txt)); ul.append(li); };
-    ligne('Copie de l’agenda', !!ov.copie, ov.copie ? ilYa(Date.parse(ov.copie)) : 'absente');
-    ligne('Événements en ligne', ov.enLigne != null, ov.enLigne != null ? fr(ov.enLigne) : 'inconnu');
-    ligne('Stockage de la copie', ov.services.kv, ov.services.kv ? 'relié' : 'non relié');
-    ligne('Base des statistiques et réponses', ov.services.d1, ov.services.d1 ? 'reliée' : 'non reliée');
-    ligne('Envoi des mails', ov.services.brevo, ov.services.brevo ? 'configuré' : 'clé manquante');
-  }
+  $('#u-cache').addEventListener('click', async ev => {
+    const b = ev.currentTarget; b.disabled = true;
+    try { await call('/admin/cache-clear', { method: 'POST' }); msg('Caches vidés. L’agenda se relira au prochain passage.'); await charger(true); }
+    catch (e) { msg(e.message, true); }
+    b.disabled = false;
+  });
   $('#u-refresh').addEventListener('click', async ev => {
     const b = ev.currentTarget; b.disabled = true;
     try { const d = await call('/hook/refresh', { method: 'POST' }); msg(d.message || 'Site mis à jour.'); await charger(true); }
@@ -313,6 +326,8 @@
     catch (e) { msg(e.message, true); }
     b.disabled = false;
   });
+
+  window.LS = { $, $$, el, fr, pl, call, msg, today, court, ilYa, dj, SITE, API, AIRTABLE, charger, changer, cle, recur, venir, sous, dateTexte, recompter, aller, get ov() { return ov; }, rend: {} };
 
   async function start() { showApp(true); await charger(); }
   if (token) start().catch(() => showApp(false));

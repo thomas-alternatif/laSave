@@ -41,6 +41,7 @@ const F_CONF = 'Envoyer la confirmation', F_CONF_TXT = 'Confirmation par mail'; 
 const MAIL_FROM = { name: 'Agenda de laSave', email: 'agenda@la-save.fr' };
 const MAIL_ADMIN = 'agenda@la-save.fr';
 const SITE = 'https://la-save.fr';
+const VERSION = '2026-10-02 · centre de contrôle';
 
 /* ── utilitaires ── */
 const pick = (obj, keys) => Object.fromEntries(keys.filter(k => obj[k] !== undefined && obj[k] !== null && obj[k] !== '').map(k => [k, obj[k]]));
@@ -67,6 +68,7 @@ async function at(env, path, init = {}) {
     headers: { Authorization: `Bearer ${env.AIRTABLE_TOKEN}`, 'Content-Type': 'application/json', ...(init.headers || {}) },
   });
   const d = await r.json().catch(() => ({}));
+  if (KV) await bumpAt();
   if (!r.ok) throw Object.assign(new Error(d?.error?.message || d?.error?.type || `Airtable ${r.status}`), { status: r.status });
   return d;
 }
@@ -97,7 +99,8 @@ async function sendMail(env, { to, toName, subject, html, text, replyTo }) {
     headers: { 'api-key': env.BREVO_KEY, 'Content-Type': 'application/json', Accept: 'application/json' },
     body: JSON.stringify({ sender: MAIL_FROM, to: [{ email: to, name: toName || undefined }], subject, htmlContent: html, textContent: text, replyTo: { email: replyTo || MAIL_ADMIN } }),
   });
-  if (!r.ok) throw Object.assign(new Error("L'e-mail n'a pas pu être envoyé."), { status: 502 });
+  if (!r.ok) { await jr('mail', `ÉCHEC ${r.status} : « ${String(subject).slice(0, 80)} » → ${maskMail(to)}`); throw Object.assign(new Error("L'e-mail n'a pas pu être envoyé."), { status: 502 }); }
+  await jr('mail', `« ${String(subject).slice(0, 80)} » → ${maskMail(to)}`);
 }
 
 function codeMail(nom, code) {
@@ -190,6 +193,18 @@ async function sendCodeTo(env, rec) {
 
 /* ── limiteur anti-abus : N requêtes max par fenêtre, par adresse IP ── */
 let KV = null; // liaison KV (null tant qu'elle n'est pas ajoutée dans Cloudflare)
+// Journal des actions, mails et erreurs (150 dernières lignes), lu dans l'admin
+async function jr(type, msg, extra) {
+  if (!KV) return;
+  try {
+    const l = (await KV.get('jrnl', 'json')) || [];
+    l.unshift({ t: Date.now(), type, msg: String(msg).slice(0, 300), ...(extra || {}) });
+    await KV.put('jrnl', JSON.stringify(l.slice(0, 150)));
+  } catch {}
+}
+const maskMail = e => String(e || '').replace(/^(.).*?(@.*)$/, '$1***$2');
+// Nombre d'appels à Airtable ce mois-ci (la formule gratuite en autorise 1 000)
+async function bumpAt() { try { const k = 'atn:' + new Date().toISOString().slice(0, 7); await KV.put(k, String((Number(await KV.get(k)) || 0) + 1), { expirationTtl: 40 * 86400 }); } catch {} }
 async function tooMany(req, bucket, max, windowSec) {
   const ip = req.headers.get('CF-Connecting-IP') || 'inconnu';
   // Envois (formulaire, avis, codes, connexion) : compteur dans KV, fiable même sur workers.dev
@@ -563,14 +578,21 @@ C'est le seul mail que vous recevrez à ce sujet.`;
   return { subject, html, text };
 }
 
+let NERR = '';
 async function nightly(env) {
   if (!KV) return;
-  try { await rsvpRecap(env); } catch (e) { console.error('récap rsvp', e.message); }
+  const t0 = Date.now(); NERR = '';
+  try { await nightlyRun(env); } catch (e) { NERR += ' ' + e.message; }
+  await KV.put('lastnight', JSON.stringify({ at: t0, ms: Date.now() - t0, err: NERR.trim() }));
+  await jr('cron', NERR.trim() ? 'Mise à jour de nuit : problème (' + NERR.trim().slice(0, 200) + ')' : 'Mise à jour de nuit terminée (' + Math.round((Date.now() - t0) / 1000) + ' s)');
+}
+async function nightlyRun(env) {
+  try { await rsvpRecap(env); } catch (e) { console.error('récap rsvp', e.message); NERR += ' récap : ' + e.message; }
   const counts = await getCounts();
   const ids = Object.keys(counts).filter(id => isId(id) && !id.startsWith('recTMP')); // recTMP… : fiches de l'export de dépannage
   for (let i = 0; i < ids.length; i += 10) {
     const records = ids.slice(i, i + 10).map(id => ({ id, fields: pick(counts[id], ['Likes', 'Vues']) }));
-    try { await at(env, T_EVENTS, { method: 'PATCH', body: JSON.stringify({ records }) }); } catch (e) { console.error('recopie compteurs', e.message); return; }
+    try { await at(env, T_EVENTS, { method: 'PATCH', body: JSON.stringify({ records }) }); } catch (e) { console.error('recopie compteurs', e.message); NERR += ' recopie compteurs : ' + e.message; return; }
   }
   await buildSnap(env);
   await KV.delete('counts');
@@ -680,6 +702,35 @@ ${err ? `<p style="margin:0 0 14px;padding:12px 14px;border-radius:12px;backgrou
 }
 
 /* ── routes ── */
+const ROUTES = [
+  'GET /events — agenda public (copie KV, cache 60 s)', 'GET /orgas — organisateurs publiés', 'GET /e/:id — page d’un événement (partage)', 'GET /img/:att — affiche copiée dans KV',
+  'GET /ics/:id — ajout au calendrier', 'GET|POST /venir/:id — « Je viens » (prénom + nombre)', 'GET /rsvp/:id?k= — liste « Qui vient » (clé organisateur)',
+  'POST /code — vérifier un code organisateur', 'POST /code/request — demander un code', 'POST /events — proposer un événement', 'POST /events/:id/(view|like) — vues et « J’y vais »',
+  'POST /stat — « J’y vais » et vues', 'POST /avis — avis', 'POST /upload — affiche (ImgBB)', 'POST /newsletter · /newsletter/stop',
+  'GET /lien/maj · /lien/confirmer?id= — pages de lien depuis Airtable', 'POST /hook/refresh · /hook/confirm — relecture et confirmations',
+  'POST /admin/login', 'GET /admin/overview · /admin/diag · /admin/stats · /admin/events · /admin/event/:id · /admin/kv · /admin/affiches · /admin/affiche · /admin/code-requests',
+  'POST /admin/event/:id/fields · /admin/refresh · /admin/cache-clear · /admin/test-mail · /admin/sql · /admin/orgas/:id/(send-code|refuse)', 'PATCH /admin/events/:id — statut', 'GET /health',
+];
+const OV_EV = ['Titre', 'Statut', 'Date', 'Date de fin', 'Récurrence', 'Commune', 'Organisation', 'Catégorie', 'Likes', 'Vues', 'Photo', 'Contact privé', 'Envoyer la confirmation', 'Confirmation par mail', 'À la une', 'Lieu', 'Heure'];
+const OV_OR = ['Nom', 'Email', 'Statut code', 'Code', 'Publié', 'Message demande', 'Contact', 'Ordre'];
+async function loadOv(env, frais) {
+  let ov = (!frais && KV) ? await KV.get('admov', 'json') : null;
+  if (ov) return ov;
+  const q = l => l.map(f => '&fields%5B%5D=' + encodeURIComponent(f)).join('');
+  const [recs, orgs] = await Promise.all([listAll(env, T_EVENTS, q(OV_EV)), listAll(env, T_ORGAS, q(OV_OR))]);
+  ov = {
+    at: Date.now(),
+    events: recs.map(r => {
+      const f = r.fields;
+      return { id: r.id, titre: f.Titre || '', statut: f.Statut || '', date: f.Date || '', fin: f['Date de fin'] || '', rec: f['Récurrence'] || '', commune: f.Commune || '', orga: f.Organisation || '', cat: f['Catégorie'] || '', likes: f.Likes || 0, vues: f.Vues || 0, photo: !!(f.Photo && f.Photo.length), contact: !!firstEmail(f['Contact privé']), coche: !!f['Envoyer la confirmation'], conf: String(f['Confirmation par mail'] || ''), une: !!f['À la une'], lieu: f.Lieu || '', heure: f.Heure || '' };
+    }),
+    orgas: orgs.map(r => { const f = r.fields; return { id: r.id, nom: f.Nom || '', email: f.Email || '', statutCode: f['Statut code'] || '', code: f.Code || '', publie: !!f['Publié'], msg: f['Message demande'] || '', contact: f.Contact || '', ordre: f.Ordre ?? null }; }),
+  };
+  ov.codes = ov.orgas.filter(o => o.statutCode === 'Demandé').length;
+  if (KV) await KV.put('admov', JSON.stringify(ov), { expirationTtl: 120 });
+  return ov;
+}
+
 async function route(req, env, ctx) {
   const url = new URL(req.url);
   const p = url.pathname.replace(/\/+$/, '') || '/';
@@ -1058,8 +1109,10 @@ async function route(req, env, ctx) {
     const pwd = String((await body()).pwd || '');
     if (!env.ADMIN_PWD || !sameText(pwd, env.ADMIN_PWD)) {
       await new Promise(r => setTimeout(r, 800)); // ralentit les essais au hasard
+      await jr('securite', 'Mot de passe admin incorrect', { ip: req.headers.get('CF-Connecting-IP') || '' });
       return json(req, { error: 'Mot de passe incorrect' }, 401);
     }
+    await jr('admin', 'Connexion à l’admin', { ip: req.headers.get('CF-Connecting-IP') || '' });
     return json(req, { token: await makeToken(env) });
   }
   if (p.startsWith('/admin/')) {
@@ -1072,21 +1125,7 @@ async function route(req, env, ctx) {
     }
     // Tableau de bord : tout ce qu'il faut pour la vue d'ensemble en une seule lecture d'Airtable (gardée 2 minutes)
     if (m === 'GET' && p === '/admin/overview') {
-      let ov = (!url.searchParams.get('frais') && KV) ? await KV.get('admov', 'json') : null;
-      if (!ov) {
-        const [recs, demandes] = await Promise.all([
-          listAll(env, T_EVENTS, ['Titre', 'Statut', 'Date', 'Date de fin', 'Récurrence', 'Commune', 'Organisation', 'Catégorie', 'Likes', 'Vues', 'Photo', 'Contact privé', 'Envoyer la confirmation', 'Confirmation par mail'].map(f => '&fields%5B%5D=' + encodeURIComponent(f)).join('')),
-          listAll(env, T_ORGAS, '&filterByFormula=' + encodeURIComponent("{Statut code}='Demandé'") + '&fields%5B%5D=Nom'),
-        ]);
-        ov = {
-          at: Date.now(), codes: demandes.length,
-          events: recs.map(r => {
-            const f = r.fields;
-            return { id: r.id, titre: f.Titre || '', statut: f.Statut || '', date: f.Date || '', fin: f['Date de fin'] || '', rec: f['Récurrence'] || '', commune: f.Commune || '', orga: f.Organisation || '', cat: f['Catégorie'] || '', likes: f.Likes || 0, vues: f.Vues || 0, photo: !!(f.Photo && f.Photo.length), contact: !!firstEmail(f['Contact privé']), coche: !!f['Envoyer la confirmation'], conf: String(f['Confirmation par mail'] || '') };
-          }),
-        };
-        if (KV) await KV.put('admov', JSON.stringify(ov), { expirationTtl: 120 });
-      }
+      const ov = await loadOv(env, !!url.searchParams.get('frais'));
       let rsvp = {};
       if (env.DB) { try { await rsvpTable(env.DB); for (const x of (await env.DB.prepare('SELECT ev, COUNT(*) AS n, SUM(nb) AS total FROM rsvp GROUP BY ev').all()).results || []) rsvp[x.ev] = { n: x.n, total: x.total }; } catch {} }
       const snap = KV ? await KV.get('snap', 'json') : null;
@@ -1118,10 +1157,12 @@ async function route(req, env, ctx) {
       let rec; try { rec = await at(env, `${T_ORGAS}/${mm[1]}`); } catch { return json(req, { error: 'Organisateur introuvable' }, 404); }
       if (mm[2] === 'refuse') {
         await at(env, `${T_ORGAS}/${rec.id}`, { method: 'PATCH', body: JSON.stringify({ fields: { 'Statut code': 'Refusé' } }) });
+        await jr('admin', 'Demande de code refusée : ' + (rec.fields.Nom || rec.id));
         return json(req, { ok: true });
       }
       if (!isEmail(rec.fields.Email)) return json(req, { error: "Cet organisateur n'a pas d'adresse e-mail valide." }, 400);
       await sendCodeTo(env, rec);
+      await jr('admin', 'Code envoyé à ' + (rec.fields.Nom || rec.id));
       return json(req, { ok: true });
     }
     if (m === 'PATCH' && (mm = p.match(/^\/admin\/events\/(rec\w+)$/))) {
@@ -1130,6 +1171,7 @@ async function route(req, env, ctx) {
       let rec;
       try { rec = await at(env, `${T_EVENTS}/${mm[1]}`, { method: 'PATCH', body: JSON.stringify({ fields: { Statut: statut } }) }); }
       catch (e) { if (e.status === 404) return json(req, { error: 'Événement introuvable' }, 404); throw e; }
+      await jr('admin', `${statut} : ${(rec.fields && rec.fields.Titre) || rec.id}`);
       if (statut === 'Publié') ctx.waitUntil(notifyPublished(env, rec).catch(e => console.error('mail publication', e)));
       await caches.default.delete(new Request(url.origin + '/events'));
       if (KV) { await markDirty(); await KV.delete('admov'); } // le site se met à jour dans la minute
@@ -1178,11 +1220,131 @@ async function route(req, env, ctx) {
       }
       return json(req, { jours, parEvenement, parJour, diag });
     }
+    // Fiche complète d'un événement : tous les champs Airtable (privés compris), réponses « Je viens », compteurs, mails
+    if (m === 'GET' && (mm = p.match(/^\/admin\/event\/(rec\w+)$/))) {
+      if (!isId(mm[1])) return json(req, { error: 'Requête invalide' }, 400);
+      let rec; try { rec = await at(env, `${T_EVENTS}/${mm[1]}`); } catch (e) { if (e.status === 404) return json(req, { error: 'Événement introuvable' }, 404); throw e; }
+      const id = rec.id; let reponses = [];
+      if (env.DB) { try { await rsvpTable(env.DB); reponses = ((await env.DB.prepare('SELECT prenom, nb, at FROM rsvp WHERE ev = ?1 ORDER BY at').bind(id).all()).results) || []; } catch {} }
+      const compt = KV ? ((await getCounts())[id] || null) : null;
+      const snap = KV ? await KV.get('snap', 'json') : null;
+      return json(req, {
+        id, cree: rec.createdTime, champs: rec.fields, reponses, compteursEnAttente: compt,
+        enLigne: !!(snap && (snap.events || []).some(e => e.id === id)),
+        mailPublication: KV ? await KV.get('mailpub:' + id) : null,
+        mailRecap: KV ? await KV.get('mailrsvp:' + id) : null,
+        kit: `${SITE}/test13/kit.html?id=${id}&k=${await rsvpKey(env, id)}`,
+        airtable: `https://airtable.com/${BASE}/${T_EVENTS}/${id}`,
+      }, 200, { 'Cache-Control': 'no-store' });
+    }
+    // Modification de champs d'un événement depuis l'admin
+    if (m === 'POST' && (mm = p.match(/^\/admin\/event\/(rec\w+)\/fields$/))) {
+      if (!isId(mm[1])) return json(req, { error: 'Requête invalide' }, 400);
+      const EDIT = ['Titre', 'Catégorie', 'Commune', 'Date', 'Date de fin', 'Heure', 'Lieu', 'Description', 'Tarif', 'Organisation', 'Contact', 'Billetterie', 'Contact privé', 'Message aux organisateurs', 'À la une'];
+      const b = await body(), fields = {};
+      for (const k of EDIT) {
+        if (!(k in (b.fields || {}))) continue;
+        const v = b.fields[k];
+        if (k === 'À la une') fields[k] = !!v;
+        else if (k === 'Date' || k === 'Date de fin') fields[k] = /^\d{4}-\d{2}-\d{2}$/.test(String(v || '')) ? v : null;
+        else fields[k] = clip(String(v ?? ''), k === 'Description' || k === 'Message aux organisateurs' ? 4000 : 300);
+      }
+      if (!Object.keys(fields).length) return json(req, { error: 'Rien à modifier.' }, 400);
+      if ('Titre' in fields && !fields.Titre.trim()) return json(req, { error: 'Le titre ne peut pas être vide.' }, 400);
+      let rec;
+      try { rec = await at(env, `${T_EVENTS}/${mm[1]}`, { method: 'PATCH', body: JSON.stringify({ fields }) }); }
+      catch (e) { return json(req, { error: 'Airtable a refusé : ' + String(e.message).slice(0, 200) }, e.status === 404 ? 404 : 422); }
+      await caches.default.delete(new Request(url.origin + '/events'));
+      if (KV) { await markDirty(); await KV.delete('admov'); }
+      await jr('admin', `Modifié (${Object.keys(fields).join(', ')}) : ${(rec.fields && rec.fields.Titre) || rec.id}`);
+      return json(req, { ok: true });
+    }
+    // Vider les caches (copie de l'agenda relue au prochain passage, tableau de bord relu)
+    if (m === 'POST' && p === '/admin/cache-clear') {
+      if (!KV) return json(req, { error: 'Stockage KV non relié' }, 400);
+      for (const k of ['admov', 'lock', 'photolock', 'codes-recheck']) await KV.delete(k);
+      await markDirty();
+      await caches.default.delete(new Request(url.origin + '/events'));
+      await jr('admin', 'Caches vidés');
+      return json(req, { ok: true });
+    }
+    // Explorateur KV (lecture seule) : liste des clés ou valeur d'une clé
+    if (m === 'GET' && p === '/admin/kv') {
+      if (!KV) return json(req, { error: 'Stockage KV non relié' }, 400);
+      const cle = url.searchParams.get('cle');
+      if (cle) {
+        const { value, metadata } = await KV.getWithMetadata(cle);
+        if (value === null) return json(req, { error: 'Clé introuvable' }, 404);
+        return json(req, { cle, taille: value.length, valeur: value.slice(0, 8000), tronque: value.length > 8000, metadata });
+      }
+      const cles = []; let cursor;
+      do { const r = await KV.list({ limit: 1000, cursor }); cles.push(...r.keys.map(k => ({ nom: k.name, expire: k.expiration || null }))); cursor = r.list_complete ? null : r.cursor; } while (cursor && cles.length < 3000);
+      return json(req, { cles });
+    }
+    // Console D1 en lecture seule
+    if (m === 'POST' && p === '/admin/sql') {
+      if (!env.DB) return json(req, { error: 'Base D1 non reliée' }, 400);
+      let q = String((await body()).q || '').trim().replace(/;+\s*$/, '');
+      if (!/^(select|pragma\s+table_info)\b/i.test(q) || q.includes(';')) return json(req, { error: 'Lecture seule : une seule requête SELECT.' }, 400);
+      if (/^select/i.test(q) && !/\blimit\b/i.test(q)) q += ' LIMIT 200';
+      try {
+        const r = (await env.DB.prepare(q).all()).results || [];
+        return json(req, { colonnes: r[0] ? Object.keys(r[0]) : [], lignes: r.slice(0, 500) });
+      } catch (e) { return json(req, { error: String(e.message).slice(0, 300) }, 400); }
+    }
+    // Rapport complet du système : tout ce qu'il faut pour comprendre l'état du site (lu par l'admin et collé à Claude)
+    if (m === 'GET' && p === '/admin/diag') {
+      const sect = async f => { try { return await f(); } catch (e) { return { erreur: String((e && e.message) || e).slice(0, 300) }; } };
+      const d = { version: VERSION, maintenant: new Date().toISOString(), parisHeure: new Date().toLocaleString('fr-FR', { timeZone: 'Europe/Paris' }) };
+      d.liaisons = Object.fromEntries(['AIRTABLE_TOKEN', 'ADMIN_PWD', 'IMGBB_KEY', 'BREVO_KEY', 'LASAVE', 'DB', 'STATS', 'CF_ACCOUNT_ID', 'CF_STATS_TOKEN', 'NEWSLETTER_LIST'].map(k => [k, !!env[k]]));
+      d.configuration = { base: BASE, tables: { evenements: T_EVENTS, organisateurs: T_ORGAS, avis: T_AVIS }, origines: ALLOWED_ORIGINS, cron: '0 4 * * * (UTC)', recapMin: RECAP_MIN, maxReponses: MAX_REPONSES, expediteur: MAIL_FROM.email, mailAdmin: MAIL_ADMIN, statuts: ADMIN_STATUTS };
+      d.copie = await sect(async () => {
+        const snap = await KV.get('snap', 'json'); if (!snap) return { presente: false };
+        const ph = [...snap.events, ...snap.orgas].filter(x => x.Photo && x.Photo.length).length;
+        return { presente: true, at: new Date(snap.at).toISOString(), ageMinutes: Math.round((Date.now() - snap.at) / 60000), evenements: snap.events.length, organisateurs: snap.orgas.length, avecPhoto: ph, aRelire: !!snap.dirty, depuisExport: !!snap.seed, photosEnAttente: !!snap.photosPending };
+      });
+      d.nuit = await sect(async () => { const n = await KV.get('lastnight', 'json'); return n ? { derniere: new Date(n.at).toISOString(), dureeMs: n.ms, erreur: n.err || null } : { derniere: null }; });
+      d.airtable = await sect(async () => {
+        const mois = new Date().toISOString().slice(0, 7), n = Number(await KV.get('atn:' + mois)) || 0;
+        const ov = await loadOv(env, false), par = {};
+        ov.events.forEach(e => { par[e.statut || '(vide)'] = (par[e.statut || '(vide)'] || 0) + 1; });
+        const auj = new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Paris' });
+        return { appelsCeMois: n, quotaMois: 1000, evenementsParStatut: par, publiesPasses: ov.events.filter(e => e.statut === 'Publié' && !e.rec && (e.fin || e.date) && (e.fin || e.date) < auj).length, sansAffiche: ov.events.filter(e => e.statut === 'Publié' && !e.photo).length, organisateurs: ov.orgas.length, demandesDeCode: ov.codes, confirmationsEnAttente: ov.events.filter(e => e.coche && !e.conf).length, lectureLe: new Date(ov.at).toISOString() };
+      });
+      d.kv = await sect(async () => {
+        const groupes = {}; let cursor, total = 0;
+        do { const r = await KV.list({ limit: 1000, cursor }); r.keys.forEach(k => { const g = k.name.includes(':') ? k.name.split(':')[0] + ':' : k.name; (groupes[g] = groupes[g] || []).push(k.name); total++; }); cursor = r.list_complete ? null : r.cursor; } while (cursor && total < 5000);
+        const out = {}; for (const [g, l] of Object.entries(groupes)) out[g] = { nombre: l.length, exemples: /^(rl:|mailpub:|mailrsvp:)$/.test(g) ? undefined : l.slice(0, 5) };
+        return { cles: total, groupes: out, compteursEnAttente: Object.keys(await getCounts()).length };
+      });
+      d.d1 = await sect(async () => {
+        if (!env.DB) return { reliee: false };
+        await statsTable(env.DB); await rsvpTable(env.DB);
+        const tables = ((await env.DB.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '_cf_%'").all()).results || []).map(t => t.name), out = {};
+        for (const t of tables) out[t] = (await env.DB.prepare(`SELECT count(*) AS n FROM "${t.replace(/"/g, '')}"`).first()).n;
+        const st = await env.DB.prepare("SELECT min(jour) AS du, max(jour) AS au, SUM(n) AS total FROM stats").first();
+        const ty = (await env.DB.prepare("SELECT type, SUM(n) AS n FROM stats GROUP BY type").all()).results || [];
+        const rs = (await env.DB.prepare("SELECT count(DISTINCT ev) AS evenements, COALESCE(SUM(nb),0) AS personnes FROM rsvp").first());
+        return { reliee: true, lignesParTable: out, stats: { ...st, parType: Object.fromEntries(ty.map(x => [x.type, x.n])) }, rsvp: rs };
+      });
+      d.brevo = await sect(async () => {
+        if (!env.BREVO_KEY) return { configuree: false };
+        const a = (await brevo(env, '/account')).d;
+        let inscrits = null; const id = env.NEWSLETTER_LIST || await KV.get('nl-liste');
+        if (id) { const x = (await brevo(env, `/contacts/lists/${id}`)).d; inscrits = x.uniqueSubscribers ?? x.totalSubscribers ?? null; }
+        return { configuree: true, compte: a.companyName || a.email || '', forfaits: (a.plan || []).map(x => ({ type: x.type, credits: x.credits, periode: x.creditsType })), listeNewsletter: id || null, inscrits };
+      });
+      d.journal = (await KV.get('jrnl', 'json')) || [];
+      d.erreursRecentes = d.journal.filter(x => x.type === 'erreur' || /ÉCHEC|problème/.test(x.msg)).slice(0, 20);
+      d.routes = ROUTES;
+      return json(req, d, 200, { 'Cache-Control': 'no-store' });
+    }
     // Relecture immédiate d'Airtable (après une modification faite directement dans Airtable)
     if (m === 'POST' && p === '/admin/refresh') {
       if (!KV) return json(req, { error: 'Stockage KV non relié' }, 400);
       const snap = await buildSnap(env);
       if (KV) await KV.delete('admov');
+      await jr('admin', 'Relecture d’Airtable demandée (' + snap.events.length + ' événements en ligne)');
       return json(req, { ok: true, events: snap.events.length, orgas: snap.orgas.length });
     }
   }
@@ -1205,6 +1367,7 @@ export default {
     try { return await route(req, env, ctx); }
     catch (e) {
       console.error(e);
+      if (!(e.expose && (e.status || 400) < 500)) ctx.waitUntil(jr('erreur', `${req.method} ${new URL(req.url).pathname} : ${String(e.message).slice(0, 200)}`, { status: e.status || 500 }));
       if (e.expose || e.status === 503 || (e.status === 502 && /e-mail/.test(e.message))) return json(req, { error: e.message }, e.status || 502);
       return json(req, { error: 'Le service est momentanément indisponible, réessayez plus tard.' }, 502);
     }

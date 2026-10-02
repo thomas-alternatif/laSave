@@ -12,7 +12,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,500..900&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="icon" href="../favicon.ico" sizes="48x48" />
   <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
-  <link rel="stylesheet" href="admin.css?v=1" />
+  <link rel="stylesheet" href="admin.css?v=2" />
 </head>
 <body>
   <!-- Connexion -->
@@ -44,6 +44,8 @@
       <a href="#stats" data-s="stats">Statistiques</a>
       <a href="#archives" data-s="archives">Archives</a>
       <a href="#outils" data-s="outils">Outils</a>
+      <a href="#systeme" data-s="systeme">Système</a>
+      <a href="#raccourcis" data-s="raccourcis">Raccourcis</a>
     </nav>
 
     <main class="d-main">
@@ -76,8 +78,11 @@
       <section class="d-sec" id="s-organisateurs" hidden>
         <h1 class="d-h1">Organisateurs</h1>
         <h2 class="d-h2">Demandes de code</h2>
-        <div class="d-card flush"><ul class="d-rows" id="o-list"></ul></div>
+        <div class="d-card flush"><ul class="d-rows d-orga" id="o-list"></ul></div>
         <p class="d-note">Le code est envoyé par mail à l’organisateur. Refuser ne lui envoie rien.</p>
+        <h2 class="d-h2">Tous les organisateurs <span id="o-n"></span></h2>
+        <div class="d-card flush"><ul class="d-rows d-orga" id="o-all"></ul></div>
+        <p class="d-note">« Renvoyer le code » renvoie le même code (un code déjà donné n’est jamais remplacé).</p>
       </section>
 
       <!-- Statistiques -->
@@ -113,6 +118,11 @@
           <button class="d-btn main" type="button" id="u-refresh">Mettre à jour maintenant</button>
         </div>
         <div class="d-card">
+          <h2 class="d-h2 in">Vider les caches</h2>
+          <p class="d-p">Oublie les copies gardées en mémoire (tableau de bord, verrous de relecture) et force l’agenda à se relire au prochain passage. Rien n’est supprimé : ni événements, ni compteurs, ni réponses « Je viens ».</p>
+          <button class="d-btn" type="button" id="u-cache">Vider les caches</button>
+        </div>
+        <div class="d-card">
           <h2 class="d-h2 in">Mail de test</h2>
           <p class="d-p">Envoie le vrai mail « C’est en ligne » (avec un événement publié) à l’adresse de votre choix.</p>
           <div class="d-tools">
@@ -121,23 +131,58 @@
             <button class="d-btn main" type="button" id="u-test">Envoyer le test</button>
           </div>
         </div>
+      </section>
+
+      <!-- Système -->
+      <section class="d-sec" id="s-systeme" hidden>
+        <h1 class="d-h1">Système</h1>
         <div class="d-card">
-          <h2 class="d-h2 in">État du service</h2>
-          <ul class="d-health" id="u-health"></ul>
+          <h2 class="d-h2 in">Rapport complet</h2>
+          <p class="d-p">Tout l’état du site en un seul texte : services, quotas, copie de l’agenda, base de données, journal, liste de tous les événements. Copiez-le et collez-le à Claude pour qu’il voie exactement ce que vous voyez.</p>
+          <div class="d-tools">
+            <button class="d-btn main" type="button" id="sy-copy" disabled>Copier le rapport pour Claude</button>
+            <button class="d-btn" type="button" id="sy-reload">Relire le système</button>
+          </div>
+          <details class="d-det"><summary>Voir le texte du rapport</summary><textarea class="d-rapport" id="sy-rapport" readonly rows="14" aria-label="Rapport complet"></textarea></details>
+        </div>
+        <div class="d-grid" id="sy-grid"></div>
+        <div class="d-card">
+          <h2 class="d-h2 in">Journal <span class="d-light" id="sy-jn"></span></h2>
+          <div class="d-chips" id="sy-jchips"></div>
+          <ul class="d-journal" id="sy-journal"></ul>
         </div>
         <div class="d-card">
-          <h2 class="d-h2 in">Raccourcis</h2>
-          <ul class="d-links">
-            <li><a href="https://airtable.com/appHgiuv0ClNd8qsV" target="_blank" rel="noopener">Ouvrir Airtable</a></li>
-            <li><a href="stats.html">Statistiques détaillées</a></li>
-            <li><a href="newsletter.html">Lettre d’information</a></li>
-            <li><a href="./">Voir le site</a></li>
-          </ul>
+          <h2 class="d-h2 in">Stockage KV <span class="d-light">lecture seule</span></h2>
+          <p class="d-p">La mémoire du Worker : copie de l’agenda, codes, compteurs, verrous. Cliquez une clé pour voir son contenu.</p>
+          <div class="d-tools"><button class="d-btn" type="button" id="kv-go">Lister les clés</button></div>
+          <ul class="d-keys" id="kv-list"></ul>
+          <pre class="d-pre" id="kv-val" hidden></pre>
         </div>
+        <div class="d-card">
+          <h2 class="d-h2 in">Base D1 <span class="d-light">lecture seule</span></h2>
+          <p class="d-p">Statistiques et réponses « Je viens ». Une seule requête SELECT à la fois.</p>
+          <div class="d-chips" id="sql-pre"></div>
+          <textarea class="d-sql" id="sql-q" rows="3" spellcheck="false" aria-label="Requête SQL">SELECT type, SUM(n) AS total FROM stats GROUP BY type</textarea>
+          <div class="d-tools"><button class="d-btn main" type="button" id="sql-run">Lancer</button><span class="d-note" id="sql-info"></span></div>
+          <div class="d-scroll" id="sql-out"></div>
+        </div>
+        <details class="d-card d-det"><summary>Comment le site fonctionne</summary><ul class="d-how" id="sy-how"></ul></details>
+        <details class="d-card d-det"><summary>Adresses de l’API</summary><ul class="d-how" id="sy-routes"></ul></details>
+      </section>
+
+      <!-- Raccourcis -->
+      <section class="d-sec" id="s-raccourcis" hidden>
+        <h1 class="d-h1">Raccourcis</h1>
+        <p class="d-sub">Tout ce que le site utilise pour fonctionner, un clic.</p>
+        <div id="r-grid" class="d-groups"></div>
       </section>
     </main>
   </div>
 
-  <script src="admin.js?v=1"></script>
+  <!-- Fiche d'un événement -->
+  <div class="d-sheet" id="d-sheet" hidden><div class="d-sheet-box" role="dialog" aria-modal="true" aria-label="Fiche de l’événement" id="d-sheet-box"></div></div>
+
+  <script src="admin.js?v=2"></script>
+  <script src="admin-sys.js?v=1"></script>
 </body>
 </html>
