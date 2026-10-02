@@ -41,12 +41,27 @@ const F_CONF = 'Envoyer la confirmation', F_CONF_TXT = 'Confirmation par mail'; 
 const MAIL_FROM = { name: 'Agenda de laSave', email: 'agenda@la-save.fr' };
 const MAIL_ADMIN = 'agenda@la-save.fr';
 const SITE = 'https://la-save.fr';
-const VERSION = '2026-10-02 · centre de contrôle';
+const VERSION = '2026-10-02 · liens lisibles';
 
 /* ── utilitaires ── */
 const pick = (obj, keys) => Object.fromEntries(keys.filter(k => obj[k] !== undefined && obj[k] !== null && obj[k] !== '').map(k => [k, obj[k]]));
 const clip = (v, n) => (typeof v === 'string' ? v.slice(0, n) : v);
 const isId = s => /^rec[A-Za-z0-9]{14}$/.test(s || '');
+// Liens lisibles : « fete-du-village-montaigut-x7k2p » (titre + commune + 5 derniers signes de l'identifiant)
+const KIT_PATH = '/test13/kit.html';
+const slugEv = (f, id) => {
+  const b = [f.Titre, f.Commune].filter(Boolean).join(' ').replace(/œ/gi, 'oe').replace(/æ/gi, 'ae').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  const w = b.split('-'); let o = ''; for (const x of w) { if ((o + '-' + x).length > 54 && o) break; o = o ? o + '-' + x : x; }
+  const b2 = o;
+  return (b2 ? b2 + '-' : '') + String(id).slice(-5).toLowerCase();
+};
+const tokId = (events, tok) => {
+  if (isId(tok)) return tok;
+  const m = String(tok || '').toLowerCase().match(/(?:^|-)([a-z0-9]{5})$/);
+  const e = m && (events || []).find(x => x.id.slice(-5).toLowerCase() === m[1]);
+  return e ? e.id : '';
+};
+const TOK = '([A-Za-z0-9-]{5,90})';
 
 function cors(req) {
   const o = req.headers.get('Origin') || '';
@@ -240,7 +255,7 @@ function quandTexte(f) {
   return t;
 }
 function publishedMail(f, id, k = '') {
-  const lien = `${SITE}/#event-${id}`, partage = `${API_ORIGIN}/e/${id}`, PS = c => `${partage}?s=${c}`;
+  const lien = `${SITE}/#event-${id}`, partage = `${API_ORIGIN}/e/${slugEv(f, id)}`, PS = c => `${partage}?s=${c}`;
   const titre = f.Titre || 'Votre événement', quand = quandTexte(f), ou = [f.Lieu, f.Commune].filter(Boolean).join(', ');
   const ph = Array.isArray(f.Photo) && f.Photo[0] ? (f.Photo[0].thumbnails?.large?.url || f.Photo[0].url) : '';
   const S = "'Instrument Sans','Helvetica Neue',Helvetica,Arial,sans-serif", D = "Archivo,'Arial Narrow','Helvetica Neue',Arial,sans-serif";
@@ -254,7 +269,7 @@ function publishedMail(f, id, k = '') {
   const info = rows => `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-top:14px;">${rows.filter(r => r[1]).map(([k, v]) => `<tr><td valign="top" style="padding:3px 14px 3px 0;font-family:${S};font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:${G};">${k}</td><td style="padding:3px 0;font-family:${S};font-size:14px;line-height:1.4;color:${W};">${escH(v)}</td></tr>`).join('')}</table>`;
   const mot = String(f['Message aux organisateurs'] || '').trim().slice(0, 3000);
   const qui = f.Organisation ? `Bonjour ${escH(f.Organisation)},` : 'Bonjour,';
-  const kitUrl = `${SITE}/test13/kit.html?id=${id}${k ? '&k=' + k : ''}`; // page « kit de partage » (test13 pour l'instant)
+  const kitUrl = k ? `${API_ORIGIN}/kit/${slugEv(f, id)}/${k}` : `${SITE}${KIT_PATH}?id=${id}`; // page « kit de partage »
   const msg = [titre, quand, ou, f.Tarif].filter(Boolean).join('\n') + `\n\nToutes les infos : ${PS('mailpub')}`;
   const msgWa = [`*${titre}*`, quand, ou, f.Tarif].filter(Boolean).join('\n') + `\n\nToutes les infos : ${PS('mailpub')}`;
   const btnApp = (h, ico, petit, nom, bg, fg) => `<td width="49%" valign="top" style="border-radius:14px;background:${bg};"><a href="${h}" style="display:block;padding:14px 14px;text-decoration:none;border-radius:14px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td valign="middle" style="padding-right:10px;"><img src="${SITE}/images/partage/${ico}.png" width="24" height="24" alt="" style="display:block;width:24px;height:24px;border:0;"></td><td valign="middle" style="font-family:${S};color:${fg};line-height:1.15;"><span style="font-size:11px;opacity:.85;">${petit}</span><br><span style="font-size:15px;font-weight:600;">${nom}</span></td></tr></table></a></td>`;
@@ -398,7 +413,7 @@ const SNAP_MAX_AGE = 24 * 3600e3;   // au-delà, on relit Airtable (en arrière-
 const DIRTY_DELAY = 60e3;           // après une publication, on relit au plus une fois par minute
 
 // Les liens des photos Airtable expirent au bout de 2 h : on garde une copie de chaque photo dans KV
-const API_ORIGIN = 'https://lasave-api.partage.workers.dev';
+const API_ORIGIN = 'https://go.la-save.fr';
 async function keepPhotos(list, budget) {
   for (const item of list) {
     if (!Array.isArray(item.Photo)) continue;
@@ -431,7 +446,7 @@ async function buildSnap(env) {
   const orgs = await listAll(env, T_ORGAS, '&sort[0][field]=Ordre&sort[0][direction]=asc');
   const snap = {
     at: Date.now(), dirty: false,
-    events: evs.map(r => ({ id: r.id, ...pick(r.fields, EVENT_PUBLIC) })),
+    events: evs.map(r => ({ id: r.id, Lien: slugEv(r.fields, r.id), ...pick(r.fields, EVENT_PUBLIC) })),
     orgas: orgs.filter(r => r.fields['Publié']).map(r => ({ id: r.id, ...pick(r.fields, ORGA_PUBLIC) })),
   };
   // Au plus 35 nouvelles photos par passage (limite de Cloudflare) ; les suivantes au passage d'après
@@ -545,7 +560,7 @@ async function rsvpRecap(env) {
 }
 function rsvpMail(f, id, total, rows, k) {
   const titre = f.Titre || 'Votre événement', quand = quandTexte(f);
-  const kitUrl = `${SITE}/test13/kit.html?id=${id}&k=${k}`;
+  const kitUrl = `${API_ORIGIN}/kit/${slugEv(f, id)}/${k}`;
   const S = "'Helvetica Neue',Helvetica,Arial,sans-serif";
   const noms = rows.slice(0, 40).map(r => escH(r.prenom) + (r.nb > 1 ? ` (+${r.nb - 1})` : ''));
   const reste = rows.length - noms.length;
@@ -691,7 +706,7 @@ ${ou ? `<p style="margin:2px 0 0;color:#d6d4ce;">${escH(ou)}</p>` : ''}
 <h2 style="margin:26px 0 4px;font-size:20px;">Vous venez ?</h2>
 <p style="margin:0 0 16px;color:#d6d4ce;font-size:15px;">Dites-le à l’organisateur, ça l’aide à préparer l’accueil.</p>
 ${err ? `<p style="margin:0 0 14px;padding:12px 14px;border-radius:12px;background:#2a1410;color:#ffd9cf;font-size:15px;">${escH(err)}</p>` : ''}
-<form method="post" action="${API_ORIGIN}/venir/${id}">
+<form method="post" action="${API_ORIGIN}/venir/${slugEv(ev, id)}">
 <label style="display:block;font-size:14px;font-weight:600;">Votre prénom<input name="prenom" required maxlength="40" autocomplete="given-name" value="${escH(prenom)}" style="${champ}"></label>
 <label style="display:block;margin-top:14px;font-size:14px;font-weight:600;">Combien de personnes, vous compris ?<select name="nb" style="${champ}">${opts}</select></label>
 <div style="position:absolute;left:-9999px;" aria-hidden="true"><label>Ne pas remplir<input name="site" tabindex="-1" autocomplete="off"></label></div>
@@ -703,8 +718,8 @@ ${err ? `<p style="margin:0 0 14px;padding:12px 14px;border-radius:12px;backgrou
 
 /* ── routes ── */
 const ROUTES = [
-  'GET /events — agenda public (copie KV, cache 60 s)', 'GET /orgas — organisateurs publiés', 'GET /e/:id — page d’un événement (partage)', 'GET /img/:att — affiche copiée dans KV',
-  'GET /ics/:id — ajout au calendrier', 'GET|POST /venir/:id — « Je viens » (prénom + nombre)', 'GET /rsvp/:id?k= — liste « Qui vient » (clé organisateur)',
+  'GET /events — agenda public (copie KV, cache 60 s)', 'GET /orgas — organisateurs publiés', 'GET /e/:lien — page d’un événement (partage), ex. /e/fete-du-village-montaigut-x7k2p', 'GET /kit/:lien/:clé — raccourci vers le kit de partage', 'GET /img/:att — affiche copiée dans KV',
+  'GET /ics/:lien — ajout au calendrier', 'GET|POST /venir/:lien — « Je viens » (prénom + nombre)', 'GET /rsvp/:lien?k= — liste « Qui vient » (clé organisateur)',
   'POST /code — vérifier un code organisateur', 'POST /code/request — demander un code', 'POST /events — proposer un événement', 'POST /events/:id/(view|like) — vues et « J’y vais »',
   'POST /stat — « J’y vais » et vues', 'POST /avis — avis', 'POST /upload — affiche (ImgBB)', 'POST /newsletter · /newsletter/stop',
   'GET /lien/maj · /lien/confirmer?id= — pages de lien depuis Airtable', 'POST /hook/refresh · /hook/confirm — relecture et confirmations',
@@ -740,14 +755,14 @@ async function route(req, env, ctx) {
   // Événements publiés (mis en cache 60 s au bord du réseau Cloudflare)
   if (m === 'GET' && p === '/events' && KV) {
     const snap = await getSnap(env, ctx);
-    return json(req, withCounts(snap.events, await getCounts()), 200, { 'Cache-Control': 'public, max-age=60' });
+    return json(req, withCounts(snap.events.map(e => e.Lien ? e : { ...e, Lien: slugEv(e, e.id) }), await getCounts()), 200, { 'Cache-Control': 'public, max-age=60' });
   }
   if (m === 'GET' && p === '/events') {
     const cache = caches.default, key = new Request(url.origin + '/events');
     let res = await cache.match(key);
     if (!res) {
       const recs = await listAll(env, T_EVENTS, '&filterByFormula=' + encodeURIComponent("{Statut}='Publié'"));
-      res = new Response(JSON.stringify(recs.map(r => ({ id: r.id, ...pick(r.fields, EVENT_PUBLIC) }))),
+      res = new Response(JSON.stringify(recs.map(r => ({ id: r.id, Lien: slugEv(r.fields, r.id), ...pick(r.fields, EVENT_PUBLIC) }))),
         { headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'public, max-age=60' } });
       ctx.waitUntil(cache.put(key, res.clone()));
     }
@@ -755,11 +770,11 @@ async function route(req, env, ctx) {
   }
 
   // « Je viens » : page et envoi du formulaire (invitation mail)
-  const vm = p.match(/^\/venir\/(rec[A-Za-z0-9]{14})$/);
+  const vm = p.match(new RegExp('^/venir/' + TOK + '$'));
   if (vm && (m === 'GET' || m === 'POST')) {
-    const id = vm[1];
     if (!KV || !env.DB) return pageSimple('Bientôt disponible', 'Cette page n’est pas encore activée.');
-    const ev = ((await getSnap(env, ctx)).events || []).find(e => e.id === id);
+    const evs0 = (await getSnap(env, ctx)).events || [], id = tokId(evs0, vm[1]);
+    const ev = evs0.find(e => e.id === id);
     if (!ev) return pageSimple('Événement introuvable', 'Cet événement n’est pas (ou plus) en ligne sur laSave.');
     if ((ev['Date de fin'] || ev.Date || '9999') < parisJour()) return pageSimple('Événement passé', 'Cet événement a déjà eu lieu.');
     if (m === 'GET') return venirPage(ev, id);
@@ -783,14 +798,15 @@ async function route(req, env, ctx) {
 <main style="max-width:440px;text-align:center;"><h1 style="font-size:30px;margin:0 0 12px;">C’est noté !</h1>
 <p style="color:#d6d4ce;margin:0 0 6px;">Merci ${escH(prenom)}, l’organisateur sait que vous venez${nb > 1 ? ` à ${nb}` : ''}.</p>
 <p style="color:#a3a19b;margin:0 0 26px;font-size:15px;">${escH(ev.Titre)} · ${escH(quandTexte(ev))}</p>
-<a href="${API_ORIGIN}/ics/${id}" style="display:inline-block;padding:13px 24px;border-radius:99px;background:#FFA823;color:#141210;font-weight:600;text-decoration:none;">Ajouter à mon agenda</a>
+<a href="${API_ORIGIN}/ics/${slugEv(ev, id)}" style="display:inline-block;padding:13px 24px;border-radius:99px;background:#FFA823;color:#141210;font-weight:600;text-decoration:none;">Ajouter à mon agenda</a>
 <p style="margin:18px 0 0;"><a href="${SITE}/#event-${id}" style="color:#f4f3ef;font-weight:600;">Voir la fiche de l’événement</a></p></main></body></html>`,
       { headers: { 'Content-Type': 'text/html; charset=utf-8', 'X-Robots-Tag': 'noindex', 'Cache-Control': 'no-store' } });
   }
   // « Qui vient » : liste vue par l'organisateur (lien du kit, avec clé)
-  const rm = p.match(/^\/rsvp\/(rec[A-Za-z0-9]{14})$/);
+  const rm = p.match(new RegExp('^/rsvp/' + TOK + '$'));
   if (m === 'GET' && rm) {
-    const id = rm[1];
+    const id = tokId(KV ? ((await getSnap(env, ctx).catch(() => null)) || {}).events : [], rm[1]);
+    if (!id) return json(req, { error: 'Lien non valide.' }, 404);
     if (!env.DB) return json(req, { ok: true, total: 0, reponses: [] }, 200, { 'Cache-Control': 'no-store' });
     if (!sameText(String(url.searchParams.get('k') || ''), await rsvpKey(env, id))) return json(req, { error: 'Lien non valide.' }, 403);
     await rsvpTable(env.DB);
@@ -798,11 +814,21 @@ async function route(req, env, ctx) {
     return json(req, { ok: true, total: rows.reduce((a, r) => a + r.nb, 0), reponses: rows }, 200, { 'Cache-Control': 'no-store' });
   }
 
+  // Lien court du kit : go.la-save.fr/kit/<événement>/<clé> → page du kit
+  const km = m === 'GET' && p.match(/^\/kit\/([A-Za-z0-9-]{5,90})\/([A-Za-z0-9]{10,40})$/);
+  if (km) {
+    const kid = tokId(KV ? ((await getSnap(env, ctx).catch(() => null)) || {}).events : [], km[1]) || (isId(km[1]) ? km[1] : '');
+    if (!kid) return Response.redirect(SITE, 302);
+    return new Response(null, { status: 302, headers: { Location: `${SITE}${KIT_PATH}?id=${kid}&k=${km[2]}`, 'Cache-Control': 'no-store', 'X-Robots-Tag': 'noindex', 'Referrer-Policy': 'no-referrer' } });
+  }
+
   // Fichier agenda (.ics) d'un événement : sur iPhone, il s'ouvre directement dans Calendrier
   let sm;
-  if (m === 'GET' && (sm = p.match(/^\/ics\/(rec[A-Za-z0-9]{14})$/))) {
-    const id = sm[1];
+  if (m === 'GET' && (sm = p.match(new RegExp('^/ics/' + TOK + '$')))) {
+    let id = sm[1];
     let ev = null;
+    if (!isId(id)) id = tokId(KV ? ((await getSnap(env, ctx).catch(() => null)) || {}).events : [], id);
+    if (!isId(id)) return Response.redirect(SITE, 302);
     if (KV) { const snap = await getSnap(env, ctx).catch(() => null); ev = snap && snap.events.find(e => e.id === id) || null; }
     else { try { const r = await at(env, `${T_EVENTS}/${id}`); if (r.fields.Statut === 'Publié') ev = r.fields; } catch {} }
     if (!ev || !/^\d{4}-\d{2}-\d{2}$/.test(ev.Date || '')) return Response.redirect(SITE, 302);
@@ -819,7 +845,7 @@ async function route(req, env, ctx) {
     }
     const esc = s => String(s || '').replace(/([,;\\])/g, '\\$1').replace(/\r?\n/g, '\\n');
     const where = [ev.Lieu, ev.Commune].filter(Boolean).join(', ');
-    const lien = `${API_ORIGIN}/e/${id}?s=site`;
+    const lien = `${API_ORIGIN}/e/${slugEv(ev, id)}?s=site`;
     const tz = 'BEGIN:VTIMEZONE\r\nTZID:Europe/Paris\r\nBEGIN:DAYLIGHT\r\nTZOFFSETFROM:+0100\r\nTZOFFSETTO:+0200\r\nTZNAME:CEST\r\nDTSTART:19700329T020000\r\nRRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=-1SU\r\nEND:DAYLIGHT\r\nBEGIN:STANDARD\r\nTZOFFSETFROM:+0200\r\nTZOFFSETTO:+0100\r\nTZNAME:CET\r\nDTSTART:19701025T030000\r\nRRULE:FREQ=YEARLY;BYMONTH=10;BYDAY=-1SU\r\nEND:STANDARD\r\nEND:VTIMEZONE\r\n';
     const ics = `BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//laSave//FR\r\nCALSCALE:GREGORIAN\r\nMETHOD:PUBLISH\r\n${hm ? tz : ''}BEGIN:VEVENT\r\nUID:${id}@la-save.fr\r\nDTSTAMP:${new Date().toISOString().replace(/[-:]/g, '').slice(0, 15)}Z\r\n${dt}\r\nSUMMARY:${esc(ev.Titre || 'Événement')}\r\nLOCATION:${esc(where)}\r\nDESCRIPTION:${esc(String(ev.Description || '').slice(0, 800) + '\n\n' + lien)}\r\nURL:${lien}\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n`;
     stat(env, 'agenda', id, 'ics');
@@ -827,8 +853,11 @@ async function route(req, env, ctx) {
   }
 
   // Page de partage : aperçu (titre, image) pour Facebook/WhatsApp puis redirection vers le site
-  if (m === 'GET' && (sm = p.match(/^\/e\/(rec[A-Za-z0-9]{14})$/))) {
-    const id = sm[1], home = 'https://la-save.fr';
+  if (m === 'GET' && (sm = p.match(new RegExp('^/e/' + TOK + '$')))) {
+    const home = 'https://la-save.fr';
+    let id = sm[1];
+    if (!isId(id)) id = tokId(KV ? ((await getSnap(env, ctx).catch(() => null)) || {}).events : [], id);
+    if (!isId(id)) return Response.redirect(home, 302);
     const canal = CANAUX.includes(url.searchParams.get('s')) ? url.searchParams.get('s') : '';
     // Un robot d'aperçu (WhatsApp, Facebook…) = le lien vient d'être posté ; sinon = quelqu'un a cliqué
     stat(env, ROBOTS.test(req.headers.get('User-Agent') || '') ? 'apercu' : 'lien', id, canal);
@@ -1247,7 +1276,7 @@ async function route(req, env, ctx) {
         enLigne: !!(snap && (snap.events || []).some(e => e.id === id)),
         mailPublication: KV ? await KV.get('mailpub:' + id) : null,
         mailRecap: KV ? await KV.get('mailrsvp:' + id) : null,
-        kit: `${SITE}/test13/kit.html?id=${id}&k=${await rsvpKey(env, id)}`,
+        kit: `${API_ORIGIN}/kit/${slugEv(rec.fields, id)}/${await rsvpKey(env, id)}`,
         airtable: `https://airtable.com/${BASE}/${T_EVENTS}/${id}`,
       }, 200, { 'Cache-Control': 'no-store' });
     }

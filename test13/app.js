@@ -1,7 +1,7 @@
 /* laSave — test13 : site complet (accueil, fiches, organisateurs, partager, pages d'information) */
 (() => {
   'use strict';
-  const API = 'https://lasave-api.partage.workers.dev';
+  const API = 'https://go.la-save.fr';
   const $ = s => document.querySelector(s);
   const $$ = s => [...document.querySelectorAll(s)];
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -171,7 +171,7 @@
     const ymd = x => `${x.getFullYear()}${pad(x.getMonth() + 1)}${pad(x.getDate())}`;
     return { s: ymd(d), f: ymd(end), allDay: true };
   }
-  const shareUrl = e => `${API}/e/${encodeURIComponent(e.id)}?s=site`;
+  const shareUrl = e => `${API}/e/${encodeURIComponent(e.Lien || e.id)}?s=site`;
   const gcalUrl = (e, r = range(e)) => 'https://calendar.google.com/calendar/render?action=TEMPLATE&text=' + encodeURIComponent(e.Titre || 'Événement') + '&dates=' + r.s + '/' + r.f + '&details=' + encodeURIComponent((e.Description || '').slice(0, 800) + '\n\n' + shareUrl(e)) + '&location=' + encodeURIComponent([e.Lieu, e.Commune].filter(Boolean).join(', ')) + (r.allDay ? '' : '&ctz=Europe/Paris');
   // Ajout direct à l'agenda du téléphone : Calendrier sur iPhone (fichier .ics), Google Agenda sur Android
   const isApple = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
@@ -180,7 +180,7 @@
     if (!isApple && /Android/i.test(navigator.userAgent)) {
       try { navigator.sendBeacon(API + '/stat', new Blob([JSON.stringify({ t: 'agenda', id: e.id, c: 'google' })], { type: 'text/plain' })); } catch (_) {}
       window.open(gcalUrl(e), '_blank', 'noopener');
-    } else location.href = `${API}/ics/${encodeURIComponent(e.id)}`;
+    } else location.href = `${API}/ics/${encodeURIComponent(e.Lien || e.id)}`;
   }
   let curEvent = null;
   function calendar(e) {
