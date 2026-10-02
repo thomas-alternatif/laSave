@@ -66,7 +66,7 @@ const tokId = (events, tok) => {
   const e = m && list.find(x => x.id.slice(-5).toLowerCase() === m[1]);
   return e ? e.id : '';
 };
-// Canal d'un lien partagé : une seule lettre après le « ? » (go.la-save.fr/titre-4-octobre?w = WhatsApp)
+// Canal d'un lien partagé : une seule lettre après le « ? » (partage.la-save.fr/titre-4-octobre?w = WhatsApp)
 const LETTRES = { w: 'wa', s: 'sms', f: 'fb', m: 'mail', l: 'legende', t: 'story', p: 'post', a: 'mailpub', i: 'invitation', q: 'qr' };
 const LETTRE = Object.fromEntries(Object.entries(LETTRES).map(([k, v]) => [v, k]));
 const canalDe = sp => { for (const [k, v] of sp) if (LETTRES[k] && v === '') return LETTRES[k]; const c = sp.get('v') || sp.get('s'); return CANAUX.includes(c) ? c : ''; };
@@ -823,7 +823,7 @@ async function route(req, env, ctx) {
     return json(req, { ok: true, total: rows.reduce((a, r) => a + r.nb, 0), reponses: rows }, 200, { 'Cache-Control': 'no-store' });
   }
 
-  // Lien court du kit : go.la-save.fr/kit/<événement>/<clé> → page du kit
+  // Lien court du kit : partage.la-save.fr/kit/<événement>/<clé> → page du kit
   const km = m === 'GET' && p.match(/^\/kit\/([A-Za-z0-9-]{5,90})\/([A-Za-z0-9]{10,40})$/);
   if (km) {
     const kid = tokId(KV ? ((await getSnap(env, ctx).catch(() => null)) || {}).events : [], km[1]) || (isId(km[1]) ? km[1] : '');
@@ -1286,6 +1286,7 @@ async function route(req, env, ctx) {
         mailPublication: KV ? await KV.get('mailpub:' + id) : null,
         mailRecap: KV ? await KV.get('mailrsvp:' + id) : null,
         kit: `${API_ORIGIN}/kit/${slugEv(rec.fields, id)}/${await rsvpKey(env, id)}`,
+        partage: `${API_ORIGIN}/${slugEv(rec.fields, id)}`,
         airtable: `https://airtable.com/${BASE}/${T_EVENTS}/${id}`,
       }, 200, { 'Cache-Control': 'no-store' });
     }

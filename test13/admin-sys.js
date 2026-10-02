@@ -101,7 +101,7 @@
     else if (k === 'refuses') st('Remettre en attente', '', 'En attente');
     // liens
     const liens = el('div', 'sh-ligne');
-    liens.append(lien('Airtable', d.airtable), lien('Kit organisateur', d.kit), lien('Page de partage', `${API}/e/${e.id}`), lien('Ajout au calendrier', `${API}/ics/${e.id}`), lien('Formulaire « Je viens »', `${API}/venir/${e.id}`));
+    liens.append(lien('Airtable', d.airtable), lien('Kit organisateur', d.kit), lien("Page de partage", d.partage || `${API}/e/${e.id}`), lien('Ajout au calendrier', `${API}/ics/${e.id}`), lien('Formulaire « Je viens »', `${API}/venir/${e.id}`));
     if (d.enLigne) liens.append(lien('Fiche sur le site', `${SITE}/#event-${e.id}`));
     // chiffres
     const total = d.reponses.reduce((a, r) => a + (+r.nb || 0), 0), att = d.compteursEnAttente || {};
