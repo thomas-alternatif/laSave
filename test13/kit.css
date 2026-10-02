@@ -78,14 +78,14 @@ body { background: #120c09; }
 
 /* ── En-tête façon affiche ── */
 .k-hero { background: rgba(8,8,8,.86); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-radius: 26px; padding: 22px 26px 22px; margin-top: 8px; }
-.k-hero-meta, .k-hero-foot { display: flex; justify-content: space-between; gap: 12px; font-size: 12px; font-weight: 600; }
+.k-hero-meta, .k-hero-foot { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 12px; font-size: 12px; font-weight: 600; }
 .k-hero-meta { padding-bottom: 12px; border-bottom: 1px solid var(--texte); }
 .k-hero-meta span:last-child, .k-hero-foot span:last-child { color: var(--texte-2); font-weight: 500; text-align: right; }
 .k-hero-foot { padding-top: 12px; border-top: 1px solid var(--ligne); margin-top: 26px; color: var(--texte-2); font-weight: 500; }
 .k-hero-grid { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 28px; align-items: end; padding-top: 26px; }
 .k-hero h1 { display: grid; line-height: .86; text-transform: uppercase; }
-.k-h-a { white-space: nowrap; font: 800 clamp(64px, 13.5vw, 164px)/.86 var(--display); font-stretch: 75%; letter-spacing: -.02em; }
-.k-h-b { font: 800 clamp(30px, 6.2vw, 76px)/1 var(--display); font-stretch: 125%; letter-spacing: .01em; color: #FFA823; padding-left: .08em; margin-top: .12em; }
+.k-h-a, .k-h-b { white-space: nowrap; font: 800 clamp(52px, 11.2vw, 132px)/.88 var(--display); font-stretch: 75%; letter-spacing: -.015em; }
+.k-h-b { color: #FFA823; margin-top: .1em; }
 .k-lead { margin-top: 20px; max-width: 40ch; font-size: 17px; color: #d6d4ce; }
 .k-hero-poster { position: relative; width: clamp(130px, 22vw, 230px); margin: 0 10px 8px 0; transform: rotate(3deg); }
 .k-hero-poster img { width: 100%; border-radius: 14px; box-shadow: 0 24px 50px rgba(0,0,0,.6); }
