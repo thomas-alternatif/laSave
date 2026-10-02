@@ -15,10 +15,10 @@
   const MET = {
     visites: ['Visites', r => r.type === 'visite' && r.id === 'site', 'Personnes venues sur le site (une par session)'],
     fiches: ['Fiches consultées', r => r.type === 'fiche', 'Événements ouverts sur le site'],
-    clics: ['Clics sur liens partagés', r => r.type === 'lien', 'Personnes arrivées grâce à un partage'],
-    apercus: ['Liens partagés', r => r.type === 'apercu', 'Liens collés dans une messagerie ou un réseau'],
-    kits: ['Kits ouverts', r => r.type === 'kit', 'Organisateurs qui préparent un partage'],
-    boutons: ['Boutons du kit', r => r.type === 'kit_action', 'Clics sur les boutons du kit'],
+    clics: ['Arrivées par un lien partagé', r => r.type === 'lien', 'Personnes qui ont cliqué sur un lien partagé et sont arrivées sur laSave'],
+    apercus: ['Liens postés', r => r.type === 'apercu', 'Fois où un lien laSave a été collé dans WhatsApp, Facebook, etc. (vu quand l’appli affiche l’aperçu)'],
+    kits: ['Kits ouverts', r => r.type === 'kit', 'Organisateurs venus sur la page « Faites-le connaître »'],
+    boutons: ['Partages lancés depuis le kit', r => r.type === 'kit_action', 'Clics sur un bouton du kit : story, visuel, lien, WhatsApp, SMS, copier…'],
     jyvais: ['« J’y vais »', r => r.type === 'jyvais', 'Clics sur le bouton des fiches'],
     agenda: ['Ajouts au calendrier', r => r.type === 'agenda', 'Google Agenda ou fichier .ics'],
     lettre: ['Inscrits à la lettre', r => r.type === 'newsletter', 'Nouveaux inscrits sur la période'],
@@ -130,7 +130,7 @@
     let d; try { d = await donnees(30); } catch (e) { kp.replaceChildren(el('p', 'd-note', 'Statistiques indisponibles : ' + e.message)); return; }
     kp.replaceChildren();
     const t = (cle, titre) => kpi(somme(d.cur, MET[cle][1]), titre || MET[cle][0], '', somme(d.cur, MET[cle][1]), somme(d.prev, MET[cle][1]), d.prevOk);
-    kp.append(t('visites'), t('fiches'), t('clics', 'Clics sur les liens partagés'), t('kits'), t('jyvais'), kpi(jeViens(d.rsvpCur), '« Je viens » reçus', '', jeViens(d.rsvpCur), jeViens(d.rsvpPrev), d.prevOk), kpi(d.inscrits != null ? d.inscrits : somme(d.cur, MET.lettre[1]), d.inscrits != null ? 'Inscrits à la lettre' : 'Nouveaux inscrits', d.inscrits != null ? `dont ${fr(somme(d.cur, MET.lettre[1]))} sur la période` : '', 0, 0, false));
+    kp.append(t('visites'), t('fiches'), t('clics'), t('kits'), t('jyvais'), kpi(jeViens(d.rsvpCur), '« Je viens » reçus', '', jeViens(d.rsvpCur), jeViens(d.rsvpPrev), d.prevOk), kpi(d.inscrits != null ? d.inscrits : somme(d.cur, MET.lettre[1]), d.inscrits != null ? 'Inscrits à la lettre' : 'Nouveaux inscrits', d.inscrits != null ? `dont ${fr(somme(d.cur, MET.lettre[1]))} sur la période` : '', 0, 0, false));
     const vals = serie(d, 'visites'), tot = vals.reduce((x, y) => x + y, 0);
     const moy = barres($('#v-chart'), d.jours, vals, 'visites', 480, 210);
     $('#v-chart-sum').textContent = `${fr(tot)} au total · ${dec(moy)} par jour`;
@@ -195,16 +195,23 @@
     kp.append(kpi(jeViens(d.rsvpCur), '« Je viens » reçus', 'Personnes inscrites depuis un mail d’invitation', jeViens(d.rsvpCur), jeViens(d.rsvpPrev), d.prevOk));
     rGraphique();
 
+    // le parcours d'un partage
+    const fl = $('#t-flow'); fl.replaceChildren();
+    [['Kits ouverts', 'kits', 'L’organisateur ouvre sa page « Faites-le connaître ».'], ['Partages lancés', 'boutons', 'Il clique sur un bouton : story, visuel, lien, WhatsApp, SMS, copier…'], ['Liens postés', 'apercus', 'Le lien est collé dans une messagerie ou un réseau social, qui en affiche l’aperçu.'], ['Arrivées', 'clics', 'Quelqu’un clique sur ce lien et arrive sur laSave.']].forEach(([t, k, txt], i) => {
+      const li = el('li'), n = somme(d.cur, MET[k][1]), [dl, cls] = d.prevOk ? delta(n, somme(d.prev, MET[k][1])) : ['', ''];
+      li.append(el('small', '', 'Étape ' + (i + 1)), el('b', '', fr(n)), el('strong', '', t)); if (dl) li.append(el('em', 'dl ' + cls, dl)); li.append(el('p', '', txt)); fl.append(li);
+    });
+
     // les bons réflexes (rapports entre les chiffres)
     const S = k => somme(d.cur, MET[k][1]), visitesDe = c => somme(d.cur, r => r.type === 'visite' && r.id === 'site' && r.canal === c);
     const rap = (nom, a, b, fmt) => ({ nom, v: b ? fmt(a / b) : '–' });
     const R = [
       rap('Fiches ouvertes par visite', S('fiches'), S('visites'), x => dec(x)),
       rap('« J’y vais » pour 100 fiches ouvertes', S('jyvais') * 100, S('fiches'), x => dec(x)),
-      rap('Clics pour chaque lien partagé', S('clics'), S('apercus'), x => dec(x)),
-      rap('Boutons utilisés par kit ouvert', S('boutons'), S('kits'), x => dec(x)),
+      rap('Arrivées pour chaque lien posté', S('clics'), S('apercus'), x => dec(x)),
+      rap('Partages lancés par kit ouvert', S('boutons'), S('kits'), x => dec(x)),
       rap('Ajouts au calendrier pour 100 fiches', S('agenda') * 100, S('fiches'), x => dec(x)),
-      rap('Visites arrivées par un lien partagé laSave', visitesDe('partage') * 100, S('visites'), x => Math.round(x) + ' %'),
+      rap('Visites arrivées par un lien partagé', visitesDe('partage') * 100, S('visites'), x => Math.round(x) + ' %'),
       rap('Visites arrivées depuis Google', visitesDe('google') * 100, S('visites'), x => Math.round(x) + ' %'),
       rap('Visites sans passer par un lien (accès direct)', visitesDe('direct') * 100, S('visites'), x => Math.round(x) + ' %'),
     ];
@@ -221,7 +228,7 @@
   }
 
   /* événement par événement */
-  const COLS = [['fiche', 'Fiches', 'fiche'], ['apercu', 'Liens partagés', 'apercu'], ['lien', 'Clics', 'lien'], ['kit', 'Kits', 'kit'], ['jyvais', 'J’y vais', 'jyvais'], ['agenda', 'Calendrier', 'agenda'], ['venir', 'Je viens']];
+  const COLS = [['fiche', 'Fiches', 'fiche'], ['apercu', 'Liens postés', 'apercu'], ['lien', 'Arrivées', 'lien'], ['kit', 'Kits ouverts', 'kit'], ['jyvais', 'J’y vais', 'jyvais'], ['agenda', 'Calendrier', 'agenda'], ['venir', 'Je viens']];
   function parEvenement() {
     const m = {}; dCour.cur.forEach(r => { if (!/^rec/.test(r.id)) return; const o = m[r.id] = m[r.id] || { id: r.id, fiche: 0, apercu: 0, lien: 0, kit: 0, jyvais: 0, agenda: 0 }; if (r.type in o) o[r.type] += r.n; });
     L.ov.events.forEach(e => { if (!m[e.id] && (L.cle(e) === 'enligne' || L.venir(e.id))) m[e.id] = { id: e.id, fiche: 0, apercu: 0, lien: 0, kit: 0, jyvais: 0, agenda: 0 }; });
@@ -258,7 +265,7 @@
     l.slice(0, 60).forEach(e => { const li = el('li'), b = el('button', 'd-btn sm ghost', e.titre || '(sans titre)'); b.type = 'button'; b.addEventListener('click', () => L.rend.fiche(e)); li.append(b); ul.append(li); });
   }
   /* jour par jour */
-  const CJ = [['visites', 'Visites'], ['fiches', 'Fiches'], ['clics', 'Clics'], ['apercus', 'Aperçus'], ['kits', 'Kits'], ['boutons', 'Boutons'], ['jyvais', 'J’y vais'], ['agenda', 'Calendrier'], ['lettre', 'Lettre'], ['jeviens', 'Je viens']];
+  const CJ = [['visites', 'Visites'], ['fiches', 'Fiches'], ['clics', 'Arrivées'], ['apercus', 'Liens postés'], ['kits', 'Kits ouverts'], ['boutons', 'Partages kit'], ['jyvais', 'J’y vais'], ['agenda', 'Calendrier'], ['lettre', 'Lettre'], ['jeviens', 'Je viens']];
   function tableJours() {
     const d = dCour, t = $('#t-days'); t.replaceChildren();
     const S = Object.fromEntries(CJ.map(([k]) => [k, serie(d, k)]));
@@ -276,9 +283,9 @@
     const bloc = (t, items) => { o.push('', '## ' + t); const l = items.filter(x => x[1] > 0).sort((a, b) => b[1] - a[1]); o.push(...(l.length ? l.map(x => `- ${x[0]} : ${x[1]}`) : ['aucun'])); };
     bloc('Provenance des visiteurs', parCanal(d.cur, r => r.type === 'visite' && r.id === 'site' && r.canal !== 'interne', SOURCES));
     bloc('Versions du site', Object.keys(VERSIONS).map(k => [VERSIONS[k], somme(d.cur, r => r.type === 'visite' && r.id === k)]));
-    bloc('Clics sur liens partagés par canal', parCanal(d.cur, r => r.type === 'lien', CANAUX));
-    bloc('Liens partagés (aperçus) par canal', parCanal(d.cur, r => r.type === 'apercu', CANAUX));
-    bloc('Boutons du kit', parCanal(d.cur, r => r.type === 'kit_action', KIT));
+    bloc('Arrivées par lien partagé, selon le canal', parCanal(d.cur, r => r.type === 'lien', CANAUX));
+    bloc('Liens postés, selon le canal', parCanal(d.cur, r => r.type === 'apercu', CANAUX));
+    bloc('Partages lancés depuis le kit, par bouton', parCanal(d.cur, r => r.type === 'kit_action', KIT));
     bloc('Calendrier', parCanal(d.cur, r => r.type === 'agenda', AGENDA));
     o.push('', '## Par événement : titre | statut | fiches | aperçus | clics | kits | j’y vais | calendrier | je viens');
     parEvenement().sort((a, b) => b.fiche - a.fiche).slice(0, 60).forEach(x => o.push([x.e ? x.e.titre : x.id, x.e ? x.e.statut : '-', x.fiche, x.apercu, x.lien, x.kit, x.jyvais, x.agenda, x.venir].join(' | ')));

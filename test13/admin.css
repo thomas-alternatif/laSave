@@ -305,3 +305,13 @@ a.d-btn { text-decoration: none; }
 .d-chart text { font-size: 12px; }
 .d-cols .d-next li { grid-template-columns: minmax(0, 1fr); gap: 2px; padding: 12px 0; }
 .d-cols .d-next time, .d-cols .d-next .d-venir { grid-column: auto; }
+.d-flow { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); counter-reset: none; }
+.d-flow li { position: relative; display: grid; gap: 2px; align-content: start; padding: 14px 16px; border-radius: 16px; background: #141414; border: 1px solid var(--ligne); }
+.d-flow small { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--orange); }
+.d-flow b { font: 800 34px/1 var(--display); font-stretch: 75%; }
+.d-flow strong { font-weight: 600; }
+.d-flow em { font-style: normal; font-size: 12px; font-weight: 700; color: var(--texte-2); }
+.d-flow em.up { color: var(--ok); } .d-flow em.down { color: var(--alerte); }
+.d-flow p { color: var(--texte-2); font-size: 13px; line-height: 1.4; margin-top: 4px; }
+@media (min-width: 900px) { .d-flow li:not(:last-child)::after { content: '→'; position: absolute; right: -11px; top: 22px; color: var(--texte-2); background: var(--panneau); width: 10px; text-align: center; z-index: 1; } }
+.d-flow + .d-note { margin-top: 14px; }

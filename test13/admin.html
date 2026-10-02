@@ -12,7 +12,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,500..900&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="icon" href="../favicon.ico" sizes="48x48" />
   <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
-  <link rel="stylesheet" href="admin.css?v=3" />
+  <link rel="stylesheet" href="admin.css?v=4" />
 </head>
 <body>
   <!-- Connexion -->
@@ -100,6 +100,11 @@
         <p class="d-sub" id="t-txt"></p>
         <div class="d-kpis" id="t-kpis"></div>
         <div class="d-card">
+          <h2 class="d-h2 in">Le parcours d’un partage</h2>
+          <ol class="d-flow" id="t-flow"></ol>
+          <p class="d-note">Un lien peut aussi être posté sans passer par le kit (bouton « Partager » du site, mail). Les étapes ne se suivent donc pas toujours une à une. Le « J’y vais » et les fiches ouvertes sont plus bas.</p>
+        </div>
+        <div class="d-card">
           <h2 class="d-h2 in">Jour par jour <span class="d-light" id="t-chart-sum"></span></h2>
           <div class="d-chips" id="t-metric" role="tablist" aria-label="Mesure"></div>
           <div class="d-chart" id="t-chart"></div>
@@ -113,11 +118,11 @@
           <div class="d-card"><h2 class="d-h2 in">Quelle version du site</h2><div class="d-bars" id="t-versions"></div><p class="d-note">« Test » = la nouvelle version (test13), pas encore en ligne.</p></div>
         </div>
         <div class="d-cols">
-          <div class="d-card"><h2 class="d-h2 in">Clics sur les liens partagés</h2><div class="d-bars" id="t-canaux"></div><p class="d-note">Par où les gens arrivent : WhatsApp, Facebook, mail, QR code…</p></div>
-          <div class="d-card"><h2 class="d-h2 in">Liens partagés (aperçus)</h2><div class="d-bars" id="t-apercus"></div><p class="d-note">Fois où un lien a été collé dans une messagerie ou un réseau social, qui en a affiché l’aperçu.</p></div>
+          <div class="d-card"><h2 class="d-h2 in">Arrivées par un lien partagé</h2><div class="d-bars" id="t-canaux"></div><p class="d-note">Par où les gens arrivent : WhatsApp, Facebook, mail, QR code…</p></div>
+          <div class="d-card"><h2 class="d-h2 in">Liens postés</h2><div class="d-bars" id="t-apercus"></div><p class="d-note">Où les liens laSave sont collés (WhatsApp, Facebook…). Compté quand l’appli affiche l’aperçu du lien.</p></div>
         </div>
         <div class="d-cols">
-          <div class="d-card"><h2 class="d-h2 in">Boutons du kit de partage</h2><div class="d-bars" id="t-kit"></div></div>
+          <div class="d-card"><h2 class="d-h2 in">Boutons utilisés dans le kit</h2><div class="d-bars" id="t-kit"></div></div>
           <div class="d-card"><h2 class="d-h2 in">Ajouts au calendrier et lettre</h2><div class="d-bars" id="t-cal"></div><p class="d-note" id="t-nl"></p></div>
         </div>
         <div class="d-card flush">
