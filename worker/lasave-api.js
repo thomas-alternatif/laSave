@@ -34,7 +34,7 @@ const EVENT_PUBLIC = ['Titre','Catégorie','Organisation','Description','Commune
 const ORGA_PUBLIC = ['Nom','Description courte','Description','Photo','Contact','Ordre'];
 // Champs acceptés depuis le formulaire « Ajouter un événement »
 const EVENT_SUBMIT = ['Titre','Catégorie','Commune','Date','Date de fin','Heure','Lieu','Description','Tarif','Récurrence','Période','Organisation','Contact','Contact privé','Message privé','Billetterie'];
-const ADMIN_STATUTS = ['Publié','Archivé','En attente'];
+const ADMIN_STATUTS = ['Publié','Archivé','En attente','Refusé'];
 const F_CONF = 'Envoyer la confirmation', F_CONF_TXT = 'Confirmation par mail'; // champs Airtable du bouton « envoyer la confirmation »
 
 // E-mails
@@ -1070,6 +1070,28 @@ async function route(req, env, ctx) {
       const recs = await listAll(env, T_EVENTS, '&filterByFormula=' + encodeURIComponent(`{Statut}='${statut}'`));
       return json(req, recs); // l'admin voit tous les champs, y compris privés
     }
+    // Tableau de bord : tout ce qu'il faut pour la vue d'ensemble en une seule lecture d'Airtable (gardée 2 minutes)
+    if (m === 'GET' && p === '/admin/overview') {
+      let ov = (!url.searchParams.get('frais') && KV) ? await KV.get('admov', 'json') : null;
+      if (!ov) {
+        const [recs, demandes] = await Promise.all([
+          listAll(env, T_EVENTS, ['Titre', 'Statut', 'Date', 'Date de fin', 'Récurrence', 'Commune', 'Organisation', 'Catégorie', 'Likes', 'Vues', 'Photo', 'Contact privé', 'Envoyer la confirmation', 'Confirmation par mail'].map(f => '&fields%5B%5D=' + encodeURIComponent(f)).join('')),
+          listAll(env, T_ORGAS, '&filterByFormula=' + encodeURIComponent("{Statut code}='Demandé'") + '&fields%5B%5D=Nom'),
+        ]);
+        ov = {
+          at: Date.now(), codes: demandes.length,
+          events: recs.map(r => {
+            const f = r.fields;
+            return { id: r.id, titre: f.Titre || '', statut: f.Statut || '', date: f.Date || '', fin: f['Date de fin'] || '', rec: f['Récurrence'] || '', commune: f.Commune || '', orga: f.Organisation || '', cat: f['Catégorie'] || '', likes: f.Likes || 0, vues: f.Vues || 0, photo: !!(f.Photo && f.Photo.length), contact: !!firstEmail(f['Contact privé']), coche: !!f['Envoyer la confirmation'], conf: String(f['Confirmation par mail'] || '') };
+          }),
+        };
+        if (KV) await KV.put('admov', JSON.stringify(ov), { expirationTtl: 120 });
+      }
+      let rsvp = {};
+      if (env.DB) { try { await rsvpTable(env.DB); for (const x of (await env.DB.prepare('SELECT ev, COUNT(*) AS n, SUM(nb) AS total FROM rsvp GROUP BY ev').all()).results || []) rsvp[x.ev] = { n: x.n, total: x.total }; } catch {} }
+      const snap = KV ? await KV.get('snap', 'json') : null;
+      return json(req, { ...ov, rsvp, copie: snap ? new Date(snap.at).toISOString() : null, enLigne: snap ? (snap.events || []).length : null, services: { kv: !!KV, d1: !!env.DB, brevo: !!env.BREVO_KEY, stats: !!(env.STATS || env.DB) } }, 200, { 'Cache-Control': 'no-store' });
+    }
     // Affiches à sauvegarder : liste (avec les liens frais d'Airtable) puis téléchargement d'un fichier par le Worker
     if (m === 'GET' && p === '/admin/affiches') {
       const statut = url.searchParams.get('statut');
@@ -1110,7 +1132,7 @@ async function route(req, env, ctx) {
       catch (e) { if (e.status === 404) return json(req, { error: 'Événement introuvable' }, 404); throw e; }
       if (statut === 'Publié') ctx.waitUntil(notifyPublished(env, rec).catch(e => console.error('mail publication', e)));
       await caches.default.delete(new Request(url.origin + '/events'));
-      if (KV) await markDirty(); // le site se met à jour dans la minute
+      if (KV) { await markDirty(); await KV.delete('admov'); } // le site se met à jour dans la minute
       return json(req, { ok: true });
     }
     // Mail de test : le vrai mail « C'est en ligne » avec un événement publié, envoyé à l'adresse choisie
@@ -1160,6 +1182,7 @@ async function route(req, env, ctx) {
     if (m === 'POST' && p === '/admin/refresh') {
       if (!KV) return json(req, { error: 'Stockage KV non relié' }, 400);
       const snap = await buildSnap(env);
+      if (KV) await KV.delete('admov');
       return json(req, { ok: true, events: snap.events.length, orgas: snap.orgas.length });
     }
   }

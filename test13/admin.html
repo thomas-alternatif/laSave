@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://lasave-api.partage.workers.dev; base-uri 'self'; form-action 'none'" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="theme-color" content="#050505" />
+  <title>Tableau de bord · laSave</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,500..900&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="icon" href="../favicon.ico" sizes="48x48" />
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="admin.css?v=1" />
+</head>
+<body>
+  <!-- Connexion -->
+  <main class="d-login" id="d-login">
+    <form class="d-login-box" id="d-form">
+      <img src="../test7/logo.png" alt="laSave" width="132" height="32" />
+      <h1>Tableau de bord</h1>
+      <p>Accès réservé à la mairie. Même mot de passe que l’administration du site.</p>
+      <label for="d-pwd">Mot de passe</label>
+      <input id="d-pwd" type="password" autocomplete="current-password" required />
+      <button class="d-btn main" type="submit">Se connecter</button>
+      <p class="d-err" id="d-err" role="alert" hidden></p>
+    </form>
+  </main>
+
+  <!-- Tableau de bord -->
+  <div class="d-app" id="d-app" hidden>
+    <header class="d-top">
+      <a class="d-logo" href="./" aria-label="laSave, accueil"><img src="../test7/logo.png" alt="laSave" width="118" height="29" /></a>
+      <p class="d-sync" id="d-sync" role="status"></p>
+      <button class="d-btn sm" type="button" id="d-reload">Actualiser</button>
+      <button class="d-btn sm ghost" type="button" id="d-logout">Déconnexion</button>
+    </header>
+
+    <nav class="d-nav" id="d-nav" aria-label="Sections">
+      <a href="#vue" data-s="vue">Vue d’ensemble</a>
+      <a href="#evenements" data-s="evenements">Événements <span class="d-badge" id="b-ev" hidden></span></a>
+      <a href="#organisateurs" data-s="organisateurs">Organisateurs <span class="d-badge" id="b-org" hidden></span></a>
+      <a href="#stats" data-s="stats">Statistiques</a>
+      <a href="#archives" data-s="archives">Archives</a>
+      <a href="#outils" data-s="outils">Outils</a>
+    </nav>
+
+    <main class="d-main">
+      <p class="d-msg" id="d-msg" role="status" hidden></p>
+
+      <!-- Vue d'ensemble -->
+      <section class="d-sec" id="s-vue" hidden>
+        <h1 class="d-h1">Vue d’ensemble</h1>
+        <p class="d-sub" id="v-date"></p>
+        <h2 class="d-h2">À traiter</h2>
+        <ul class="d-todo" id="v-todo"></ul>
+        <h2 class="d-h2">Les 30 derniers jours <a class="d-more" href="stats.html">Détail des statistiques</a></h2>
+        <div class="d-kpis" id="v-kpis"></div>
+        <h2 class="d-h2">Les 7 prochains jours</h2>
+        <div class="d-card"><ul class="d-next" id="v-next"></ul></div>
+      </section>
+
+      <!-- Événements -->
+      <section class="d-sec" id="s-evenements" hidden>
+        <h1 class="d-h1">Événements</h1>
+        <div class="d-bar">
+          <input class="d-search" id="e-q" type="search" placeholder="Chercher un titre, une asso, une commune" aria-label="Chercher un événement" />
+        </div>
+        <div class="d-chips" id="e-chips" role="tablist" aria-label="Filtrer par statut"></div>
+        <div class="d-bulk" id="e-bulk" hidden></div>
+        <div class="d-card flush"><ul class="d-rows" id="e-list"></ul></div>
+      </section>
+
+      <!-- Organisateurs -->
+      <section class="d-sec" id="s-organisateurs" hidden>
+        <h1 class="d-h1">Organisateurs</h1>
+        <h2 class="d-h2">Demandes de code</h2>
+        <div class="d-card flush"><ul class="d-rows" id="o-list"></ul></div>
+        <p class="d-note">Le code est envoyé par mail à l’organisateur. Refuser ne lui envoie rien.</p>
+      </section>
+
+      <!-- Statistiques -->
+      <section class="d-sec" id="s-stats" hidden>
+        <h1 class="d-h1">Statistiques <span class="d-light">30 jours</span></h1>
+        <div class="d-card"><h2 class="d-h2 in">Visites par jour</h2><div class="d-chart" id="t-chart"></div></div>
+        <div class="d-card"><h2 class="d-h2 in">Les événements les plus vus</h2><ul class="d-top5" id="t-top"></ul></div>
+        <p class="d-note"><a href="stats.html">Ouvrir les statistiques détaillées</a> : d’où viennent les visiteurs, canaux de partage, boutons du kit.</p>
+      </section>
+
+      <!-- Archives -->
+      <section class="d-sec" id="s-archives" hidden>
+        <h1 class="d-h1">Archives</h1>
+        <div class="d-card">
+          <h2 class="d-h2 in">Sauvegarder les affiches</h2>
+          <p class="d-p">Toutes les affiches d’un statut dans un seul fichier .zip, à ranger où vous voulez.</p>
+          <div class="d-tools">
+            <label for="a-statut">Événements</label>
+            <select id="a-statut"><option value="Archivé">Archivés</option><option value="Publié">En ligne</option><option value="En attente">En attente</option></select>
+            <button class="d-btn main" type="button" id="a-zip" disabled>Télécharger le .zip</button>
+          </div>
+          <p class="d-prog" id="a-prog" role="status" hidden></p>
+          <p class="d-sum" id="a-sum"></p>
+        </div>
+      </section>
+
+      <!-- Outils -->
+      <section class="d-sec" id="s-outils" hidden>
+        <h1 class="d-h1">Outils</h1>
+        <div class="d-card">
+          <h2 class="d-h2 in">Mettre le site à jour</h2>
+          <p class="d-p">Relit Airtable tout de suite. À utiliser après une modification faite directement dans Airtable. Sinon, c’est automatique chaque nuit.</p>
+          <button class="d-btn main" type="button" id="u-refresh">Mettre à jour maintenant</button>
+        </div>
+        <div class="d-card">
+          <h2 class="d-h2 in">Mail de test</h2>
+          <p class="d-p">Envoie le vrai mail « C’est en ligne » (avec un événement publié) à l’adresse de votre choix.</p>
+          <div class="d-tools">
+            <label for="u-to">Adresse</label>
+            <input id="u-to" type="email" placeholder="vous@exemple.fr" autocomplete="email" />
+            <button class="d-btn main" type="button" id="u-test">Envoyer le test</button>
+          </div>
+        </div>
+        <div class="d-card">
+          <h2 class="d-h2 in">État du service</h2>
+          <ul class="d-health" id="u-health"></ul>
+        </div>
+        <div class="d-card">
+          <h2 class="d-h2 in">Raccourcis</h2>
+          <ul class="d-links">
+            <li><a href="https://airtable.com/appHgiuv0ClNd8qsV" target="_blank" rel="noopener">Ouvrir Airtable</a></li>
+            <li><a href="stats.html">Statistiques détaillées</a></li>
+            <li><a href="newsletter.html">Lettre d’information</a></li>
+            <li><a href="./">Voir le site</a></li>
+          </ul>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="admin.js?v=1"></script>
+</body>
+</html>

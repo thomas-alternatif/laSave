@@ -1,0 +1,319 @@
+/* laSave : tableau de bord de la mairie */
+(() => {
+  'use strict';
+  const API = 'https://lasave-api.partage.workers.dev';
+  const SITE = 'https://la-save.fr';
+  const AIRTABLE = 'https://airtable.com/appHgiuv0ClNd8qsV/tbl6Um2XQPq4JPxCg';
+  const $ = s => document.querySelector(s);
+  const $$ = s => [...document.querySelectorAll(s)];
+  const el = (tag, cls, txt) => { const n = document.createElement(tag); if (cls) n.className = cls; if (txt != null) n.textContent = txt; return n; };
+  const fr = n => Math.round(n || 0).toLocaleString('fr-FR');
+  const pl = (n, un, plus) => `${fr(n)} ${n > 1 ? plus : un}`;
+  const KEY = 'lasave_admin'; // même session que l'administration du site et les statistiques
+  let token = ''; try { token = sessionStorage.getItem(KEY) || ''; } catch (_) {}
+  const saveToken = t => { token = t; try { t ? sessionStorage.setItem(KEY, t) : sessionStorage.removeItem(KEY); } catch (_) {} };
+
+  let ov = null, stats = null, filtre = null, q = '';
+
+  /* ── réseau ── */
+  async function call(path, opts = {}, raw = false) {
+    const r = await fetch(API + path, { ...opts, headers: { ...(opts.body ? { 'Content-Type': 'application/json' } : {}), ...(token ? { Authorization: 'Bearer ' + token } : {}), ...(opts.headers || {}) } });
+    if (r.status === 401 && path.startsWith('/admin/') && path !== '/admin/login') { saveToken(''); showApp(false); throw Object.assign(new Error('Session expirée, reconnectez-vous.'), { status: 401 }); }
+    if (!r.ok) { const d = await r.json().catch(() => ({})); throw Object.assign(new Error(d.error || 'Erreur ' + r.status), { status: r.status }); }
+    return raw ? r : r.json();
+  }
+
+  /* ── dates ── */
+  const today = () => new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Paris' });
+  const dj = iso => new Date(iso + 'T12:00:00');
+  const court = iso => dj(iso).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' }).replace(/\.$/, '');
+  const longue = () => new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'Europe/Paris' });
+  const ilYa = ms => { const m = Math.max(0, Math.round((Date.now() - ms) / 60000)); return m < 2 ? 'à l’instant' : m < 60 ? `il y a ${m} min` : m < 2880 ? `il y a ${Math.round(m / 60)} h` : `il y a ${Math.round(m / 1440)} jours`; };
+
+  /* ── classement des événements ── */
+  const recur = e => (e.rec && e.rec !== 'Aucune') || !e.date;
+  const fin = e => e.fin || e.date;
+  const passe = e => !recur(e) && fin(e) && fin(e) < today();
+  const cle = e => e.statut === 'Publié' ? (passe(e) ? 'passes' : 'enligne') : e.statut === 'Archivé' ? 'archives' : e.statut === 'Refusé' ? 'refuses' : 'attente';
+  const FILTRES = [['attente', 'À valider'], ['enligne', 'En ligne'], ['passes', 'À archiver'], ['archives', 'Archivés'], ['refuses', 'Refusés'], ['tous', 'Tous']];
+  const compte = k => ov.events.filter(e => k === 'tous' || cle(e) === k).length;
+  const dateTexte = e => !e.date ? 'Toute l’année' : court(e.date) + (e.fin && e.fin !== e.date ? ' → ' + court(e.fin) : '');
+  const sous = e => [e.orga, e.commune].filter(Boolean).join(' · ');
+  const venir = id => (ov.rsvp && ov.rsvp[id] && ov.rsvp[id].total) || 0;
+
+  /* ── messages ── */
+  let tMsg;
+  function msg(texte, err = false) {
+    const m = $('#d-msg'); m.textContent = texte; m.className = 'd-msg' + (err ? ' err' : ''); m.hidden = false;
+    clearTimeout(tMsg); tMsg = setTimeout(() => { m.hidden = true; }, err ? 9000 : 6000);
+  }
+
+  /* ── connexion ── */
+  function showApp(ok) { $('#d-login').hidden = ok; $('#d-app').hidden = !ok; }
+  $('#d-form').addEventListener('submit', async ev => {
+    ev.preventDefault();
+    const err = $('#d-err'); err.hidden = true;
+    try {
+      const d = await call('/admin/login', { method: 'POST', body: JSON.stringify({ pwd: $('#d-pwd').value }) });
+      if (!d.token) throw new Error('Connexion impossible.');
+      saveToken(d.token); $('#d-pwd').value = ''; await start();
+    } catch (e) { err.textContent = e.message; err.hidden = false; }
+  });
+  $('#d-logout').addEventListener('click', () => { saveToken(''); ov = null; stats = null; showApp(false); });
+  $('#d-reload').addEventListener('click', async () => { await charger(true); msg('Données actualisées.'); });
+
+  /* ── chargement ── */
+  async function charger(frais = false) {
+    $('#d-reload').disabled = true;
+    try {
+      ov = await call('/admin/overview' + (frais ? '?frais=1' : ''));
+      if (frais) stats = null;
+    } catch (e) { if (e.status !== 401) msg(e.message, true); }
+    $('#d-reload').disabled = false;
+    if (!ov) return;
+    if (!filtre) filtre = compte('attente') ? 'attente' : 'enligne';
+    $('#d-sync').textContent = ov.copie ? `Agenda mis à jour ${ilYa(Date.parse(ov.copie))} · ${pl(ov.enLigne, 'événement en ligne', 'événements en ligne')}` : 'Agenda pas encore copié';
+    const nA = compte('attente') + compte('passes');
+    const b = $('#b-ev'); b.textContent = nA; b.hidden = !nA;
+    const bo = $('#b-org'); bo.textContent = ov.codes; bo.hidden = !ov.codes;
+    afficher();
+  }
+
+  /* ── navigation ── */
+  const TITRES = { vue: 'Vue d’ensemble', evenements: 'Événements', organisateurs: 'Organisateurs', stats: 'Statistiques', archives: 'Archives', outils: 'Outils' };
+  function section() { const h = location.hash.slice(1); return TITRES[h] ? h : 'vue'; }
+  function afficher() {
+    if (!ov) return;
+    const s = section();
+    $$('.d-sec').forEach(x => { x.hidden = x.id !== 's-' + s; });
+    $$('#d-nav a').forEach(a => { const on = a.dataset.s === s; a.classList.toggle('on', on); on ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current'); });
+    document.title = TITRES[s] + ' · Tableau de bord · laSave';
+    const actif = $('#d-nav a.on'); if (actif) { const nav = $('#d-nav'); nav.scrollLeft = actif.offsetLeft - (nav.clientWidth - actif.offsetWidth) / 2; }
+    ({ vue: rVue, evenements: rEvenements, organisateurs: rOrgas, stats: rStats, archives: rArchives, outils: rOutils })[s]();
+  }
+  window.addEventListener('hashchange', () => { afficher(); window.scrollTo({ top: 0 }); });
+  const aller = (h, f) => { if (f) { filtre = f; q = ''; $('#e-q').value = ''; } if (location.hash === '#' + h) afficher(); else location.hash = h; };
+
+  /* ── actions sur les événements ── */
+  async function changer(e, statut, bouton) {
+    if (bouton) bouton.disabled = true;
+    try {
+      await call(`/admin/events/${e.id}`, { method: 'PATCH', body: JSON.stringify({ Statut: statut }) });
+      e.statut = statut;
+      msg({ Publié: `« ${e.titre} » est publié. L’agenda se met à jour dans la minute.${e.contact ? ' Le mail « C’est en ligne » part à l’organisateur.' : ''}`, Archivé: `« ${e.titre} » est archivé.`, Refusé: `« ${e.titre} » est refusé.`, 'En attente': `« ${e.titre} » est remis en attente.` }[statut]);
+      return true;
+    } catch (er) { if (er.status !== 401) msg(er.message, true); if (bouton) bouton.disabled = false; return false; }
+  }
+
+  /* ── vue d'ensemble ── */
+  function carte(cls, nombre, texte, bouton, action) {
+    const li = el('li', cls); li.append(el('b', '', fr(nombre)), el('span', '', texte));
+    if (bouton) { const b = el('button', 'd-btn sm', bouton); b.type = 'button'; b.addEventListener('click', action); li.append(b); }
+    return li;
+  }
+  function rVue() {
+    $('#v-date').textContent = longue().replace(/^./, c => c.toUpperCase());
+    const todo = $('#v-todo'); todo.innerHTML = '';
+    const nA = compte('attente'), nP = compte('passes');
+    const conf = ov.events.filter(e => e.coche && /^En attente/.test(e.conf)).length;
+    const sans = ov.events.filter(e => cle(e) === 'enligne' && !e.photo && !recur(e)).length;
+    if (nA) todo.append(carte('', nA, nA > 1 ? 'événements attendent votre validation' : 'événement attend votre validation', 'Voir', () => aller('evenements', 'attente')));
+    if (ov.codes) todo.append(carte('', ov.codes, ov.codes > 1 ? 'demandes de code organisateur' : 'demande de code organisateur', 'Voir', () => aller('organisateurs')));
+    if (nP) todo.append(carte('', nP, nP > 1 ? 'événements passés encore en ligne' : 'événement passé encore en ligne', 'Archiver', () => aller('evenements', 'passes')));
+    if (conf) todo.append(carte('info', conf, conf > 1 ? 'confirmations par mail en attente d’envoi' : 'confirmation par mail en attente d’envoi', 'Mettre le site à jour', () => aller('outils')));
+    if (sans) todo.append(carte('info', sans, sans > 1 ? 'événements en ligne sans affiche' : 'événement en ligne sans affiche', 'Voir', () => aller('evenements', 'enligne')));
+    if (!todo.children.length) { const li = el('li', 'calme'); li.append(el('span', '', 'Tout est à jour : rien à valider, rien à archiver.')); todo.append(li); }
+
+    // 7 prochains jours
+    const a = today(), b7 = new Date(Date.now() + 7 * 864e5).toLocaleDateString('sv-SE', { timeZone: 'Europe/Paris' });
+    const next = ov.events.filter(e => cle(e) === 'enligne' && !recur(e) && e.date <= b7 && fin(e) >= a).sort((x, y) => (x.date < a ? a : x.date).localeCompare(y.date < a ? a : y.date));
+    const ul = $('#v-next'); ul.innerHTML = '';
+    if (!next.length) ul.append(el('li', 'd-vide', 'Rien de prévu dans les 7 prochains jours.'));
+    next.forEach(e => {
+      const li = el('li'), t = el('div'), v = venir(e.id);
+      t.append(el('b', '', e.titre || '(sans titre)'), el('small', '', sous(e)));
+      li.append(el('time', '', e.date < a ? 'En cours' : court(e.date)), t, el('span', 'd-venir' + (v ? ' on' : ''), v ? `${pl(v, 'personne vient', 'personnes viennent')}` : 'aucune réponse'));
+      ul.append(li);
+    });
+    chargerStats().then(kpis).catch(() => { $('#v-kpis').replaceChildren(el('p', 'd-note', 'Statistiques indisponibles pour le moment.')); });
+  }
+  async function chargerStats() { if (!stats) stats = await call('/admin/stats?jours=30'); return stats; }
+  const somme = (d, type) => d.parEvenement.filter(r => r.type === type).reduce((a, r) => a + (+r.n || 0), 0);
+  function kpis(d) {
+    const aVenir = ov.events.filter(e => cle(e) === 'enligne').reduce((a, e) => a + venir(e.id), 0);
+    const rows = [[somme(d, 'visite'), 'Visites'], [somme(d, 'fiche'), 'Fiches consultées'], [somme(d, 'lien'), 'Clics sur les liens partagés'], [somme(d, 'kit'), 'Kits de partage ouverts'], [somme(d, 'jyvais'), '« J’y vais » cliqués'], [aVenir, '« Je viens » reçus pour les événements à venir'], [d.inscrits != null ? d.inscrits : somme(d, 'newsletter'), d.inscrits != null ? 'Inscrits à la lettre' : 'Nouveaux inscrits à la lettre']];
+    const w = $('#v-kpis'); w.innerHTML = '';
+    rows.forEach(([n, t]) => { const k = el('div', 'd-kpi'); k.append(el('b', '', fr(n)), el('span', '', t)); w.append(k); });
+  }
+
+  /* ── événements ── */
+  function rEvenements() {
+    const chips = $('#e-chips'); chips.innerHTML = '';
+    FILTRES.forEach(([k, nom]) => {
+      const b = el('button', 'd-chip' + (filtre === k ? ' on' : ''), nom); b.type = 'button'; b.setAttribute('role', 'tab'); b.setAttribute('aria-selected', filtre === k);
+      b.append(Object.assign(el('i'), { textContent: compte(k) }));
+      b.addEventListener('click', () => { filtre = k; rEvenements(); });
+      chips.append(b);
+    });
+    const norm = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+    let liste = ov.events.filter(e => (filtre === 'tous' || cle(e) === filtre) && (!q || norm([e.titre, e.orga, e.commune, e.cat].join(' ')).includes(norm(q))));
+    const futur = filtre === 'enligne' || filtre === 'attente';
+    liste.sort((x, y) => futur ? (x.date || '9999').localeCompare(y.date || '9999') : (y.date || '').localeCompare(x.date || ''));
+
+    // action groupée : archiver tous les événements passés
+    const bulk = $('#e-bulk'); bulk.innerHTML = '';
+    const passes = ov.events.filter(e => cle(e) === 'passes');
+    if (filtre === 'passes' && passes.length) {
+      bulk.hidden = false;
+      bulk.append(el('span', '', `${pl(passes.length, 'événement passé est encore en ligne', 'événements passés sont encore en ligne')}. L’archivage les retire de l’agenda ; rien n’est supprimé.`));
+      const b = el('button', 'd-btn main sm', `Archiver les ${passes.length}`); b.type = 'button'; let sur = false;
+      b.addEventListener('click', async () => {
+        if (!sur) { sur = true; b.textContent = 'Confirmer l’archivage'; setTimeout(() => { sur = false; b.textContent = `Archiver les ${passes.length}`; }, 5000); return; }
+        b.disabled = true; let n = 0;
+        for (const e of passes) { b.textContent = `Archivage… ${n + 1}/${passes.length}`; if (!(await changer(e, 'Archivé'))) break; n++; }
+        msg(`${pl(n, 'événement archivé', 'événements archivés')}.`); await charger(true);
+      });
+      bulk.append(b);
+    } else bulk.hidden = true;
+
+    const ul = $('#e-list'); ul.innerHTML = '';
+    if (!liste.length) { ul.append(el('li', 'd-vide', q ? 'Aucun événement ne correspond à cette recherche.' : 'Aucun événement ici.')); return; }
+    const h = el('li', 'col-h'); ['Date', 'Événement', 'Statut', 'J’y vais', 'Je viens', ''].forEach(t => h.append(el('span', '', t))); ul.append(h);
+    liste.forEach(e => {
+      const li = el('li'), t = el('div', 't'), k = cle(e);
+      t.append(el('b', '', e.titre || '(sans titre)'), el('small', '', sous(e)));
+      const pillTxt = k === 'passes' ? 'Passé' : e.statut || 'En attente', pill = el('span', 'd-pill p-' + pillTxt.replace(/\s/g, ''), pillTxt);
+      const v = venir(e.id), acts = el('div', 'acts');
+      const bt = (txt, cls, fn) => { const b = el('button', 'd-btn sm ' + cls, txt); b.type = 'button'; b.addEventListener('click', async () => { if (await changer(e, fn, b)) { await recompter(); } }); return b; };
+      if (k === 'attente') acts.append(bt('Publier', 'ok', 'Publié'), bt('Refuser', 'warn', 'Refusé'));
+      else if (k === 'enligne') acts.append(bt('Archiver', '', 'Archivé'));
+      else if (k === 'passes') acts.append(bt('Archiver', 'main', 'Archivé'));
+      else if (k === 'archives') acts.append(bt('Remettre en ligne', '', 'Publié'));
+      else if (k === 'refuses') acts.append(bt('Remettre en attente', '', 'En attente'));
+      if (k === 'enligne') { const a = el('a', 'd-btn sm ghost', 'Fiche'); a.href = `${SITE}/#event-${e.id}`; a.target = '_blank'; a.rel = 'noopener'; acts.append(a); }
+      const at = el('a', 'd-btn sm ghost', 'Airtable'); at.href = `${AIRTABLE}/${e.id}`; at.target = '_blank'; at.rel = 'noopener'; acts.append(at);
+      li.append(el('time', '', dateTexte(e)), t, el('span', '', ''), el('span', 'num', e.likes ? fr(e.likes) : '–'), el('span', 'num' + (v ? ' on' : ''), v ? fr(v) : '–'), acts);
+      li.children[2].append(pill);
+      ul.append(li);
+    });
+  }
+  async function recompter() { // après une action : les compteurs et la liste suivent, sans relire Airtable
+    const nA = compte('attente') + compte('passes'); const b = $('#b-ev'); b.textContent = nA; b.hidden = !nA;
+    rEvenements();
+  }
+  $('#e-q').addEventListener('input', ev => { q = ev.target.value.trim(); rEvenements(); });
+
+  /* ── organisateurs ── */
+  async function rOrgas() {
+    const ul = $('#o-list'); ul.innerHTML = ''; ul.append(el('li', 'd-vide', 'Chargement…'));
+    let rows; try { rows = await call('/admin/code-requests'); } catch (e) { ul.replaceChildren(el('li', 'd-vide', e.message)); return; }
+    ul.innerHTML = '';
+    if (!rows.length) { ul.append(el('li', 'd-vide', 'Aucune demande de code en attente.')); return; }
+    ul.classList.add('d-orga');
+    rows.forEach(r => {
+      const li = el('li'), t = el('div', 't'); t.append(el('b', '', r.Nom || '(sans nom)'), el('small', '', r.Email || 'pas d’adresse'));
+      const acts = el('div', 'acts');
+      const go = (txt, cls, act, ok) => { const b = el('button', 'd-btn sm ' + cls, txt); b.type = 'button'; b.addEventListener('click', async () => { b.disabled = true; try { await call(`/admin/orgas/${r.id}/${act}`, { method: 'POST' }); li.remove(); ov.codes = Math.max(0, ov.codes - 1); const bo = $('#b-org'); bo.textContent = ov.codes; bo.hidden = !ov.codes; msg(ok); if (!ul.children.length) ul.append(el('li', 'd-vide', 'Aucune demande de code en attente.')); } catch (e) { b.disabled = false; msg(e.message, true); } }); return b; };
+      acts.append(go('Envoyer le code', 'ok', 'send-code', `Code envoyé à ${r.Nom}.`), go('Refuser', 'warn', 'refuse', `Demande de ${r.Nom} refusée.`));
+      li.append(t, acts); if (r.Message) li.append(el('p', 'msg', r.Message));
+      ul.append(li);
+    });
+  }
+
+  /* ── statistiques ── */
+  async function rStats() {
+    let d; try { d = await chargerStats(); } catch (e) { $('#t-chart').textContent = e.message; return; }
+    // visites par jour
+    const par = {}; for (let i = 29; i >= 0; i--) par[new Date(Date.now() - i * 864e5).toISOString().slice(0, 10)] = 0;
+    d.parJour.forEach(r => { const k = String(r.jour).slice(0, 10); if (r.type === 'visite' && k in par) par[k] += +r.n || 0; });
+    const jours = Object.keys(par), vals = jours.map(j => par[j]), max = Math.max(1, ...vals);
+    const W = 640, H = 170, pad = 28, bw = (W - pad) / jours.length;
+    const barres = vals.map((v, i) => { const h = Math.round((H - 40) * v / max); return `<rect class="b" x="${(pad + i * bw + 1.5).toFixed(1)}" y="${H - 22 - h}" width="${(bw - 3).toFixed(1)}" height="${Math.max(v ? 2 : 0, h)}" rx="2"><title>${jours[i]} : ${v}</title></rect>`; }).join('');
+    const lab = (i, x, anchor) => `<text x="${x}" y="${H - 5}" text-anchor="${anchor}">${court(jours[i])}</text>`;
+    $('#t-chart').innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Visites par jour sur 30 jours"><line x1="${pad}" x2="${W}" y1="${H - 22}" y2="${H - 22}"/><text x="0" y="14">${max}</text>${barres}${lab(0, pad, 'start')}${lab(14, pad + 14.5 * bw, 'middle')}${lab(29, W, 'end')}</svg>`;
+    // événements les plus consultés
+    const parId = {};
+    d.parEvenement.forEach(r => { if (!r.id || !/^rec/.test(r.id)) return; const o = parId[r.id] = parId[r.id] || { fiche: 0, apercu: 0, lien: 0, kit: 0, jyvais: 0 }; if (r.type in o) o[r.type] += +r.n || 0; });
+    const titres = Object.fromEntries(ov.events.map(e => [e.id, e.titre]));
+    const top = Object.entries(parId).map(([id, o]) => ({ id, ...o })).filter(o => o.fiche + o.lien + o.jyvais > 0).sort((a, b) => b.fiche - a.fiche).slice(0, 8);
+    const ul = $('#t-top'); ul.innerHTML = '';
+    if (!top.length) ul.append(el('li', '', 'Pas encore de données sur la période.'));
+    top.forEach(o => { const li = el('li'); li.append(el('b', '', titres[o.id] || 'Événement retiré de la liste'), el('span', '', `${pl(o.fiche, 'fiche vue', 'fiches vues')} · ${pl(o.lien, 'clic de partage', 'clics de partage')} · ${fr(o.jyvais)} « J’y vais »`)); ul.append(li); });
+  }
+
+  /* ── archives : sauvegarde des affiches ── */
+  let listeAff = [];
+  const mo = n => n >= 1e6 ? (n / 1e6).toFixed(1).replace('.', ',') + ' Mo' : Math.max(1, Math.round(n / 1e3)) + ' Ko';
+  async function rArchives() {
+    const zip = $('#a-zip'); zip.disabled = true; $('#a-sum').textContent = 'Chargement…';
+    try { listeAff = await call('/admin/affiches?statut=' + encodeURIComponent($('#a-statut').value)); } catch (e) { $('#a-sum').textContent = e.message; return; }
+    const nb = listeAff.reduce((a, x) => a + x.fichiers.length, 0), poids = listeAff.reduce((a, x) => a + x.fichiers.reduce((b, f) => b + f.taille, 0), 0);
+    $('#a-sum').textContent = nb ? `${pl(listeAff.filter(x => x.fichiers.length).length, 'événement', 'événements')} · ${pl(nb, 'affiche', 'affiches')} · ${mo(poids)}` : 'Aucune affiche pour ce statut.';
+    zip.disabled = !nb;
+  }
+  $('#a-statut').addEventListener('change', rArchives);
+  const CRC = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+  const crc32 = u => { let c = 0xFFFFFFFF; for (let i = 0; i < u.length; i++) c = CRC[(c ^ u[i]) & 255] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; };
+  function faireZip(files) {
+    const enc = new TextEncoder(), parts = [], central = []; let off = 0, cd = 0;
+    const n = new Date(), dt = (n.getHours() << 11) | (n.getMinutes() << 5) | (n.getSeconds() >> 1), dd = ((n.getFullYear() - 1980) << 9) | ((n.getMonth() + 1) << 5) | n.getDate();
+    for (const f of files) {
+      const nm = enc.encode(f.name), crc = crc32(f.data), sz = f.data.length;
+      const lh = new DataView(new ArrayBuffer(30)); lh.setUint32(0, 0x04034b50, true); lh.setUint16(4, 20, true); lh.setUint16(6, 0x0800, true); lh.setUint16(10, dt, true); lh.setUint16(12, dd, true); lh.setUint32(14, crc, true); lh.setUint32(18, sz, true); lh.setUint32(22, sz, true); lh.setUint16(26, nm.length, true);
+      parts.push(lh.buffer, nm, f.data);
+      const ch = new DataView(new ArrayBuffer(46)); ch.setUint32(0, 0x02014b50, true); ch.setUint16(4, 20, true); ch.setUint16(6, 20, true); ch.setUint16(8, 0x0800, true); ch.setUint16(12, dt, true); ch.setUint16(14, dd, true); ch.setUint32(16, crc, true); ch.setUint32(20, sz, true); ch.setUint32(24, sz, true); ch.setUint16(28, nm.length, true); ch.setUint32(42, off, true);
+      central.push(ch.buffer, nm); cd += 46 + nm.length; off += 30 + nm.length + sz;
+    }
+    const end = new DataView(new ArrayBuffer(22)); end.setUint32(0, 0x06054b50, true); end.setUint16(8, files.length, true); end.setUint16(10, files.length, true); end.setUint32(12, cd, true); end.setUint32(16, off, true);
+    return new Blob([...parts, ...central, end.buffer], { type: 'application/zip' });
+  }
+  const propre = s => String(s || '').replace(/[\\/:*?"<>|\u0000-\u001f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 80);
+  const ext = f => { const m = /\.([A-Za-z0-9]{2,5})$/.exec(f.nom || ''); return m ? m[1].toLowerCase() : /png/.test(f.type) ? 'png' : /webp/.test(f.type) ? 'webp' : /pdf/.test(f.type) ? 'pdf' : 'jpg'; };
+  $('#a-zip').addEventListener('click', async () => {
+    const btn = $('#a-zip'), prog = $('#a-prog'); btn.disabled = true; prog.hidden = false;
+    const todo = []; listeAff.forEach(x => x.fichiers.forEach((f, i) => todo.push({ x, f, i })));
+    const files = [], pris = new Set(); let rate = 0;
+    for (let k = 0; k < todo.length; k++) {
+      const { x, f, i } = todo[k]; prog.textContent = `Téléchargement ${k + 1} sur ${todo.length}…`;
+      try {
+        const r = await call('/admin/affiche?u=' + encodeURIComponent(f.url), {}, true), data = new Uint8Array(await r.arrayBuffer());
+        const base = `${x.date || 'sans-date'} ${propre(x.titre) || 'affiche'}${x.fichiers.length > 1 ? ' (' + (i + 1) + ')' : ''}`; let name = `${base}.${ext(f)}`, n = 2;
+        while (pris.has(name.toLowerCase())) name = `${base} - ${n++}.${ext(f)}`;
+        pris.add(name.toLowerCase()); files.push({ name, data });
+      } catch (e) { if (e.status === 401) return; rate++; }
+    }
+    if (!files.length) { prog.textContent = 'Aucune affiche n’a pu être téléchargée. Actualisez et réessayez.'; btn.disabled = false; return; }
+    prog.textContent = 'Création du fichier…'; await new Promise(r => setTimeout(r, 30));
+    const blob = faireZip(files), a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = `affiches-lasave-${today()}.zip`; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 60000);
+    prog.textContent = `${pl(files.length, 'affiche', 'affiches')} dans le .zip (${mo(blob.size)}).` + (rate ? ` ${pl(rate, 'n’a pas pu être récupérée', 'n’ont pas pu être récupérées')}.` : '');
+    btn.disabled = false;
+  });
+
+  /* ── outils ── */
+  function rOutils() {
+    const ul = $('#u-health'); ul.innerHTML = '';
+    const ligne = (nom, ok, txt) => { const li = el('li'); li.append(el('span', '', nom), el('span', ok ? 'ok' : 'ko', txt)); ul.append(li); };
+    ligne('Copie de l’agenda', !!ov.copie, ov.copie ? ilYa(Date.parse(ov.copie)) : 'absente');
+    ligne('Événements en ligne', ov.enLigne != null, ov.enLigne != null ? fr(ov.enLigne) : 'inconnu');
+    ligne('Stockage de la copie', ov.services.kv, ov.services.kv ? 'relié' : 'non relié');
+    ligne('Base des statistiques et réponses', ov.services.d1, ov.services.d1 ? 'reliée' : 'non reliée');
+    ligne('Envoi des mails', ov.services.brevo, ov.services.brevo ? 'configuré' : 'clé manquante');
+  }
+  $('#u-refresh').addEventListener('click', async ev => {
+    const b = ev.currentTarget; b.disabled = true;
+    try { const d = await call('/hook/refresh', { method: 'POST' }); msg(d.message || 'Site mis à jour.'); await charger(true); }
+    catch (e) { msg(e.status === 429 ? 'Trop de demandes, réessayez dans quelques minutes.' : e.message, true); }
+    b.disabled = false;
+  });
+  $('#u-test').addEventListener('click', async ev => {
+    const b = ev.currentTarget, to = $('#u-to').value.trim(); if (!to) { msg('Indiquez une adresse e-mail.', true); return; }
+    b.disabled = true;
+    try { const d = await call('/admin/test-mail', { method: 'POST', body: JSON.stringify({ to }) }); msg(`Mail de test envoyé à ${to}${d.titre ? ' (événement : ' + d.titre + ')' : ''}.`); }
+    catch (e) { msg(e.message, true); }
+    b.disabled = false;
+  });
+
+  async function start() { showApp(true); await charger(); }
+  if (token) start().catch(() => showApp(false));
+})();
