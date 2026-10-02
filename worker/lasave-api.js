@@ -260,7 +260,7 @@ function quandTexte(f) {
   return t;
 }
 function publishedMail(f, id, k = '') {
-  const lien = `${SITE}/#event-${id}`, partage = `${API_ORIGIN}/${slugEv(f, id)}`, PS = () => partage;
+  const lien = `${SITE}/#event-${id}`, partage = `${API_ORIGIN}/${slugEv(f, id)}`, PS = c => `${partage}?v=${c}`;
   const titre = f.Titre || 'Votre événement', quand = quandTexte(f), ou = [f.Lieu, f.Commune].filter(Boolean).join(', ');
   const ph = Array.isArray(f.Photo) && f.Photo[0] ? (f.Photo[0].thumbnails?.large?.url || f.Photo[0].url) : '';
   const S = "'Instrument Sans','Helvetica Neue',Helvetica,Arial,sans-serif", D = "Archivo,'Arial Narrow','Helvetica Neue',Arial,sans-serif";
@@ -863,7 +863,7 @@ async function route(req, env, ctx) {
     let id = sm[1];
     if (!isId(id)) id = tokId(KV ? ((await getSnap(env, ctx).catch(() => null)) || {}).events : [], id);
     if (!isId(id)) return Response.redirect(home, 302);
-    const canal = CANAUX.includes(url.searchParams.get('s')) ? url.searchParams.get('s') : '';
+    const cv = url.searchParams.get('v') || url.searchParams.get('s'), canal = CANAUX.includes(cv) ? cv : '';
     // Un robot d'aperçu (WhatsApp, Facebook…) = le lien vient d'être posté ; sinon = quelqu'un a cliqué
     stat(env, ROBOTS.test(req.headers.get('User-Agent') || '') ? 'apercu' : 'lien', id, canal);
     let ev = null;
