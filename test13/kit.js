@@ -231,8 +231,26 @@ ${photo ? `<tr><td style="padding:18px 24px 0;"><a href="${lien}"><img src="${es
 ${ou(e) ? `<tr><td style="padding:4px 24px 0;font-size:15px;color:#d6d4ce;">${esc(ou(e))}</td></tr>` : ''}
 ${e.Tarif ? `<tr><td style="padding:4px 24px 0;font-size:15px;color:#a3a19b;">${esc(e.Tarif)}</td></tr>` : ''}
 ${orga ? `<tr><td style="padding:20px 24px 0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>${orga.logo ? `<td valign="middle" style="padding-right:12px;"><img src="${esc(orga.logo)}" width="44" height="44" alt="" style="display:block;width:44px;height:44px;border-radius:99px;border:2px solid #ffffff;background:#ffffff;object-fit:cover;"></td>` : ''}<td valign="middle" style="font-size:12px;line-height:1.3;color:#a3a19b;">Organisé par<br><span style="font-size:15px;font-weight:700;color:#f4f3ef;">${esc(orga.name)}</span></td></tr></table></td></tr>` : ''}
-<tr><td style="padding:22px 24px 26px;"><a href="${lien}" style="display:inline-block;background:#FFA823;color:#141210;font-weight:700;font-size:15px;text-decoration:none;padding:13px 24px;border-radius:99px;">Voir l’événement</a>${/^https:\/\//.test(e.Billetterie || '') ? ` &nbsp;<a href="${esc(e.Billetterie)}" style="display:inline-block;color:#f4f3ef;font-weight:700;font-size:15px;text-decoration:underline;padding:13px 6px;">Prendre ma place</a>` : ''}</td></tr>
+<tr><td style="padding:22px 24px 26px;"><a href="${API}/venir/${id}?s=invitation" style="display:inline-block;background:#FFA823;color:#141210;font-weight:700;font-size:15px;text-decoration:none;padding:13px 24px;border-radius:99px;">Je viens</a> &nbsp;<a href="${lien}" style="display:inline-block;color:#f4f3ef;font-weight:700;font-size:15px;text-decoration:underline;padding:13px 6px;">Voir l’événement</a>${/^https:\/\//.test(e.Billetterie || '') ? ` &nbsp;<a href="${esc(e.Billetterie)}" style="display:inline-block;color:#f4f3ef;font-weight:700;font-size:15px;text-decoration:underline;padding:13px 6px;">Prendre ma place</a>` : ''}</td></tr>
 </table>`;
+  }
+
+  // « Qui vient » : visible seulement avec la clé du lien reçu par mail (?k=…)
+  async function loadVenir() {
+    const k = new URLSearchParams(location.search).get('k');
+    if (!k || !/^[A-Za-z0-9_-]{10,40}$/.test(k)) return;
+    const box = $('#k-venir'); box.hidden = false;
+    const go = async () => {
+      let r; try { r = await fetch(`${API}/rsvp/${id}?k=${encodeURIComponent(k)}`).then(x => x.ok ? x.json() : null); } catch (_) { r = null; }
+      const list = $('#k-venir-list');
+      if (!r || !r.ok) { $('#k-venir-h').textContent = 'Liste indisponible'; list.innerHTML = ''; return; }
+      const n = r.total, nr = r.reponses.length;
+      $('#k-venir-h').textContent = n ? `${n} personne${n > 1 ? 's' : ''} ${n > 1 ? 'viennent' : 'vient'}` : 'Pas encore de réponse';
+      $('#k-venir-n').textContent = nr ? `${nr} réponse${nr > 1 ? 's' : ''}` : '';
+      list.innerHTML = r.reponses.map(x => `<li><b>${esc(x.prenom)}</b>${x.nb > 1 ? `<span>+ ${x.nb - 1}</span>` : ''}</li>`).join('');
+    };
+    $('#k-venir-r').addEventListener('click', async () => { await go(); toast('Liste actualisée'); });
+    go();
   }
 
   async function init() {
@@ -284,6 +302,7 @@ ${orga ? `<tr><td style="padding:20px 24px 0;"><table role="presentation" cellpa
     $('#k-hero-cat').textContent = e['Catégorie'] || 'Événement';
     $('#k-hero-date').textContent = [quand(e).split(' · ')[0], commune(e.Commune)].filter(Boolean).join(' · ');
     $('#k-body').hidden = false;
+    loadVenir();
 
     try { await document.fonts.load(titleFont(100)); await document.fonts.load('600 40px "Instrument Sans"'); } catch (_) { /* polices de secours */ }
     const story = await render(e, 1080, 1920, { photo, orga, orgLogo: 112, pad: 90, title: 132, titleMin: 72, info: 46, stamp: 34, posterW: 820, posterH: 900, top: 380, bottom: 1530, logo: 250, logoY: 235, pill: 34, pillY: 1580 });

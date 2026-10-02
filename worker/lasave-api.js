@@ -224,7 +224,7 @@ function quandTexte(f) {
   if (f.Heure) t += ` à ${String(f.Heure).replace(':', 'h')}`;
   return t;
 }
-function publishedMail(f, id) {
+function publishedMail(f, id, k = '') {
   const lien = `${SITE}/#event-${id}`, partage = `${API_ORIGIN}/e/${id}`, PS = c => `${partage}?s=${c}`;
   const titre = f.Titre || 'Votre événement', quand = quandTexte(f), ou = [f.Lieu, f.Commune].filter(Boolean).join(', ');
   const ph = Array.isArray(f.Photo) && f.Photo[0] ? (f.Photo[0].thumbnails?.large?.url || f.Photo[0].url) : '';
@@ -239,10 +239,10 @@ function publishedMail(f, id) {
   const info = rows => `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-top:14px;">${rows.filter(r => r[1]).map(([k, v]) => `<tr><td valign="top" style="padding:3px 14px 3px 0;font-family:${S};font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:${G};">${k}</td><td style="padding:3px 0;font-family:${S};font-size:14px;line-height:1.4;color:${W};">${escH(v)}</td></tr>`).join('')}</table>`;
   const mot = String(f['Message aux organisateurs'] || '').trim().slice(0, 3000);
   const qui = f.Organisation ? `Bonjour ${escH(f.Organisation)},` : 'Bonjour,';
-  const kitUrl = `${SITE}/test13/kit.html?id=${id}`; // page « kit de partage » (test13 pour l'instant)
+  const kitUrl = `${SITE}/test13/kit.html?id=${id}${k ? '&k=' + k : ''}`; // page « kit de partage » (test13 pour l'instant)
   const msg = [titre, quand, ou, f.Tarif].filter(Boolean).join('\n') + `\n\nToutes les infos : ${PS('mailpub')}`;
   const msgWa = [`*${titre}*`, quand, ou, f.Tarif].filter(Boolean).join('\n') + `\n\nToutes les infos : ${PS('mailpub')}`;
-  const btnApp = (h, ico, petit, nom, bg, fg) => `<td width="50%" valign="top" style="border-radius:14px;background:${bg};"><a href="${h}" style="display:block;padding:14px 14px;text-decoration:none;border-radius:14px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td valign="middle" style="padding-right:10px;"><img src="${SITE}/images/partage/${ico}.png" width="24" height="24" alt="" style="display:block;width:24px;height:24px;border:0;"></td><td valign="middle" style="font-family:${S};color:${fg};line-height:1.15;"><span style="font-size:11px;opacity:.85;">${petit}</span><br><span style="font-size:15px;font-weight:600;">${nom}</span></td></tr></table></a></td>`;
+  const btnApp = (h, ico, petit, nom, bg, fg) => `<td width="49%" valign="top" style="border-radius:14px;background:${bg};"><a href="${h}" style="display:block;padding:14px 14px;text-decoration:none;border-radius:14px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td valign="middle" style="padding-right:10px;"><img src="${SITE}/images/partage/${ico}.png" width="24" height="24" alt="" style="display:block;width:24px;height:24px;border:0;"></td><td valign="middle" style="font-family:${S};color:${fg};line-height:1.15;"><span style="font-size:11px;opacity:.85;">${petit}</span><br><span style="font-size:15px;font-weight:600;">${nom}</span></td></tr></table></a></td>`;
 
   const html = `<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="dark"><meta name="supported-color-schemes" content="dark"><title>Votre événement est en ligne</title>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,500..900&family=Instrument+Sans:wght@400;600&display=swap" rel="stylesheet"></head>
@@ -274,34 +274,20 @@ function publishedMail(f, id) {
 
   <tr><td style="padding:0 0 16px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${P};border-radius:26px;"><tr><td style="padding:26px 26px 28px;">
     ${meta('Faites-le connaître', 'Partage')}
-    <div style="padding-top:22px;">${gros('Partagez-le', 34, '#B923FF', true)}</div>
-    <p style="margin:12px 0 0;font-family:${S};font-size:15px;line-height:1.6;color:#d6d4ce;">Plus il circule, plus il y aura de monde. On vous a préparé de quoi le partager partout, en deux clics.</p>
+    <div style="padding-top:22px;">${gros('Partagez-le', 34, '#C955E0', true)}</div>
+    <p style="margin:12px 0 0;font-family:${S};font-size:15px;line-height:1.6;color:#d6d4ce;">Plus il circule, plus il y aura de monde. Tout est prêt pour le partager en deux clics.</p>
 
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:22px;background:#B923FF;border-radius:18px;"><tr><td style="padding:22px 22px 24px;">
-      <div style="font-family:${S};font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#ffffff;opacity:.8;">Votre kit de partage</div>
-      <div style="margin-top:8px;">${gros('Tout est prêt', 30, '#ffffff')}</div>
-      <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-top:14px;">
-        ${[['Une story Instagram', 'prête à publier'], ['Un visuel', 'pour Instagram et Facebook, avec sa légende'], ['Le lien', 'à envoyer par message, avec l’aperçu de l’affiche'], ['Une invitation mail', 'mise en forme, à copier-coller']]
-          .map(([k, v]) => `<tr><td valign="top" style="padding:3px 10px 3px 0;font-family:${S};font-size:15px;font-weight:700;color:#ffffff;">✓</td><td style="padding:3px 0;font-family:${S};font-size:15px;line-height:1.45;color:#ffffff;"><strong>${k}</strong> ${v}</td></tr>`).join('')}
-      </table>
-      <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-top:18px;"><tr><td style="border-radius:99px;background:#141210;"><a href="${kitUrl}" style="display:inline-block;padding:14px 26px;font-family:${S};font-size:15px;font-weight:600;color:#f4f3ef;text-decoration:none;border-radius:99px;">Ouvrir mon kit de partage</a></td></tr></table>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:22px;background:#181818;border:1px solid #2c2c2c;border-radius:18px;"><tr><td style="padding:22px 22px 24px;">
+      <div style="font-family:${S};font-size:16px;font-weight:600;line-height:1.4;color:${W};">Votre kit de partage</div>
+      <p style="margin:8px 0 0;font-family:${S};font-size:14px;line-height:1.6;color:#d6d4ce;">Une story Instagram, un visuel avec sa légende, le lien avec l’aperçu de l’affiche et une invitation mail à copier-coller.</p>
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-top:18px;"><tr><td style="border-radius:99px;background:#C955E0;"><a href="${kitUrl}" style="display:inline-block;padding:14px 26px;font-family:${S};font-size:15px;font-weight:600;color:#141210;text-decoration:none;border-radius:99px;">Ouvrir mon kit</a></td></tr></table>
     </td></tr></table>
 
-    <p style="margin:24px 0 0;font-family:${S};font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:${G};">Ou directement</p>
-    <p style="margin:10px 0 8px;font-family:${S};font-size:13px;color:${G};">Votre lien s’affichera comme ceci :</p>
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#181818;border:1px solid #2c2c2c;border-radius:14px;"><tr>
-      ${ph ? `<td width="84" valign="top" style="padding:12px 0 12px 12px;"><img src="${escH(ph)}" width="72" alt="" style="display:block;width:72px;height:auto;border-radius:8px;border:0;"></td>` : ''}
-      <td valign="top" style="padding:12px 14px;">
-        <div style="font-family:${S};font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:${G};">la-save.fr</div>
-        <div style="margin-top:3px;font-family:${S};font-size:15px;font-weight:600;line-height:1.3;color:${W};">${escH(titre)}</div>
-        <div style="margin-top:3px;font-family:${S};font-size:13px;line-height:1.4;color:${G};">${escH([quand, f.Commune].filter(Boolean).join(' · '))}</div>
-      </td>
-    </tr></table>
-
+    <p style="margin:26px 0 0;font-family:${S};font-size:12px;font-weight:600;color:${W};">Ou en un clic</p>
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:14px;">
-      <tr>${btnApp(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(PS('mailpub'))}`, 'facebook', 'Partager sur', 'Facebook', '#1877F2', '#ffffff')}<td width="10" style="font-size:0;">&nbsp;</td>${btnApp(`https://wa.me/?text=${encodeURIComponent(msgWa)}`, 'whatsapp', 'Envoyer sur', 'WhatsApp', '#128C7E', '#ffffff')}</tr>
+      <tr>${btnApp(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(PS('mailpub'))}`, 'facebook', 'Partager sur', 'Facebook', '#1877F2', '#ffffff')}<td width="12" style="width:12px;font-size:0;line-height:0;">&nbsp;</td>${btnApp(`https://wa.me/?text=${encodeURIComponent(msgWa)}`, 'whatsapp', 'Envoyer sur', 'WhatsApp', '#128C7E', '#ffffff')}</tr>
       <tr><td colspan="3" height="10" style="font-size:0;line-height:0;">&nbsp;</td></tr>
-      <tr>${btnApp(`sms:?&body=${encodeURIComponent(msg)}`, 'sms', 'Envoyer par', 'SMS', '#262626', '#ffffff')}<td width="10" style="font-size:0;">&nbsp;</td>${btnApp(`mailto:?subject=${encodeURIComponent(titre)}&body=${encodeURIComponent(msg)}`, 'mail', 'Envoyer par', 'E-mail', '#FFA823', '#141210')}</tr>
+      <tr>${btnApp(`sms:?&body=${encodeURIComponent(msg)}`, 'sms', 'Envoyer par', 'SMS', '#262626', '#ffffff')}<td width="12" style="width:12px;font-size:0;line-height:0;">&nbsp;</td>${btnApp(`mailto:?subject=${encodeURIComponent(titre)}&body=${encodeURIComponent(msg)}`, 'mail', 'Envoyer par', 'E-mail', '#FFA823', '#141210')}</tr>
     </table>
 
   </td></tr></table></td></tr>
@@ -337,7 +323,7 @@ async function notifyPublished(env, rec) {
   if (!isEmail(to) || !env.BREVO_KEY) return;
   if (KV && await KV.get('mailpub:' + rec.id)) return;           // déjà prévenu (republication, etc.)
   if (KV) { try { await keepPhotos([f], { n: 1 }); } catch {} }  // l'affiche doit rester visible dans le mail
-  await sendMail(env, { to, toName: f.Organisation, ...publishedMail(f, rec.id) });
+  await sendMail(env, { to, toName: f.Organisation, ...publishedMail(f, rec.id, await rsvpKey(env, rec.id)) });
   if (KV) await KV.put('mailpub:' + rec.id, new Date().toISOString());
 }
 
@@ -504,7 +490,7 @@ async function tryConfirm(env, rec, liveEvents, lien = false) {
   if (!env.BREVO_KEY) return ecrire("Pas envoyée : la clé d'envoi (Brevo) n'est pas configurée.", true);
   try {
     if (KV) { try { await keepPhotos([f], { n: 1 }); } catch {} }
-    await sendMail(env, { to, toName: f.Organisation, ...publishedMail(f, id) });
+    await sendMail(env, { to, toName: f.Organisation, ...publishedMail(f, id, await rsvpKey(env, id)) });
   } catch (e) { console.error('confirmation : envoi', e.message); return ecrire("Échec de l'envoi : décochez puis recochez la case pour réessayer.", true); }
   if (KV) await KV.put('mailpub:' + id, new Date().toISOString());
   const now = new Date(), tz = { timeZone: 'Europe/Paris' };
@@ -528,6 +514,7 @@ async function nightly(env) {
   }
   await buildSnap(env);
   await KV.delete('counts');
+  try { if (env.DB) { await rsvpTable(env.DB); await env.DB.prepare('DELETE FROM rsvp WHERE fin < ?1').bind(new Date(Date.now() - 7 * 864e5).toISOString().slice(0, 10)).run(); } } catch (e) { console.error('purge rsvp', e.message); }
 }
 
 /* ── session admin : jeton signé HMAC, valable 12 h ── */
@@ -594,6 +581,44 @@ async function statsSql(env, sql) {
   return d.data || [];
 }
 
+
+/* ── « Je viens » : réponses des invités (D1, table rsvp) ──
+   Un invité ouvre la page depuis l'invitation mail, laisse son prénom et le nombre de personnes.
+   Seul l'organisateur (lien de son kit, avec clé) peut voir la liste. Effacé 7 jours après l'événement. */
+let rsvpOk = false;
+async function rsvpTable(db) {
+  if (rsvpOk) return;
+  await db.prepare('CREATE TABLE IF NOT EXISTS rsvp (ev TEXT NOT NULL, cle TEXT NOT NULL, prenom TEXT NOT NULL, nb INTEGER NOT NULL, fin TEXT NOT NULL, at TEXT NOT NULL, PRIMARY KEY (ev, cle))').run();
+  rsvpOk = true;
+}
+const rsvpKey = async (env, id) => (await hmac(env, 'rsvp.' + id)).slice(0, 20);
+const parisJour = () => new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Paris' });
+const MAX_REPONSES = 300;
+function venirPage(ev, id, { err = '', prenom = '', nb = 1 } = {}) {
+  const quand = quandTexte(ev), ou = [ev.Lieu, ev.Commune].filter(Boolean).join(', ');
+  const opts = Array.from({ length: 10 }, (_, i) => `<option value="${i + 1}"${i + 1 === nb ? ' selected' : ''}>${i + 1}</option>`).join('');
+  const css = "font-family:'Helvetica Neue',Arial,sans-serif;";
+  const champ = `display:block;width:100%;box-sizing:border-box;margin-top:6px;padding:13px 14px;border-radius:12px;border:1.5px solid #3a3a3a;background:#181818;color:#f4f3ef;font-size:16px;${css}`;
+  return new Response(`<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>Je viens · ${escH(ev.Titre)} · laSave</title></head>
+<body style="margin:0;min-height:100vh;display:grid;place-items:center;background:#050505;color:#f4f3ef;font:16px/1.6 'Helvetica Neue',Arial,sans-serif;padding:20px;box-sizing:border-box;">
+<main style="width:100%;max-width:440px;background:#0e0e0e;border-radius:26px;padding:28px 26px 30px;">
+<p style="margin:0;font-size:12px;font-weight:600;color:#a3a19b;letter-spacing:.06em;text-transform:uppercase;">laSave · Agenda de la Save</p>
+<h1 style="margin:14px 0 4px;font-size:30px;line-height:1.1;text-transform:uppercase;">${escH(ev.Titre)}</h1>
+<p style="margin:0;color:#FFA823;font-weight:600;">${escH(quand)}</p>
+${ou ? `<p style="margin:2px 0 0;color:#d6d4ce;">${escH(ou)}</p>` : ''}
+<h2 style="margin:26px 0 4px;font-size:20px;">Vous venez ?</h2>
+<p style="margin:0 0 16px;color:#d6d4ce;font-size:15px;">Dites-le à l’organisateur, ça l’aide à préparer l’accueil.</p>
+${err ? `<p style="margin:0 0 14px;padding:12px 14px;border-radius:12px;background:#2a1410;color:#ffd9cf;font-size:15px;">${escH(err)}</p>` : ''}
+<form method="post" action="${API_ORIGIN}/venir/${id}">
+<label style="display:block;font-size:14px;font-weight:600;">Votre prénom<input name="prenom" required maxlength="40" autocomplete="given-name" value="${escH(prenom)}" style="${champ}"></label>
+<label style="display:block;margin-top:14px;font-size:14px;font-weight:600;">Combien de personnes, vous compris ?<select name="nb" style="${champ}">${opts}</select></label>
+<div style="position:absolute;left:-9999px;" aria-hidden="true"><label>Ne pas remplir<input name="site" tabindex="-1" autocomplete="off"></label></div>
+<button type="submit" style="margin-top:22px;width:100%;padding:15px 24px;border:0;border-radius:99px;background:#FFA823;color:#141210;font-size:16px;font-weight:700;cursor:pointer;${css}">Je viens</button>
+</form>
+<p style="margin:16px 0 0;font-size:12px;line-height:1.5;color:#a3a19b;">Votre prénom et le nombre de personnes ne sont visibles que par l’organisateur. Rien d’autre n’est gardé, tout est effacé une semaine après l’événement.</p>
+</main></body></html>`, { headers: { 'Content-Type': 'text/html; charset=utf-8', 'X-Robots-Tag': 'noindex', 'Cache-Control': 'no-store' } });
+}
+
 /* ── routes ── */
 async function route(req, env, ctx) {
   const url = new URL(req.url);
@@ -616,6 +641,50 @@ async function route(req, env, ctx) {
       ctx.waitUntil(cache.put(key, res.clone()));
     }
     return new Response(res.body, { headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'public, max-age=60', ...cors(req) } });
+  }
+
+  // « Je viens » : page et envoi du formulaire (invitation mail)
+  const vm = p.match(/^\/venir\/(rec[A-Za-z0-9]{14})$/);
+  if (vm && (m === 'GET' || m === 'POST')) {
+    const id = vm[1];
+    if (!KV || !env.DB) return pageSimple('Bientôt disponible', 'Cette page n’est pas encore activée.');
+    const ev = ((await getSnap(env, ctx)).events || []).find(e => e.id === id);
+    if (!ev) return pageSimple('Événement introuvable', 'Cet événement n’est pas (ou plus) en ligne sur laSave.');
+    if ((ev['Date de fin'] || ev.Date || '9999') < parisJour()) return pageSimple('Événement passé', 'Cet événement a déjà eu lieu.');
+    if (m === 'GET') return venirPage(ev, id);
+    let fd; try { fd = await req.formData(); } catch { return venirPage(ev, id, { err: 'Le formulaire n’a pas pu être lu, réessayez.' }); }
+    if (String(fd.get('site') || '')) return pageSimple('C’est noté', 'Merci !'); // piège à robots : on fait semblant
+    const prenom = String(fd.get('prenom') || '').replace(/[\u0000-\u001f<>]/g, '').replace(/\s+/g, ' ').trim().slice(0, 40);
+    const nb = Math.min(10, Math.max(1, parseInt(fd.get('nb'), 10) || 1));
+    if (!prenom) return venirPage(ev, id, { err: 'Indiquez votre prénom.', nb });
+    if (await tooMany(req, 'venir', 10, 3600)) return pageSimple('Trop de tentatives', 'Réessayez dans une heure.');
+    await rsvpTable(env.DB);
+    const cle = prenom.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+    const deja = await env.DB.prepare('SELECT 1 AS x FROM rsvp WHERE ev = ?1 AND cle = ?2').bind(id, cle).first();
+    if (!deja) {
+      const tot = await env.DB.prepare('SELECT COUNT(*) AS n FROM rsvp WHERE ev = ?1').bind(id).first();
+      if ((tot?.n || 0) >= MAX_REPONSES) return pageSimple('Réponses closes', 'Le nombre maximum de réponses est atteint.');
+    }
+    await env.DB.prepare('INSERT INTO rsvp (ev, cle, prenom, nb, fin, at) VALUES (?1, ?2, ?3, ?4, ?5, ?6) ON CONFLICT (ev, cle) DO UPDATE SET prenom = ?3, nb = ?4, at = ?6')
+      .bind(id, cle, prenom, nb, ev['Date de fin'] || ev.Date || parisJour(), new Date().toISOString()).run();
+    return new Response(`<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>C’est noté · laSave</title></head>
+<body style="margin:0;min-height:100vh;display:grid;place-items:center;background:#050505;color:#f4f3ef;font:16px/1.6 'Helvetica Neue',Arial,sans-serif;padding:24px;box-sizing:border-box;">
+<main style="max-width:440px;text-align:center;"><h1 style="font-size:30px;margin:0 0 12px;">C’est noté !</h1>
+<p style="color:#d6d4ce;margin:0 0 6px;">Merci ${escH(prenom)}, l’organisateur sait que vous venez${nb > 1 ? ` à ${nb}` : ''}.</p>
+<p style="color:#a3a19b;margin:0 0 26px;font-size:15px;">${escH(ev.Titre)} · ${escH(quandTexte(ev))}</p>
+<a href="${API_ORIGIN}/ics/${id}" style="display:inline-block;padding:13px 24px;border-radius:99px;background:#FFA823;color:#141210;font-weight:600;text-decoration:none;">Ajouter à mon agenda</a>
+<p style="margin:18px 0 0;"><a href="${SITE}/#event-${id}" style="color:#f4f3ef;font-weight:600;">Voir la fiche de l’événement</a></p></main></body></html>`,
+      { headers: { 'Content-Type': 'text/html; charset=utf-8', 'X-Robots-Tag': 'noindex', 'Cache-Control': 'no-store' } });
+  }
+  // « Qui vient » : liste vue par l'organisateur (lien du kit, avec clé)
+  const rm = p.match(/^\/rsvp\/(rec[A-Za-z0-9]{14})$/);
+  if (m === 'GET' && rm) {
+    const id = rm[1];
+    if (!env.DB) return json(req, { ok: true, total: 0, reponses: [] }, 200, { 'Cache-Control': 'no-store' });
+    if (!sameText(String(url.searchParams.get('k') || ''), await rsvpKey(env, id))) return json(req, { error: 'Lien non valide.' }, 403);
+    await rsvpTable(env.DB);
+    const rows = (await env.DB.prepare('SELECT prenom, nb FROM rsvp WHERE ev = ?1 ORDER BY at').bind(id).all()).results || [];
+    return json(req, { ok: true, total: rows.reduce((a, r) => a + r.nb, 0), reponses: rows }, 200, { 'Cache-Control': 'no-store' });
   }
 
   // Fichier agenda (.ics) d'un événement : sur iPhone, il s'ouvre directement dans Calendrier
@@ -878,10 +947,10 @@ async function route(req, env, ctx) {
     let snap = (await KV.get('snap', 'json')) || {};
     const relire = async () => { // relit Airtable (une seule fois à la fois)
       if (await KV.get('lock')) return false;
-      await KV.put('lock', '1', { expirationTtl: 30 });
+      await KV.put('lock', '1', { expirationTtl: 60 });
       snap = await buildSnap(env); return true;
     };
-    try { await relire(); } catch (e) { return pageSimple('Airtable injoignable', 'Réessayez dans un instant.'); }
+    try { await relire(); } catch (e) { return pageSimple('Airtable injoignable', 'Réessayez dans un instant. Détail : ' + (e && e.status ? e.status + ' · ' : '') + String((e && e.message) || e).slice(0, 160)); }
     if (p === '/lien/maj') {
       let envoyes = 0;
       try { const att = await listAll(env, T_EVENTS, '&filterByFormula=' + encodeURIComponent("AND({Envoyer la confirmation},{Statut}='Publié')")); for (const rec of att) { if ((await tryConfirm(env, rec, snap.events || [])).envoye) envoyes++; } } catch {}
@@ -898,7 +967,7 @@ async function route(req, env, ctx) {
     if (!KV) return json(req, { error: 'Stockage KV non relié' }, 400);
     if (await tooMany(req, 'hookrefresh', 60, 3600)) return slowDown(req);
     if (await KV.get('lock')) return json(req, { ok: true, message: 'Relecture déjà en cours.' });
-    await KV.put('lock', '1', { expirationTtl: 30 });
+    await KV.put('lock', '1', { expirationTtl: 60 });
     let snap; try { snap = await buildSnap(env); } catch (e) { return json(req, { ok: false, error: 'Airtable injoignable, réessayez.' }, 502); }
     let envoyes = 0; // confirmations cochées qui attendaient la mise en ligne
     try {
@@ -916,7 +985,7 @@ async function route(req, env, ctx) {
     let live = KV ? ((await KV.get('snap', 'json')) || {}).events || [] : [];
     // publié dans Airtable mais pas encore sur le site : on relit Airtable maintenant
     if (rec.fields.Statut === 'Publié' && KV && !live.some(e => e.id === id) && !(await KV.get('lock'))) {
-      await KV.put('lock', '1', { expirationTtl: 30 });
+      await KV.put('lock', '1', { expirationTtl: 60 });
       try { live = (await buildSnap(env)).events; } catch (e) { console.error('relecture Airtable', e.message); }
     }
     const r = await tryConfirm(env, rec, live);
@@ -977,7 +1046,7 @@ async function route(req, env, ctx) {
       const ev = list.find(e => e.id === b.id) || list.find(e => e.Photo?.length && (e.Date || '') >= auj) || list.find(e => e.Photo?.length) || list[0];
       if (!ev) return json(req, { error: 'Aucun événement publié pour faire le test.' }, 404);
       const f = { ...ev, 'Message aux organisateurs': "Ceci est un mail de test : c'est ce que reçoit un organisateur quand son événement est publié." };
-      const mail = publishedMail(f, ev.id);
+      const mail = publishedMail(f, ev.id, await rsvpKey(env, ev.id));
       await sendMail(env, { to, ...mail, subject: '[Test] ' + mail.subject });
       return json(req, { ok: true, titre: ev.Titre || '' });
     }
