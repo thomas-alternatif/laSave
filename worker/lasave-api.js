@@ -66,6 +66,10 @@ const tokId = (events, tok) => {
   const e = m && list.find(x => x.id.slice(-5).toLowerCase() === m[1]);
   return e ? e.id : '';
 };
+// Canal d'un lien partagé : une seule lettre après le « ? » (go.la-save.fr/titre-4-octobre?w = WhatsApp)
+const LETTRES = { w: 'wa', s: 'sms', f: 'fb', m: 'mail', l: 'legende', t: 'story', p: 'post', a: 'mailpub', i: 'invitation', q: 'qr' };
+const LETTRE = Object.fromEntries(Object.entries(LETTRES).map(([k, v]) => [v, k]));
+const canalDe = sp => { for (const [k, v] of sp) if (LETTRES[k] && v === '') return LETTRES[k]; const c = sp.get('v') || sp.get('s'); return CANAUX.includes(c) ? c : ''; };
 const TOK = '([A-Za-z0-9-]{5,90})';
 
 function cors(req) {
@@ -260,7 +264,7 @@ function quandTexte(f) {
   return t;
 }
 function publishedMail(f, id, k = '') {
-  const lien = `${SITE}/#event-${id}`, partage = `${API_ORIGIN}/${slugEv(f, id)}`, PS = c => `${partage}?v=${c}`;
+  const lien = `${SITE}/#event-${id}`, partage = `${API_ORIGIN}/${slugEv(f, id)}`, PS = c => LETTRE[c] ? `${partage}?${LETTRE[c]}` : partage;
   const titre = f.Titre || 'Votre événement', quand = quandTexte(f), ou = [f.Lieu, f.Commune].filter(Boolean).join(', ');
   const ph = Array.isArray(f.Photo) && f.Photo[0] ? (f.Photo[0].thumbnails?.large?.url || f.Photo[0].url) : '';
   const S = "'Instrument Sans','Helvetica Neue',Helvetica,Arial,sans-serif", D = "Archivo,'Arial Narrow','Helvetica Neue',Arial,sans-serif";
@@ -863,7 +867,7 @@ async function route(req, env, ctx) {
     let id = sm[1];
     if (!isId(id)) id = tokId(KV ? ((await getSnap(env, ctx).catch(() => null)) || {}).events : [], id);
     if (!isId(id)) return Response.redirect(home, 302);
-    const cv = url.searchParams.get('v') || url.searchParams.get('s'), canal = CANAUX.includes(cv) ? cv : '';
+    const canal = canalDe(url.searchParams);
     // Un robot d'aperçu (WhatsApp, Facebook…) = le lien vient d'être posté ; sinon = quelqu'un a cliqué
     stat(env, ROBOTS.test(req.headers.get('User-Agent') || '') ? 'apercu' : 'lien', id, canal);
     let ev = null;
