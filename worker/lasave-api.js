@@ -50,8 +50,8 @@ const isId = s => /^rec[A-Za-z0-9]{14}$/.test(s || '');
 // Liens lisibles : « fete-du-village-montaigut-x7k2p » (titre + commune + 5 derniers signes de l'identifiant)
 const KIT_PATH = '/test13/kit.html';
 const slugEv = (f, id) => {
-  const b = [f.Titre, f.Commune].filter(Boolean).join(' ').replace(/œ/gi, 'oe').replace(/æ/gi, 'ae').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-  const w = b.split('-'); let o = ''; for (const x of w) { if ((o + '-' + x).length > 54 && o) break; o = o ? o + '-' + x : x; }
+  const b = String(f.Titre || '').replace(/œ/gi, 'oe').replace(/æ/gi, 'ae').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  const w = b.split('-'); let o = ''; for (const x of w) { if ((o + '-' + x).length > 30 && o) break; o = o ? o + '-' + x : x; }
   const b2 = o;
   return (b2 ? b2 + '-' : '') + String(id).slice(-5).toLowerCase();
 };
@@ -255,7 +255,7 @@ function quandTexte(f) {
   return t;
 }
 function publishedMail(f, id, k = '') {
-  const lien = `${SITE}/#event-${id}`, partage = `${API_ORIGIN}/e/${slugEv(f, id)}`, PS = c => `${partage}?s=${c}`;
+  const lien = `${SITE}/#event-${id}`, partage = `${API_ORIGIN}/${slugEv(f, id)}`, PS = c => `${partage}?s=${c}`;
   const titre = f.Titre || 'Votre événement', quand = quandTexte(f), ou = [f.Lieu, f.Commune].filter(Boolean).join(', ');
   const ph = Array.isArray(f.Photo) && f.Photo[0] ? (f.Photo[0].thumbnails?.large?.url || f.Photo[0].url) : '';
   const S = "'Instrument Sans','Helvetica Neue',Helvetica,Arial,sans-serif", D = "Archivo,'Arial Narrow','Helvetica Neue',Arial,sans-serif";
@@ -718,7 +718,7 @@ ${err ? `<p style="margin:0 0 14px;padding:12px 14px;border-radius:12px;backgrou
 
 /* ── routes ── */
 const ROUTES = [
-  'GET /events — agenda public (copie KV, cache 60 s)', 'GET /orgas — organisateurs publiés', 'GET /e/:lien — page d’un événement (partage), ex. /e/fete-du-village-montaigut-x7k2p', 'GET /kit/:lien/:clé — raccourci vers le kit de partage', 'GET /img/:att — affiche copiée dans KV',
+  'GET /events — agenda public (copie KV, cache 60 s)', 'GET /orgas — organisateurs publiés', 'GET /:lien — page d’un événement (partage), ex. /fete-du-village-x7k2p (ancien format /e/… toujours valable)', 'GET /kit/:lien/:clé — raccourci vers le kit de partage', 'GET /img/:att — affiche copiée dans KV',
   'GET /ics/:lien — ajout au calendrier', 'GET|POST /venir/:lien — « Je viens » (prénom + nombre)', 'GET /rsvp/:lien?k= — liste « Qui vient » (clé organisateur)',
   'POST /code — vérifier un code organisateur', 'POST /code/request — demander un code', 'POST /events — proposer un événement', 'POST /events/:id/(view|like) — vues et « J’y vais »',
   'POST /stat — « J’y vais » et vues', 'POST /avis — avis', 'POST /upload — affiche (ImgBB)', 'POST /newsletter · /newsletter/stop',
@@ -845,7 +845,7 @@ async function route(req, env, ctx) {
     }
     const esc = s => String(s || '').replace(/([,;\\])/g, '\\$1').replace(/\r?\n/g, '\\n');
     const where = [ev.Lieu, ev.Commune].filter(Boolean).join(', ');
-    const lien = `${API_ORIGIN}/e/${slugEv(ev, id)}?s=site`;
+    const lien = `${API_ORIGIN}/${slugEv(ev, id)}?s=site`;
     const tz = 'BEGIN:VTIMEZONE\r\nTZID:Europe/Paris\r\nBEGIN:DAYLIGHT\r\nTZOFFSETFROM:+0100\r\nTZOFFSETTO:+0200\r\nTZNAME:CEST\r\nDTSTART:19700329T020000\r\nRRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=-1SU\r\nEND:DAYLIGHT\r\nBEGIN:STANDARD\r\nTZOFFSETFROM:+0200\r\nTZOFFSETTO:+0100\r\nTZNAME:CET\r\nDTSTART:19701025T030000\r\nRRULE:FREQ=YEARLY;BYMONTH=10;BYDAY=-1SU\r\nEND:STANDARD\r\nEND:VTIMEZONE\r\n';
     const ics = `BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//laSave//FR\r\nCALSCALE:GREGORIAN\r\nMETHOD:PUBLISH\r\n${hm ? tz : ''}BEGIN:VEVENT\r\nUID:${id}@la-save.fr\r\nDTSTAMP:${new Date().toISOString().replace(/[-:]/g, '').slice(0, 15)}Z\r\n${dt}\r\nSUMMARY:${esc(ev.Titre || 'Événement')}\r\nLOCATION:${esc(where)}\r\nDESCRIPTION:${esc(String(ev.Description || '').slice(0, 800) + '\n\n' + lien)}\r\nURL:${lien}\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n`;
     stat(env, 'agenda', id, 'ics');
@@ -853,7 +853,7 @@ async function route(req, env, ctx) {
   }
 
   // Page de partage : aperçu (titre, image) pour Facebook/WhatsApp puis redirection vers le site
-  if (m === 'GET' && (sm = p.match(new RegExp('^/e/' + TOK + '$')))) {
+  if (m === 'GET' && (sm = p.match(new RegExp('^/e/' + TOK + '$')) || p.match(/^\/([a-z0-9]+(?:-[a-z0-9]+)+)$/))) {
     const home = 'https://la-save.fr';
     let id = sm[1];
     if (!isId(id)) id = tokId(KV ? ((await getSnap(env, ctx).catch(() => null)) || {}).events : [], id);
