@@ -1,7 +1,7 @@
 /* laSave — kit de partage : story, visuel, message et invitation mail pour un événement */
 (() => {
   'use strict';
-  const API = 'https://go.la-save.fr';
+  const API = 'https://partage.la-save.fr';
   const SITE = 'https://la-save.fr';
   const $ = s => document.querySelector(s);
   const CATS = {

@@ -1,7 +1,7 @@
 /* laSave — test13 : site complet (accueil, fiches, organisateurs, partager, pages d'information) */
 (() => {
   'use strict';
-  const API = 'https://go.la-save.fr';
+  const API = 'https://partage.la-save.fr';
   const $ = s => document.querySelector(s);
   const $$ = s => [...document.querySelectorAll(s)];
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;

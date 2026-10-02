@@ -422,7 +422,7 @@ const SNAP_MAX_AGE = 24 * 3600e3;   // au-delà, on relit Airtable (en arrière-
 const DIRTY_DELAY = 60e3;           // après une publication, on relit au plus une fois par minute
 
 // Les liens des photos Airtable expirent au bout de 2 h : on garde une copie de chaque photo dans KV
-const API_ORIGIN = 'https://go.la-save.fr';
+const API_ORIGIN = 'https://partage.la-save.fr';
 async function keepPhotos(list, budget) {
   for (const item of list) {
     if (!Array.isArray(item.Photo)) continue;

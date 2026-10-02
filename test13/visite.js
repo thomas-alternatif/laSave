@@ -1,7 +1,7 @@
 /* laSave — compteur de visites anonyme (aucun cookie, aucune donnée personnelle)
    Une visite = une session de navigation ; on note seulement d'où vient le visiteur. */
 (() => {
-  const API = 'https://go.la-save.fr';
+  const API = 'https://partage.la-save.fr';
   try {
     if (navigator.webdriver) return;                         // robots d'indexation
     if (sessionStorage.getItem('lasave_visite')) return;     // déjà comptée pendant cette session
@@ -11,7 +11,7 @@
   try {
     const h = document.referrer ? new URL(document.referrer).hostname : '';
     if (!h) src = 'direct';
-    else if (h === 'go.la-save.fr' || /workers\.dev$/.test(h)) src = 'partage'; // lien partagé laSave (/e/…)
+    else if (h === 'go.la-save.fr' || h === 'partage.la-save.fr' || /workers\.dev$/.test(h)) src = 'partage'; // lien partagé laSave (/e/…)
     else if (/(^|\.)la-save\.fr$/.test(h)) src = 'interne';        // lien partagé laSave (/e/…)
     else if (/google\./.test(h)) src = 'google';
     else if (/facebook|fb\.com|messenger/.test(h)) src = 'facebook';
