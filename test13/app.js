@@ -171,7 +171,7 @@
     const ymd = x => `${x.getFullYear()}${pad(x.getMonth() + 1)}${pad(x.getDate())}`;
     return { s: ymd(d), f: ymd(end), allDay: true };
   }
-  const shareUrl = e => `${API}/e/${encodeURIComponent(e.Lien || e.id)}?s=site`;
+  const shareUrl = e => `${API}/${e.Lien ? encodeURIComponent(e.Lien) : "e/" + encodeURIComponent(e.id)}`;
   const gcalUrl = (e, r = range(e)) => 'https://calendar.google.com/calendar/render?action=TEMPLATE&text=' + encodeURIComponent(e.Titre || 'Événement') + '&dates=' + r.s + '/' + r.f + '&details=' + encodeURIComponent((e.Description || '').slice(0, 800) + '\n\n' + shareUrl(e)) + '&location=' + encodeURIComponent([e.Lieu, e.Commune].filter(Boolean).join(', ')) + (r.allDay ? '' : '&ctz=Europe/Paris');
   // Ajout direct à l'agenda du téléphone : Calendrier sur iPhone (fichier .ics), Google Agenda sur Android
   const isApple = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);

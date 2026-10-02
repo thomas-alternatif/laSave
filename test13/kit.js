@@ -231,7 +231,7 @@ ${photo ? `<tr><td style="padding:18px 24px 0;"><a href="${lien}"><img src="${es
 ${ou(e) ? `<tr><td style="padding:4px 24px 0;font-size:15px;color:#d6d4ce;">${esc(ou(e))}</td></tr>` : ''}
 ${e.Tarif ? `<tr><td style="padding:4px 24px 0;font-size:15px;color:#a3a19b;">${esc(e.Tarif)}</td></tr>` : ''}
 ${orga ? `<tr><td style="padding:20px 24px 0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>${orga.logo ? `<td valign="middle" style="padding-right:12px;"><img src="${esc(orga.logo)}" width="44" height="44" alt="" style="display:block;width:44px;height:44px;border-radius:99px;border:2px solid #ffffff;background:#ffffff;object-fit:cover;"></td>` : ''}<td valign="middle" style="font-size:12px;line-height:1.3;color:#a3a19b;">Organisé par<br><span style="font-size:15px;font-weight:700;color:#f4f3ef;">${esc(orga.name)}</span></td></tr></table></td></tr>` : ''}
-<tr><td style="padding:22px 24px 26px;"><a href="${API}/venir/${(state.e && state.e.Lien) || id}?s=invitation" style="display:inline-block;background:#FFA823;color:#141210;font-weight:700;font-size:15px;text-decoration:none;padding:13px 24px;border-radius:99px;">Je viens</a> &nbsp;<a href="${lien}" style="display:inline-block;color:#f4f3ef;font-weight:700;font-size:15px;text-decoration:underline;padding:13px 6px;">Voir l’événement</a>${/^https:\/\//.test(e.Billetterie || '') ? ` &nbsp;<a href="${esc(e.Billetterie)}" style="display:inline-block;color:#f4f3ef;font-weight:700;font-size:15px;text-decoration:underline;padding:13px 6px;">Prendre ma place</a>` : ''}</td></tr>
+<tr><td style="padding:22px 24px 26px;"><a href="${API}/venir/${(state.e && state.e.Lien) || id}" style="display:inline-block;background:#FFA823;color:#141210;font-weight:700;font-size:15px;text-decoration:none;padding:13px 24px;border-radius:99px;">Je viens</a> &nbsp;<a href="${lien}" style="display:inline-block;color:#f4f3ef;font-weight:700;font-size:15px;text-decoration:underline;padding:13px 6px;">Voir l’événement</a>${/^https:\/\//.test(e.Billetterie || '') ? ` &nbsp;<a href="${esc(e.Billetterie)}" style="display:inline-block;color:#f4f3ef;font-weight:700;font-size:15px;text-decoration:underline;padding:13px 6px;">Prendre ma place</a>` : ''}</td></tr>
 </table>`;
   }
 
@@ -270,7 +270,7 @@ ${orga ? `<tr><td style="padding:20px 24px 0;"><table role="presentation" cellpa
     const orga = nomOrg || o ? { name: (o && o.Nom) || nomOrg, logo: oa ? ((oa.thumbnails && oa.thumbnails.large && oa.thumbnails.large.url) || oa.url) : '' } : null;
     const att = e.Photo && e.Photo[0];
     const photo = att ? ((att.thumbnails && att.thumbnails.large && att.thumbnails.large.url) || att.url) : (catOf(e)[1] ? SITE + catOf(e)[1] : '');
-    const url = `${API}/e/${e.Lien || id}`, u = c => `${url}?s=${c}`, lien = u('invitation'); // ?s= : canal, pour les statistiques
+    const url = `${API}/${e.Lien || "e/" + id}`, L = { wa: 'w', sms: 's', fb: 'f', mail: 'm', legende: 'l', story: 't', post: 'p', mailpub: 'a', invitation: 'i', qr: 'q' }, u = c => L[c] ? `${url}?${L[c]}` : url, lien = u('invitation'); // ?s= : canal, pour les statistiques
     state.url = u('lien'); state.urlCopie = u('copie');
     stat('kit', new URLSearchParams(location.search).get('via') === 'qr' ? 'qr' : '');
     document.title = `Partager « ${e.Titre} » · laSave`;
