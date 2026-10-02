@@ -1,7 +1,7 @@
 /* laSave : page d'archive des affiches. Télécharge les affiches d'un statut dans un seul .zip (assemblé dans le navigateur). */
 (() => {
   'use strict';
-  const API = 'https://lasave-api.partage.workers.dev';
+  const API = 'https://go.la-save.fr';
   const $ = s => document.querySelector(s);
   const KEY = 'lasave_admin'; // même session que l'administration du site
   const tok = () => { try { return sessionStorage.getItem(KEY) || ''; } catch (_) { return ''; } };

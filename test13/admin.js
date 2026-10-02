@@ -1,7 +1,7 @@
 /* laSave : tableau de bord de la mairie */
 (() => {
   'use strict';
-  const API = 'https://lasave-api.partage.workers.dev';
+  const API = 'https://go.la-save.fr';
   const SITE = 'https://la-save.fr';
   const AIRTABLE = 'https://airtable.com/appHgiuv0ClNd8qsV/tbl6Um2XQPq4JPxCg';
   const $ = s => document.querySelector(s);

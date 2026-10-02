@@ -1,7 +1,7 @@
 /* laSave — page de statistiques (réservée à la mairie) */
 (() => {
   'use strict';
-  const API = 'https://partage.la-save.fr';
+  const API = 'https://go.la-save.fr';
   const $ = s => document.querySelector(s);
   const el = (tag, cls, txt) => { const n = document.createElement(tag); if (cls) n.className = cls; if (txt != null) n.textContent = txt; return n; };
   const fr = n => Math.round(n).toLocaleString('fr-FR');
