@@ -47,18 +47,23 @@ const VERSION = '2026-10-02 · liens lisibles';
 const pick = (obj, keys) => Object.fromEntries(keys.filter(k => obj[k] !== undefined && obj[k] !== null && obj[k] !== '').map(k => [k, obj[k]]));
 const clip = (v, n) => (typeof v === 'string' ? v.slice(0, n) : v);
 const isId = s => /^rec[A-Za-z0-9]{14}$/.test(s || '');
-// Liens lisibles : « fete-du-village-montaigut-x7k2p » (titre + commune + 5 derniers signes de l'identifiant)
+// Liens lisibles : « fete-des-familles-4-octobre » (titre + jour ; l'ancien format avec 5 signes d'identifiant reste valable)
 const KIT_PATH = '/test13/kit.html';
+const MOIS = ['janvier','fevrier','mars','avril','mai','juin','juillet','aout','septembre','octobre','novembre','decembre'];
 const slugEv = (f, id) => {
   const b = String(f.Titre || '').replace(/œ/gi, 'oe').replace(/æ/gi, 'ae').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-  const w = b.split('-'); let o = ''; for (const x of w) { if ((o + '-' + x).length > 30 && o) break; o = o ? o + '-' + x : x; }
-  const b2 = o;
-  return (b2 ? b2 + '-' : '') + String(id).slice(-5).toLowerCase();
+  let o = ''; for (const x of b.split('-')) { if ((o + '-' + x).length > 30 && o) break; o = o ? o + '-' + x : x; }
+  const d = String(f.Date || '').match(/^\d{4}-(\d{2})-(\d{2})$/);
+  const q = d && MOIS[+d[1] - 1] ? `${+d[2]}-${MOIS[+d[1] - 1]}` : String(id).slice(-5).toLowerCase();
+  return o ? `${o}-${q}` : q;
 };
 const tokId = (events, tok) => {
   if (isId(tok)) return tok;
-  const m = String(tok || '').toLowerCase().match(/(?:^|-)([a-z0-9]{5})$/);
-  const e = m && (events || []).find(x => x.id.slice(-5).toLowerCase() === m[1]);
+  const t = String(tok || '').toLowerCase(), list = events || [];
+  const ex = list.find(x => slugEv(x, x.id) === t);
+  if (ex) return ex.id;
+  const m = t.match(/(?:^|-)([a-z0-9]{5})$/);
+  const e = m && list.find(x => x.id.slice(-5).toLowerCase() === m[1]);
   return e ? e.id : '';
 };
 const TOK = '([A-Za-z0-9-]{5,90})';
@@ -255,7 +260,7 @@ function quandTexte(f) {
   return t;
 }
 function publishedMail(f, id, k = '') {
-  const lien = `${SITE}/#event-${id}`, partage = `${API_ORIGIN}/${slugEv(f, id)}`, PS = c => `${partage}?s=${c}`;
+  const lien = `${SITE}/#event-${id}`, partage = `${API_ORIGIN}/${slugEv(f, id)}`, PS = () => partage;
   const titre = f.Titre || 'Votre événement', quand = quandTexte(f), ou = [f.Lieu, f.Commune].filter(Boolean).join(', ');
   const ph = Array.isArray(f.Photo) && f.Photo[0] ? (f.Photo[0].thumbnails?.large?.url || f.Photo[0].url) : '';
   const S = "'Instrument Sans','Helvetica Neue',Helvetica,Arial,sans-serif", D = "Archivo,'Arial Narrow','Helvetica Neue',Arial,sans-serif";
@@ -845,7 +850,7 @@ async function route(req, env, ctx) {
     }
     const esc = s => String(s || '').replace(/([,;\\])/g, '\\$1').replace(/\r?\n/g, '\\n');
     const where = [ev.Lieu, ev.Commune].filter(Boolean).join(', ');
-    const lien = `${API_ORIGIN}/${slugEv(ev, id)}?s=site`;
+    const lien = `${API_ORIGIN}/${slugEv(ev, id)}`;
     const tz = 'BEGIN:VTIMEZONE\r\nTZID:Europe/Paris\r\nBEGIN:DAYLIGHT\r\nTZOFFSETFROM:+0100\r\nTZOFFSETTO:+0200\r\nTZNAME:CEST\r\nDTSTART:19700329T020000\r\nRRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=-1SU\r\nEND:DAYLIGHT\r\nBEGIN:STANDARD\r\nTZOFFSETFROM:+0200\r\nTZOFFSETTO:+0100\r\nTZNAME:CET\r\nDTSTART:19701025T030000\r\nRRULE:FREQ=YEARLY;BYMONTH=10;BYDAY=-1SU\r\nEND:STANDARD\r\nEND:VTIMEZONE\r\n';
     const ics = `BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//laSave//FR\r\nCALSCALE:GREGORIAN\r\nMETHOD:PUBLISH\r\n${hm ? tz : ''}BEGIN:VEVENT\r\nUID:${id}@la-save.fr\r\nDTSTAMP:${new Date().toISOString().replace(/[-:]/g, '').slice(0, 15)}Z\r\n${dt}\r\nSUMMARY:${esc(ev.Titre || 'Événement')}\r\nLOCATION:${esc(where)}\r\nDESCRIPTION:${esc(String(ev.Description || '').slice(0, 800) + '\n\n' + lien)}\r\nURL:${lien}\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n`;
     stat(env, 'agenda', id, 'ics');
