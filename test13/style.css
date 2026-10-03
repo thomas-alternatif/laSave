@@ -1701,3 +1701,6 @@ main { padding-top: clamp(10px, 4vw, 64px); }
   html.rv-on:not(.still) .rv-zoom:not(.in) .poster-img img { transition: none; }
 }
 .row-sec.open .track { overflow: visible; }
+
+/* ════ v81 : plus de trait doré au bas de la page (cadre de focus du contenu, repris par programme à chaque changement de vue) ════ */
+#contenu:focus, #contenu:focus-visible { outline: 0; }
