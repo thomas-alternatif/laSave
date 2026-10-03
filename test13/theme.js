@@ -1,2 +1,2 @@
-/* Applique le thème choisi avant l'affichage (évite un flash) */
-try { if (localStorage.getItem('lasave_theme') === 'light') document.documentElement.setAttribute('data-theme', 'light'); } catch (e) {}
+/* Le site n'existe plus qu'en sombre : on efface un ancien choix « clair » resté dans le navigateur */
+try { localStorage.removeItem('lasave_theme'); document.documentElement.removeAttribute('data-theme'); } catch (e) {}

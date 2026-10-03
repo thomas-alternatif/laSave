@@ -320,14 +320,6 @@
   const onScroll = () => top.classList.toggle('solid', window.scrollY > 40 || top.classList.contains('on-page'));
   window.addEventListener('scroll', onScroll, { passive: true });
 
-  /* ── Fond du site : la photo de « À la une », très floutée ── */
-  let bdCur = 0;
-  function setBackdrop(src) {
-    const layers = $$('.backdrop i'); if (!layers.length || !src) return;
-    bdCur = 1 - bdCur;
-    bg(layers[bdCur], src); layers[bdCur].classList.add('on'); layers[1 - bdCur].classList.remove('on');
-  }
-
   /* ── 1. À la une ── */
   function buildHero(events) {
     // Seuls les événements cochés « À la une » passent ici ; si aucun n'est coché, on montre les 3 prochains pour ne pas laisser la une vide
@@ -338,28 +330,33 @@
     if (feats.length < 2) $$('.hero-arr, .hero-foot').forEach(n => { n.hidden = true; });
     $('#hero-total').textContent = String(feats.length).padStart(2, '0');
     let cur = 0, paused = motion.still, t0 = 0, raf = 0, hold = false;
+    const HERO_MS = 4500; // temps entre deux événements
+    // Un point par événement : le point doré est celui qu'on voit ; on peut cliquer pour y aller
+    const dots = $('#hero-dots'), dotEls = feats.map((e, i) => {
+      const b = el('button'); b.type = 'button'; b.setAttribute('aria-label', `Événement ${i + 1} sur ${feats.length} : ${e.Titre || 'Événement'}`);
+      b.appendChild(el('i')); b.addEventListener('click', () => { show(i); restart(); }); dots.appendChild(b); return b;
+    });
     function show(i) {
       cur = (i + feats.length) % feats.length;
       const e = feats[cur], b = $('#hero-bg'), r = $('#hero-ref'), tx = $('.hero-text');
       b.classList.add('fade'); r.classList.add('fade'); tx.classList.add('fade');
       setTimeout(() => {
-        bg(b, photoOf(e)); bg(r, photoOf(e)); setBackdrop(photoOf(e));
+        bg(b, photoOf(e)); bg(r, photoOf(e));
         $('#hero-when').textContent = [whenOf(e), e.Commune].filter(Boolean).join(' · ');
         title($('#hero-title'), e.Titre || 'Événement');
         fit($('#hero-title'), 30);
         b.classList.remove('fade'); r.classList.remove('fade'); tx.classList.remove('fade');
       }, reduce ? 0 : 280);
       $('#hero-num').textContent = String(cur + 1).padStart(2, '0');
+      dotEls.forEach((d, k) => { d.classList.toggle('on', k === cur); if (k === cur) d.setAttribute('aria-current', 'true'); else d.removeAttribute('aria-current'); });
       bindHeart('#hero-heart', e);
     }
     function progress(ts) {
       if (!t0) t0 = ts;
-      const k = Math.min(1, (ts - t0) / 7000);
-      $('#hero-progress').style.width = (k * 100).toFixed(1) + '%';
-      if (k >= 1) { t0 = 0; show(cur + 1); }
+      if (ts - t0 >= HERO_MS) { t0 = 0; show(cur + 1); }
       raf = requestAnimationFrame(progress);
     }
-    function restart() { cancelAnimationFrame(raf); t0 = 0; $('#hero-progress').style.width = '0%'; if (!paused && !hold && feats.length > 1) raf = requestAnimationFrame(progress); }
+    function restart() { cancelAnimationFrame(raf); t0 = 0; if (!paused && !hold && feats.length > 1) raf = requestAnimationFrame(progress); }
     $('#hero-open').addEventListener('click', () => openEvent(feats[cur]));
     $('#hero-prev').addEventListener('click', () => { show(cur - 1); restart(); });
     $('#hero-next').addEventListener('click', () => { show(cur + 1); restart(); });
@@ -725,15 +722,71 @@
 
     // Envoi
     const form = $('#ev-form');
+
+    /* Formulaire en trois temps : une partie à la fois (sans JavaScript, tout reste affiché) */
+    const parts = [...form.querySelectorAll(':scope > fieldset')];
+    let stepNow = 0;
+    const nav = el('div', 'wiz-nav'), bPrev = el('button', 'wiz-prev', 'Retour'), bNext = el('button', 'glow glass wiz-next');
+    bPrev.type = 'button'; bNext.type = 'button';
+    bNext.innerHTML = '<span class="glow-t">Continuer</span><svg class="glow-i" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
+    nav.append(bPrev, bNext);
+    const bar = el('nav', 'wiz-bar'); bar.setAttribute('aria-label', 'Étapes du formulaire');
+    const barBtns = parts.map((fs, i) => {
+      const b = el('button', 'wiz-dot'); b.type = 'button';
+      const lg = fs.querySelector('legend'), name = lg ? lg.textContent.replace(/^\d+/, '').trim() : 'Étape ' + (i + 1);
+      b.appendChild(el('i', null, String(i + 1)));
+      b.appendChild(el('span', null, name));
+      b.addEventListener('click', () => { if (i < stepNow) wizGo(i); else if (i > stepNow) { for (let k = stepNow; k < i; k++) if (!wizCheck(k)) return wizGo(k, false); wizGo(i); } });
+      bar.appendChild(b); return b;
+    });
+    form.insertBefore(bar, form.firstChild);
+    form.insertBefore(nav, form.querySelector('.submit-row'));
+    function wizGo(i, focus = true) {
+      stepNow = Math.max(0, Math.min(parts.length - 1, i));
+      form.classList.add('wiz');
+      form.classList.toggle('at-last', stepNow === parts.length - 1);
+      parts.forEach((fs, k) => { fs.classList.toggle('cur', k === stepNow); });
+      barBtns.forEach((b, k) => { b.classList.toggle('on', k === stepNow); b.classList.toggle('done', k < stepNow); if (k === stepNow) b.setAttribute('aria-current', 'step'); else b.removeAttribute('aria-current'); });
+      bPrev.hidden = stepNow === 0; bNext.hidden = stepNow === parts.length - 1;
+      $('#form-err').textContent = '';
+      if (focus) {
+        const lg = parts[stepNow].querySelector('legend'); if (lg) { lg.tabIndex = -1; lg.focus({ preventScroll: true }); }
+        bar.scrollIntoView({ block: 'start', behavior: reduce ? 'auto' : 'smooth' });
+      }
+    }
+    // Vérifie la partie affichée avant de passer à la suivante
+    function wizCheck(k) {
+      if (k === 0) {
+        const titre = $('#f-titre').value.trim(), cat = $('#f-cat').value, commune = $('#f-commune').value.trim();
+        const miss = [!titre && '#f-titre', !cat && '#f-cat', !commune && '#f-commune'].filter(Boolean);
+        if (miss.length) { err('Il manque ' + miss.map(i => ({ '#f-titre': 'le nom de l’événement', '#f-cat': 'la catégorie', '#f-commune': 'la commune' })[i]).join(', ') + '.', miss); return false; }
+        const d1 = $('#f-date').value, d2 = $('#f-date-fin').value;
+        if (d1 && d2 && d2 < d1) { err('La date de fin est avant la date de début.', ['#f-date-fin']); return false; }
+        if (uploading) { err('L’affiche est encore en cours d’envoi, patientez une seconde.'); return false; }
+      }
+      if (k === 1) {
+        const bil = $('#f-billet').value.trim();
+        if (bil && !/^https:\/\/[^\s]+\.[^\s]+/.test(bil)) { err('Le lien de billetterie doit commencer par https://', ['#f-billet']); return false; }
+      }
+      err(''); return true;
+    }
+    const wizNext = () => { if (wizCheck(stepNow)) wizGo(stepNow + 1); };
+    bNext.addEventListener('click', wizNext);
+    bPrev.addEventListener('click', () => wizGo(stepNow - 1));
+
     const err = (txt, ids = []) => {
+      if (ids[0]) { const k = parts.findIndex(fs => fs.contains($(ids[0]))); if (k >= 0 && k !== stepNow) wizGo(k, false); }
       $$('[aria-invalid]').forEach(n => n.removeAttribute('aria-invalid'));
       ids.forEach(i => $(i).setAttribute('aria-invalid', 'true'));
       $('#form-err').textContent = txt || '';
       if (ids[0]) $(ids[0]).focus();
     };
+    wizGo(0, false);
+
     form.addEventListener('input', ev => { if (ev.target.hasAttribute('aria-invalid')) ev.target.removeAttribute('aria-invalid'); });
     form.addEventListener('submit', async ev => {
       ev.preventDefault();
+      if (stepNow < parts.length - 1) return wizNext(); // touche Entrée : on passe à la partie suivante
       const titre = $('#f-titre').value.trim(), cat = $('#f-cat').value, commune = $('#f-commune').value.trim();
       const miss = [!titre && '#f-titre', !cat && '#f-cat', !commune && '#f-commune'].filter(Boolean);
       if (miss.length) return err('Il manque ' + miss.map(i => ({ '#f-titre': 'le nom de l’événement', '#f-cat': 'la catégorie', '#f-commune': 'la commune' })[i]).join(', ') + '.', miss);
@@ -772,7 +825,7 @@
     $('#form-again').addEventListener('click', () => {
       form.reset(); photoUrl = ''; $('#drop-img').hidden = true; $('#drop-empty').hidden = false; $('#drop').classList.remove('filled'); say($('#photo-msg'), '');
       $('#f-periode-f').hidden = true; $$('[data-tarif]').forEach(x => x.setAttribute('aria-pressed', 'false'));
-      form.hidden = false; $('#code-box').hidden = false; $('#form-done').hidden = true; $('#f-titre').focus();
+      form.hidden = false; $('#code-box').hidden = false; $('#form-done').hidden = true; wizGo(0, false); $('#f-titre').focus();
     });
   }
 
@@ -1044,25 +1097,6 @@
     links.forEach(a => { const t = document.getElementById(a.dataset.spy); if (t) io.observe(t); });
   })();
 
-  /* ── Thème clair / sombre ── */
-  function bindTheme() {
-    const root = document.documentElement, meta = document.querySelector('meta[name="theme-color"]');
-    const paint = () => {
-      const light = root.getAttribute('data-theme') === 'light';
-      if ($('#theme-foot')) $('#theme-foot').textContent = light ? 'Thème : clair' : 'Thème : sombre';
-      $('#theme-top').setAttribute('aria-label', light ? 'Passer en mode sombre' : 'Passer en mode clair');
-      if (meta) meta.content = light ? '#F4F1EA' : '#050505';
-    };
-    const flip = () => {
-      const light = root.getAttribute('data-theme') !== 'light';
-      if (light) root.setAttribute('data-theme', 'light'); else root.removeAttribute('data-theme');
-      try { localStorage.setItem('lasave_theme', light ? 'light' : 'dark'); } catch (_) {}
-      paint();
-    };
-    $('#theme-top').addEventListener('click', flip); if ($('#theme-foot')) $('#theme-foot').addEventListener('click', flip);
-    paint();
-  }
-  bindTheme();
 
   /* ── Apparition douce des sections au défilement (ordinateur) ──
      Les éléments ne sont masqués que par la feuille de style, sur grand écran et si les animations sont permises ;
