@@ -135,7 +135,7 @@
       ev.preventDefault(); const champs = {};
       for (const [nom, [inp, type]] of Object.entries(inputs)) {
         const nouv = type === 'check' ? inp.checked : inp.value.trim(), ancien = type === 'check' ? !!f[nom] : String(f[nom] || '').trim();
-        if (nouv !== ancien) champs[nom] = nouv;
+        if (nouv !== ancien) champs[nom] = (nouv === '' && /^Date/.test(nom)) ? null : nouv; // une date effacée = vide dans Airtable
       }
       if (!Object.keys(champs).length) { msg('Aucune modification.'); return; }
       save.disabled = true;

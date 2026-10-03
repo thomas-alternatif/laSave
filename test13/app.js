@@ -31,6 +31,8 @@
   const day0 = d => new Date(d.getFullYear(), d.getMonth(), d.getDate());
   const today = () => day0(new Date());
   const isRec = e => e['Récurrence'] && e['Récurrence'] !== 'Aucune';
+  // Événement qui se répète mais dont la date de départ est passée : on n'affiche plus la vieille date, seulement le rythme (« chaque samedi… »)
+  const stale = e => isRec(e) && e.Date && new Date(e.Date + 'T12:00:00') < today();
   const isActive = e => isRec(e) || (e['Date de fin'] ? new Date(e['Date de fin']) >= today() : (e.Date ? new Date(e.Date) >= today() : true));
   const norm = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
   const orgName = v => Array.isArray(v) ? v.join(', ') : String(v || '');
@@ -40,12 +42,12 @@
   const hour = e => e.Heure ? String(e.Heure).replace(':', 'h') : '';
   const fmt = (d, o) => new Date(d).toLocaleDateString('fr-FR', o).replace(/\./g, '');
   const whenOf = e => {
-    if (!e.Date) return isRec(e) ? (e['Jour/Période'] || e['Période'] || e['Récurrence'] || '') : '';
+    if (!e.Date || stale(e)) return isRec(e) ? (e['Jour/Période'] || e['Période'] || e['Récurrence'] || '') : '';
     let s = fmt(e.Date, { weekday: 'short', day: 'numeric', month: 'short' });
     if (e.Heure) s += ' · ' + hour(e);
     return s;
   };
-  const sortKey = e => e.Date ? Math.max(new Date(e.Date).getTime(), Date.now()) : 9e15;
+  const sortKey = e => e.Date && !stale(e) ? Math.max(new Date(e.Date).getTime(), Date.now()) : 9e15;
   const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; };
   const img = (src, alt = '') => { const i = new Image(); i.src = src; i.alt = alt; i.loading = 'lazy'; i.decoding = 'async'; return i; };
   const bg = (node, src) => { node.style.backgroundImage = src ? `url("${String(src).replace(/["\\\n]/g, '')}")` : ''; };
@@ -61,7 +63,7 @@
   const tintOf = n => TINTS[[...String(n)].reduce((a, c) => a + c.charCodeAt(0), 0) % TINTS.length];
   async function api(path, opt = {}) {
     const h = opt.body && !(opt.body instanceof FormData) ? { 'Content-Type': 'application/json' } : {};
-    const r = await fetch(API + path, { ...opt, headers: { Accept: 'application/json', ...h } });
+    let r; try { r = await fetch(API + path, { ...opt, headers: { Accept: 'application/json', ...h } }); } catch (_) { throw Object.assign(new Error('Connexion impossible : vérifiez votre réseau.'), { status: 0 }); }
     const d = await r.json().catch(() => ({}));
     if (!r.ok) throw Object.assign(new Error(d.error || ('Erreur ' + r.status)), { status: r.status });
     return d;
@@ -374,7 +376,7 @@
   function buildFlow(events) {
     const stage = $('#flow-stage');
     const limit = new Date(today()); limit.setDate(limit.getDate() + 30);
-    const list = events.filter(e => e.Date && new Date(e.Date) <= limit && !['Conférence / Atelier', 'Sport / Loisir'].includes(e['Catégorie'])).slice(0, 16);
+    const list = events.filter(e => e.Date && new Date(e.Date + 'T12:00:00') <= limit && !stale(e) && !['Conférence / Atelier', 'Sport / Loisir'].includes(e['Catégorie'])).slice(0, 16);
     if (!list.length) { stage.appendChild(el('p', 'empty', 'Aucun événement daté dans les 30 prochains jours.')); $('.flow-ctrl').hidden = true; return; }
     let cur = Math.min(2, list.length - 1), chipSync = null;
     const cards = list.map((e, i) => {
@@ -421,7 +423,7 @@
       const rel = n < 0 ? (fin && fin >= t0 ? 'En ce moment' : '') : n === 0 ? 'Aujourd’hui' : n === 1 ? 'Demain' : `Dans ${n} jours`;
       const jour = d.toLocaleDateString('fr-FR', { weekday: 'long' });
       const mois = d.toLocaleDateString('fr-FR', { month: 'short' }).replace('.', '');
-      const key = [rel, jour, d.getDate(), mois, e.Heure || ''].join('|');
+      const key = [e.id, rel, jour, d.getDate(), mois, e.Heure || ''].join('|');
       if (key === lastDate) return; lastDate = key;
       // Petite page de calendrier (mois + jour) qui se tourne, et le jour de la semaine à côté
       const cal = el('span', 'fd-cal'); cal.setAttribute('aria-hidden', 'true');
@@ -736,6 +738,7 @@
       const lg = fs.querySelector('legend'), name = lg ? lg.textContent.replace(/^\d+/, '').trim() : 'Étape ' + (i + 1);
       b.appendChild(el('i', null, String(i + 1)));
       b.appendChild(el('span', null, name));
+      b.setAttribute('aria-label', `Étape ${i + 1} sur ${parts.length} : ${name}`);
       b.addEventListener('click', () => { if (i < stepNow) wizGo(i); else if (i > stepNow) { for (let k = stepNow; k < i; k++) if (!wizCheck(k)) return wizGo(k, false); wizGo(i); } });
       bar.appendChild(b); return b;
     });
@@ -825,7 +828,7 @@
     $('#form-again').addEventListener('click', () => {
       form.reset(); photoUrl = ''; $('#drop-img').hidden = true; $('#drop-empty').hidden = false; $('#drop').classList.remove('filled'); say($('#photo-msg'), '');
       $('#f-periode-f').hidden = true; $$('[data-tarif]').forEach(x => x.setAttribute('aria-pressed', 'false'));
-      form.hidden = false; $('#code-box').hidden = false; $('#form-done').hidden = true; wizGo(0, false); $('#f-titre').focus();
+      form.hidden = false; $('#code-box').hidden = false; $('#form-done').hidden = true; wizGo(0, false); memberCode = ''; $('#f-code').value = ''; say($('#code-msg'), ''); $('#code-box').classList.remove('done'); { const cr = $('#code-req'); if (cr) cr.hidden = true; } $('#f-titre').focus();
     });
   }
 
@@ -931,7 +934,7 @@
   const addDays = (k, n) => { const d = new Date(k + 'T12:00:00'); d.setDate(d.getDate() + n); return ymd(d); };
   const isFree = e => /^\s*(gratuit|entr[ée]e libre|libre)\b/i.test(String(e.Tarif || ''));
   const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
-  const evStart = e => String(e.Date || '').slice(0, 10);
+  const evStart = e => stale(e) ? '' : String(e.Date || '').slice(0, 10);
   const evEnd = e => { const s = evStart(e), f = String(e['Date de fin'] || '').slice(0, 10); return f && f > s ? f : s; };
   function agRange(w) {
     const t = ymd(new Date()), dow = new Date(t + 'T12:00:00').getDay(); // 0 = dimanche
@@ -1019,7 +1022,7 @@
   const HOME_ANCHORS = ['rendez-vous', 'envies', 'organisateurs', 'lettre', 'top', 'contenu'];
   let pendingEvent = null;
   function route() {
-    const h = decodeURIComponent(location.hash.slice(1));
+    let h = location.hash.slice(1); try { h = decodeURIComponent(h); } catch (_) {} // une adresse tronquée (…%) ne doit pas bloquer tout le site
     let view = 'home';
     if (h === 'partager' || h === 'proposer') view = 'partager';
     else if (h === 'agenda') view = 'agenda';
@@ -1144,9 +1147,12 @@
   setupAvisCard();
   setupLettre();
   bindMotion();
+  { const sk = $('.skip'); if (sk) sk.addEventListener('click', ev => { ev.preventDefault(); $('#contenu').focus(); }); } // « Aller au contenu » ne doit pas changer de page
   route();
   (async () => {
-    try { ALL = await api('/events'); } catch (e) { console.warn('events', e); }
+    let loadErr = false;
+    try { ALL = await api('/events'); } catch (e) { console.warn('events', e); loadErr = true; }
+    if (!Array.isArray(ALL)) { ALL = []; loadErr = true; }
     // « Agenda mis à jour le … » : signe de fraîcheur dans le pied de page
     api('/health').then(d => {
       const t = d && d.copie && new Date(d.copie), n = $('#foot-maj');
@@ -1155,9 +1161,11 @@
       n.hidden = false;
     }).catch(() => {});
     try { ORGAS = await api('/orgas'); } catch (e) { console.warn('orgas', e); }
+    if (!Array.isArray(ORGAS)) ORGAS = [];
     UP = ALL.filter(isActive).sort((a, b) => sortKey(a) - sortKey(b));
     buildHero(UP);
     buildFlow(UP);
+    if (loadErr) { const st = $('#flow-stage'); st.textContent = ''; st.appendChild(el('p', 'empty', 'Impossible de charger l’agenda pour le moment. Vérifiez votre connexion puis rechargez la page.')); const fc = $('.flow-ctrl'); if (fc) fc.hidden = true; }
     buildRows(UP);
     buildOrgs(ORGAS);
     agSetup(); renderAgenda();

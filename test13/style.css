@@ -1688,3 +1688,7 @@ main { padding-top: clamp(10px, 4vw, 64px); }
 .wiz-nav [hidden] { display: none; }
 @media (max-width: 560px) { .wiz-dot span { display: none; } .wiz-dot.on span { display: block; } .wiz-dot { gap: 8px; } .wiz-dot.on { flex: 2; } }
 @media (prefers-reduced-motion: reduce) { .ev-form.wiz > fieldset.cur { animation: none; } }
+
+/* ════ v78 : correctifs ════ */
+.hero { touch-action: pan-y; } /* le glissement horizontal change d'événement, le défilement vertical reste libre */
+.ev:has(.ev-media.none) { grid-template-columns: 1fr; } /* fiche sans affiche : le texte prend toute la largeur */

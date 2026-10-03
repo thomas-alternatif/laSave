@@ -60,8 +60,13 @@ const slugEv = (f, id) => {
 const tokId = (events, tok) => {
   if (isId(tok)) return tok;
   const t = String(tok || '').toLowerCase(), list = events || [];
-  const ex = list.find(x => slugEv(x, x.id) === t);
-  if (ex) return ex.id;
+  // Même lien pour plusieurs fiches (fête annuelle…) : on prend la prochaine à venir, sinon la plus récente
+  const jour = parisJour(), same = list.filter(x => slugEv(x, x.id) === t);
+  if (same.length) {
+    const d = x => String(x['Date de fin'] || x.Date || '');
+    const next = same.filter(x => d(x) >= jour).sort((a, b) => d(a).localeCompare(d(b)))[0];
+    return (next || same.sort((a, b) => d(b).localeCompare(d(a)))[0]).id;
+  }
   const m = t.match(/(?:^|-)([a-z0-9]{5})$/);
   const e = m && list.find(x => x.id.slice(-5).toLowerCase() === m[1]);
   return e ? e.id : '';
@@ -69,7 +74,7 @@ const tokId = (events, tok) => {
 // Canal d'un lien partagé : une seule lettre après le « ? » (partage.la-save.fr/titre-4-octobre?w = WhatsApp)
 const LETTRES = { w: 'wa', s: 'sms', f: 'fb', m: 'mail', l: 'legende', t: 'story', p: 'post', a: 'mailpub', i: 'invitation', q: 'qr' };
 const LETTRE = Object.fromEntries(Object.entries(LETTRES).map(([k, v]) => [v, k]));
-const canalDe = sp => { for (const [k, v] of sp) if (LETTRES[k] && v === '') return LETTRES[k]; const c = sp.get('v') || sp.get('s'); return CANAUX.includes(c) ? c : ''; };
+const canalDe = sp => { for (const [k, v] of sp) if (Object.hasOwn(LETTRES, k) && v === '') return LETTRES[k]; const c = sp.get('v') || sp.get('s'); return CANAUX.includes(c) ? c : ''; };
 const TOK = '([A-Za-z0-9-]{5,90})';
 
 function cors(req) {
@@ -468,6 +473,7 @@ async function buildSnap(env) {
   orgs.forEach(r => { const c = (r.fields.Code || '').trim().toUpperCase(); if (c && !['Demandé', 'Refusé'].includes(r.fields['Statut code'])) codes[c] = { id: r.id, ...pick(r.fields, ORGA_PUBLIC) }; });
   await KV.put('snap', JSON.stringify(snap));
   await KV.put('codes', JSON.stringify(codes));
+  await KV.delete('lock'); // relecture réussie : le verrou ne sert plus (sinon il bloque la suivante pendant 60 s)
   return snap;
 }
 // Dépannage : si Airtable est bloqué et qu'aucune copie n'existe, on part d'un export publié sur le site
@@ -508,6 +514,18 @@ async function getSnap(env, ctx) {
   }
   return snap; // en cas de panne Airtable, on continue de servir la dernière copie
 }
+// Retrouve l'identifiant d'une fiche depuis un lien lisible ; si la fiche vient d'être publiée et que la copie du site est en retard, on la relit une fois
+async function resolveTok(env, ctx, tok) {
+  if (isId(tok)) return tok;
+  if (!KV) return '';
+  let snap = await getSnap(env, ctx).catch(() => null);
+  let id = tokId(snap && snap.events, tok);
+  if (!id && snap && snap.dirty && !(await KV.get('lock'))) {
+    await KV.put('lock', '1', { expirationTtl: 60 });
+    try { snap = await buildSnap(env); id = tokId(snap.events, tok); } catch (e) { console.error('relecture (lien inconnu)', e.message); }
+  }
+  return id;
+}
 async function markDirty() { const snap = await KV.get('snap', 'json'); if (snap) { snap.dirty = true; await KV.put('snap', JSON.stringify(snap)); } }
 
 /* Mail « C'est en ligne » demandé depuis Airtable : part seulement si la case est cochée ET que l'événement est vraiment visible sur le site.
@@ -535,7 +553,7 @@ async function tryConfirm(env, rec, liveEvents, lien = false) {
   const now = new Date(), tz = { timeZone: 'Europe/Paris' };
   const quand = `${now.toLocaleDateString('fr-FR', { ...tz, day: '2-digit', month: '2-digit', year: 'numeric' })} à ${now.toLocaleTimeString('fr-FR', { ...tz, hour: '2-digit', minute: '2-digit' })}`;
   const r = await ecrire(`Envoyée le ${quand} à ${to}`, true);
-  return { ...r, envoye: true };
+  return { ...r, texte: r.texte.replace(to, maskMail(to)), envoye: true }; // l'adresse complète reste dans Airtable, jamais sur la page publique
 }
 // Compteurs « J'y vais » / vues en attente de recopie dans Airtable
 async function getCounts() { return (await KV.get('counts', 'json')) || {}; }
@@ -614,12 +632,20 @@ async function nightlyRun(env) {
   try { await rsvpRecap(env); } catch (e) { console.error('récap rsvp', e.message); NERR += ' récap : ' + e.message; }
   const counts = await getCounts();
   const ids = Object.keys(counts).filter(id => isId(id) && !id.startsWith('recTMP')); // recTMP… : fiches de l'export de dépannage
+  let failed = false;
   for (let i = 0; i < ids.length; i += 10) {
     const records = ids.slice(i, i + 10).map(id => ({ id, fields: pick(counts[id], ['Likes', 'Vues']) }));
-    try { await at(env, T_EVENTS, { method: 'PATCH', body: JSON.stringify({ records }) }); } catch (e) { console.error('recopie compteurs', e.message); NERR += ' recopie compteurs : ' + e.message; return; }
+    try { await at(env, T_EVENTS, { method: 'PATCH', body: JSON.stringify({ records }) }); }
+    catch (e) { // un lot refusé (fiche supprimée…) : on réessaie fiche par fiche, sans bloquer le reste
+      console.error('recopie compteurs', e.message);
+      for (const r of records) {
+        try { await at(env, T_EVENTS, { method: 'PATCH', body: JSON.stringify({ records: [r] }) }); }
+        catch (e2) { if (!(e2.status >= 400 && e2.status < 500)) failed = true; NERR += ` recopie ${r.id.slice(-5)} : ${e2.message}`; }
+      }
+    }
   }
   await buildSnap(env);
-  await KV.delete('counts');
+  if (!failed) await KV.delete('counts'); // en cas de panne réseau on garde les compteurs pour la nuit suivante
   try { if (env.DB) { await rsvpTable(env.DB); await env.DB.prepare('DELETE FROM rsvp WHERE fin < ?1').bind(new Date(Date.now() - 7 * 864e5).toISOString().slice(0, 10)).run(); } } catch (e) { console.error('purge rsvp', e.message); }
 }
 
@@ -661,7 +687,7 @@ function stat(env, type, id = '', canal = '') {
   id = String(id).slice(0, 20); canal = String(canal).slice(0, 20);
   // Base D1 (liaison « DB ») : un compteur par jour, type, événement et canal
   if (env.DB) {
-    const jour = new Date(Date.now() + 2 * 3600e3).toISOString().slice(0, 10); // jour à l'heure de Paris (à peu près)
+    const jour = parisJour(); // jour à l'heure de Paris
     const w = (async () => { await statsTable(env.DB); await env.DB.prepare('INSERT INTO stats (jour, type, id, canal, n) VALUES (?1, ?2, ?3, ?4, 1) ON CONFLICT (jour, type, id, canal) DO UPDATE SET n = n + 1').bind(jour, type, id, canal).run(); })().catch(e => console.error('stats D1', e.message));
     if (CTX) CTX.waitUntil(w);
     return;
@@ -782,10 +808,10 @@ async function route(req, env, ctx) {
   const vm = p.match(new RegExp('^/venir/' + TOK + '$'));
   if (vm && (m === 'GET' || m === 'POST')) {
     if (!KV || !env.DB) return pageSimple('Bientôt disponible', 'Cette page n’est pas encore activée.');
-    const evs0 = (await getSnap(env, ctx)).events || [], id = tokId(evs0, vm[1]);
-    const ev = evs0.find(e => e.id === id);
+    const id = await resolveTok(env, ctx, vm[1]);
+    const ev = ((await getSnap(env, ctx)).events || []).find(e => e.id === id);
     if (!ev) return pageSimple('Événement introuvable', 'Cet événement n’est pas (ou plus) en ligne sur laSave.');
-    if ((ev['Date de fin'] || ev.Date || '9999') < parisJour()) return pageSimple('Événement passé', 'Cet événement a déjà eu lieu.');
+    if (!(ev['Récurrence'] && ev['Récurrence'] !== 'Aucune') && (ev['Date de fin'] || ev.Date || '9999') < parisJour()) return pageSimple('Événement passé', 'Cet événement a déjà eu lieu.');
     if (m === 'GET') return venirPage(ev, id);
     let fd; try { fd = await req.formData(); } catch { return venirPage(ev, id, { err: 'Le formulaire n’a pas pu être lu, réessayez.' }); }
     if (String(fd.get('site') || '')) return pageSimple('C’est noté', 'Merci !'); // piège à robots : on fait semblant
@@ -800,7 +826,7 @@ async function route(req, env, ctx) {
       const tot = await env.DB.prepare('SELECT COUNT(*) AS n FROM rsvp WHERE ev = ?1').bind(id).first();
       if ((tot?.n || 0) >= MAX_REPONSES) return pageSimple('Réponses closes', 'Le nombre maximum de réponses est atteint.');
     }
-    await env.DB.prepare('INSERT INTO rsvp (ev, cle, prenom, nb, fin, at) VALUES (?1, ?2, ?3, ?4, ?5, ?6) ON CONFLICT (ev, cle) DO UPDATE SET prenom = ?3, nb = ?4, at = ?6')
+    await env.DB.prepare('INSERT INTO rsvp (ev, cle, prenom, nb, fin, at) VALUES (?1, ?2, ?3, ?4, ?5, ?6) ON CONFLICT (ev, cle) DO UPDATE SET prenom = ?3, nb = ?4, at = ?6, fin = ?5')
       .bind(id, cle, prenom, nb, ev['Date de fin'] || ev.Date || parisJour(), new Date().toISOString()).run();
     return new Response(`<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>C’est noté · laSave</title></head>
 <body style="margin:0;min-height:100vh;display:grid;place-items:center;background:#050505;color:#f4f3ef;font:16px/1.6 'Helvetica Neue',Arial,sans-serif;padding:24px;box-sizing:border-box;">
@@ -814,7 +840,7 @@ async function route(req, env, ctx) {
   // « Qui vient » : liste vue par l'organisateur (lien du kit, avec clé)
   const rm = p.match(new RegExp('^/rsvp/' + TOK + '$'));
   if (m === 'GET' && rm) {
-    const id = tokId(KV ? ((await getSnap(env, ctx).catch(() => null)) || {}).events : [], rm[1]);
+    const id = await resolveTok(env, ctx, rm[1]);
     if (!id) return json(req, { error: 'Lien non valide.' }, 404);
     if (!env.DB) return json(req, { ok: true, total: 0, reponses: [] }, 200, { 'Cache-Control': 'no-store' });
     if (!sameText(String(url.searchParams.get('k') || ''), await rsvpKey(env, id))) return json(req, { error: 'Lien non valide.' }, 403);
@@ -824,9 +850,9 @@ async function route(req, env, ctx) {
   }
 
   // Lien court du kit : partage.la-save.fr/kit/<événement>/<clé> → page du kit
-  const km = m === 'GET' && p.match(/^\/kit\/([A-Za-z0-9-]{5,90})\/([A-Za-z0-9]{10,40})$/);
+  const km = m === 'GET' && p.match(/^\/kit\/([A-Za-z0-9-]{5,90})\/([A-Za-z0-9_-]{10,40})$/);
   if (km) {
-    const kid = tokId(KV ? ((await getSnap(env, ctx).catch(() => null)) || {}).events : [], km[1]) || (isId(km[1]) ? km[1] : '');
+    const kid = await resolveTok(env, ctx, km[1]);
     if (!kid) return Response.redirect(SITE, 302);
     return new Response(null, { status: 302, headers: { Location: `${SITE}${KIT_PATH}?id=${kid}&k=${km[2]}`, 'Cache-Control': 'no-store', 'X-Robots-Tag': 'noindex', 'Referrer-Policy': 'no-referrer' } });
   }
@@ -836,7 +862,7 @@ async function route(req, env, ctx) {
   if (m === 'GET' && (sm = p.match(new RegExp('^/ics/' + TOK + '$')))) {
     let id = sm[1];
     let ev = null;
-    if (!isId(id)) id = tokId(KV ? ((await getSnap(env, ctx).catch(() => null)) || {}).events : [], id);
+    if (!isId(id)) id = await resolveTok(env, ctx, id);
     if (!isId(id)) return Response.redirect(SITE, 302);
     if (KV) { const snap = await getSnap(env, ctx).catch(() => null); ev = snap && snap.events.find(e => e.id === id) || null; }
     else { try { const r = await at(env, `${T_EVENTS}/${id}`); if (r.fields.Statut === 'Publié') ev = r.fields; } catch {} }
@@ -865,15 +891,15 @@ async function route(req, env, ctx) {
   if (m === 'GET' && (sm = p.match(new RegExp('^/e/' + TOK + '$')) || p.match(/^\/([a-z0-9]+(?:-[a-z0-9]+)+)$/))) {
     const home = 'https://la-save.fr';
     let id = sm[1];
-    if (!isId(id)) id = tokId(KV ? ((await getSnap(env, ctx).catch(() => null)) || {}).events : [], id);
+    if (!isId(id)) id = await resolveTok(env, ctx, id);
     if (!isId(id)) return Response.redirect(home, 302);
     const canal = canalDe(url.searchParams);
-    // Un robot d'aperçu (WhatsApp, Facebook…) = le lien vient d'être posté ; sinon = quelqu'un a cliqué
-    stat(env, ROBOTS.test(req.headers.get('User-Agent') || '') ? 'apercu' : 'lien', id, canal);
     let ev = null;
     if (KV) { const snap = await getSnap(env, ctx).catch(() => null); ev = snap && snap.events.find(e => e.id === id) || null; }
     else { try { const r = await at(env, `${T_EVENTS}/${id}`); if (r.fields.Statut === 'Publié') ev = r.fields; } catch {} }
     if (!ev) return Response.redirect(home, 302);
+    // Un robot d'aperçu (WhatsApp, Facebook…) = le lien vient d'être posté ; sinon = quelqu'un a cliqué
+    stat(env, ROBOTS.test(req.headers.get('User-Agent') || '') ? 'apercu' : 'lien', id, canal);
     const esc = s => String(s || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     const titre = ev.Titre || 'Événement', commune = ev.Commune || '', cat = ev['Catégorie'] || '';
     const desc = (ev.Description || '').slice(0, 200) || `${cat} à ${commune}`;
@@ -945,7 +971,7 @@ async function route(req, env, ctx) {
     if (await tooMany(req, 'coderq-' + email, 3, 86400)) return ok;
     const known = await findOrgaByEmail(env, email);
     if (known) { ctx.waitUntil(sendCodeTo(env, known).catch(e => console.error('envoi code', e))); return ok; }
-    if (!nom) return json(req, { error: 'Indiquez le nom de votre structure.' }, 400);
+    if (!nom) return ok; // même réponse qu'un e-mail connu : on ne révèle pas quelles adresses existent
     // Nouvelle demande (sans doublon) + alerte à la mairie
     const f = encodeURIComponent(`AND(LOWER({Email})='${email.replace(/'/g, "\\'")}',{Statut code}='Demandé')`);
     const dup = await listAll(env, T_ORGAS, '&filterByFormula=' + f);
@@ -969,6 +995,9 @@ async function route(req, env, ctx) {
     if (b['Jour/Période'] && !b['Période']) b['Période'] = b['Jour/Période'];
     const fields = pick(b, EVENT_SUBMIT);
     for (const k in fields) fields[k] = clip(fields[k], k === 'Description' || k === 'Message privé' ? 5000 : 300);
+    for (const k in fields) if (typeof fields[k] !== 'string') delete fields[k]; // pas d'objets ni de tableaux venus de l'extérieur
+    for (const k of ['Date', 'Date de fin']) if (fields[k] && !/^\d{4}-\d{2}-\d{2}$/.test(fields[k])) delete fields[k]; // une date mal formée ferait refuser toute la fiche par Airtable
+    if (fields['Récurrence'] && !['Aucune', 'Hebdomadaire', 'Mensuelle', 'Annuelle'].includes(fields['Récurrence'])) delete fields['Récurrence'];
     if (!fields.Titre || !fields['Catégorie'] || !fields.Commune) return json(req, { error: 'Titre, catégorie et commune sont obligatoires.' }, 400);
     if (typeof b.photoUrl === 'string' && /^https:\/\/(i\.)?ibb\.co\//.test(b.photoUrl)) fields.Photo = [{ url: b.photoUrl }];
     if (fields.Billetterie && !/^https:\/\/[^\s<>"']+$/.test(fields.Billetterie)) delete fields.Billetterie; // lien de billetterie : https uniquement
@@ -1099,10 +1128,12 @@ async function route(req, env, ctx) {
       await KV.put('lock', '1', { expirationTtl: 60 });
       snap = await buildSnap(env); return true;
     };
-    try { await relire(); } catch (e) { return pageSimple('Airtable injoignable', 'Réessayez dans un instant. Détail : ' + (e && e.status ? e.status + ' · ' : '') + String((e && e.message) || e).slice(0, 160)); }
+    let frais = false;
+    try { frais = await relire(); } catch (e) { return pageSimple('Airtable injoignable', 'Réessayez dans un instant. Détail : ' + (e && e.status ? e.status + ' · ' : '') + String((e && e.message) || e).slice(0, 160)); }
     if (p === '/lien/maj') {
       let envoyes = 0;
       try { const att = await listAll(env, T_EVENTS, '&filterByFormula=' + encodeURIComponent("AND({Envoyer la confirmation},{Statut}='Publié')")); for (const rec of att) { if ((await tryConfirm(env, rec, snap.events || [])).envoye) envoyes++; } } catch {}
+      if (!frais) return pageSimple('Déjà en cours', 'Une mise à jour est déjà en cours. Réessayez dans une minute.');
       return pageSimple('Site mis à jour', 'L’agenda est à jour.' + (envoyes ? ` ${envoyes} confirmation(s) envoyée(s).` : '') + ' Vous pouvez fermer cet onglet.');
     }
     let rec; try { rec = await at(env, `${T_EVENTS}/${id}`); } catch { return pageSimple('Introuvable', 'Cet événement n’existe pas.'); }
@@ -1234,7 +1265,7 @@ async function route(req, env, ctx) {
       if (!env.DB) return json(req, { error: 'Base D1 non reliée' }, 400);
       const jours = Math.min(180, Math.max(1, parseInt(url.searchParams.get('jours'), 10) || 60));
       await statsTable(env.DB); await rsvpTable(env.DB);
-      const depuis = new Date(Date.now() + 2 * 3600e3 - (jours - 1) * 864e5).toISOString().slice(0, 10);
+      const depuis = new Date(Date.now() - (jours - 1) * 864e5).toLocaleDateString('sv-SE', { timeZone: 'Europe/Paris' });
       const [a, b] = await Promise.all([
         env.DB.prepare('SELECT jour, type, id, canal, SUM(n) AS n FROM stats WHERE jour >= ?1 GROUP BY jour, type, id, canal ORDER BY jour').bind(depuis).all(),
         env.DB.prepare('SELECT substr(at, 1, 10) AS jour, SUM(nb) AS n, COUNT(*) AS reponses FROM rsvp WHERE substr(at, 1, 10) >= ?1 GROUP BY jour').bind(depuis).all(),
@@ -1248,7 +1279,7 @@ async function route(req, env, ctx) {
       const jours = Math.min(90, Math.max(1, parseInt(url.searchParams.get('jours'), 10) || 30));
       if (env.DB) {
         await statsTable(env.DB);
-        const depuis = new Date(Date.now() + 2 * 3600e3 - (jours - 1) * 864e5).toISOString().slice(0, 10);
+        const depuis = new Date(Date.now() - (jours - 1) * 864e5).toLocaleDateString('sv-SE', { timeZone: 'Europe/Paris' });
         const [a, b] = await Promise.all([
           env.DB.prepare("SELECT type, id, canal, SUM(n) AS n FROM stats WHERE jour >= ?1 AND NOT (type = 'visite' AND id = 'test') GROUP BY type, id, canal").bind(depuis).all(),
           env.DB.prepare("SELECT jour, type, SUM(n) AS n FROM stats WHERE jour >= ?1 AND NOT (type = 'visite' AND id = 'test') GROUP BY jour, type ORDER BY jour").bind(depuis).all(),

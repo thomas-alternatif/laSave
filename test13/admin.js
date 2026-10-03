@@ -49,7 +49,7 @@
   }
 
   /* ── connexion ── */
-  function showApp(ok) { $('#d-login').hidden = ok; $('#d-app').hidden = !ok; }
+  function showApp(ok) { $('#d-login').hidden = ok; $('#d-app').hidden = !ok; if (!ok) { const sh = $('#d-sheet'); if (sh) sh.hidden = true; document.body.classList.remove('lock'); } } // session perdue : on ferme aussi la fiche ouverte
   $('#d-form').addEventListener('submit', async ev => {
     ev.preventDefault();
     const err = $('#d-err'); err.hidden = true;
@@ -130,7 +130,8 @@
         if (!sur) { sur = true; b.textContent = 'Confirmer l’archivage'; setTimeout(() => { sur = false; b.textContent = `Archiver les ${passes.length}`; }, 5000); return; }
         b.disabled = true; let n = 0;
         for (const e of passes) { b.textContent = `Archivage… ${n + 1}/${passes.length}`; if (!(await changer(e, 'Archivé'))) break; n++; }
-        msg(`${pl(n, 'événement archivé', 'événements archivés')}.`); await charger(true);
+        if (n < passes.length) msg(`${pl(n, 'événement archivé', 'événements archivés')} sur ${passes.length} : l’archivage s’est arrêté, réessayez.`, true); else msg(`${pl(n, 'événement archivé', 'événements archivés')}.`);
+        await charger(true);
       });
       bulk.append(b);
     } else bulk.hidden = true;
@@ -181,7 +182,7 @@
       acts.append(a, c); li.append(t, acts); if (r.msg) li.append(el('p', 'msg', r.msg)); ul.append(li);
     });
     const all = $('#o-all'); all.innerHTML = '';
-    const liste = ov.orgas.filter(o => o.statutCode !== 'Demandé').sort((x, y) => x.nom.localeCompare(y.nom, 'fr'));
+    const liste = ov.orgas.filter(o => o.statutCode !== 'Demandé').sort((x, y) => String(x.nom || '').localeCompare(String(y.nom || ''), 'fr'));
     $('#o-n').textContent = `(${liste.length})`;
     if (!liste.length) all.append(el('li', 'd-vide', 'Aucun organisateur.'));
     liste.forEach(o => {

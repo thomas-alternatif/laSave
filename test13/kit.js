@@ -19,7 +19,7 @@
     const a = d(e.Date), b = e['Date de fin'] && e['Date de fin'] !== e.Date ? d(e['Date de fin']) : null;
     let t = b ? `Du ${a.getDate()}${a.getMonth() !== b.getMonth() ? ' ' + MOIS[a.getMonth()] : ''} au ${b.getDate()} ${MOIS[b.getMonth()]}`
               : cap(`${JOURS[a.getDay()]} ${a.getDate()} ${MOIS[a.getMonth()]}`);
-    if (e.Heure) t += ` · ${String(e.Heure).replace(':', 'h')}`;
+    if (e.Heure) t += ` · ${String(e.Heure).replace(/(\d{1,2}):(\d{2})/g, '$1h$2')}`;
     return t;
   };
   const commune = v => { const t = String(v || '').trim(); return t && t === t.toUpperCase() ? t.toLowerCase().replace(/\s+/g, '-').replace(/(^|-)\S/g, m => m.toUpperCase()).replace(/-(Sur|De|Du|La|Le|Les|En)-/g, m => m.toLowerCase()) : t; };
@@ -45,7 +45,13 @@
       if (cur) lines.push(cur);
       if (lines.length <= maxLignes && lines.every(l => c.measureText(l).width <= maxW)) return { px, lines };
     }
-    return { px: min, lines: [String(text).toUpperCase()] };
+    // Titre trop long même à la plus petite taille : on garde les lignes qui tiennent et on termine par « … »
+    c.font = titleFont(min); if (hasStretch) c.fontStretch = 'condensed';
+    const lines = []; let cur = '';
+    for (const w of words) { const t = cur ? cur + ' ' + w : w; if (c.measureText(t).width <= maxW) cur = t; else { if (cur) lines.push(cur); cur = w; } }
+    if (cur) lines.push(cur);
+    if (lines.length > maxLignes) { lines.length = maxLignes; lines[maxLignes - 1] = lines[maxLignes - 1].replace(/\s*\S*$/, '') + '…'; }
+    return { px: min, lines: lines.map(l => { while (l.length > 1 && c.measureText(l).width > maxW) l = l.slice(0, -2) + '…'; return l; }) };
   }
 
   // Tampon blanc en relief, comme les thèmes du site
@@ -244,10 +250,10 @@ ${orga ? `<tr><td style="padding:20px 24px 0;"><table role="presentation" cellpa
       let r; try { r = await fetch(`${API}/rsvp/${id}?k=${encodeURIComponent(k)}`).then(x => x.ok ? x.json() : null); } catch (_) { r = null; }
       const list = $('#k-venir-list');
       if (!r || !r.ok) { $('#k-venir-h').textContent = 'Liste indisponible'; list.innerHTML = ''; return; }
-      const n = r.total, nr = r.reponses.length;
+      const reps = Array.isArray(r.reponses) ? r.reponses : [], n = r.total || 0, nr = reps.length;
       $('#k-venir-h').textContent = n ? `${n} personne${n > 1 ? 's' : ''} ${n > 1 ? 'viennent' : 'vient'}` : 'Pas encore de réponse';
       $('#k-venir-n').textContent = nr ? `${nr} réponse${nr > 1 ? 's' : ''}` : '';
-      list.innerHTML = r.reponses.map(x => `<li><b>${esc(x.prenom)}</b>${x.nb > 1 ? `<span>+ ${x.nb - 1}</span>` : ''}</li>`).join('');
+      list.innerHTML = reps.map(x => `<li><b>${esc(x.prenom)}</b>${x.nb > 1 ? `<span>+ ${x.nb - 1}</span>` : ''}</li>`).join('');
     };
     $('#k-venir-r').addEventListener('click', async () => { await go(); toast('Liste actualisée'); });
     go();

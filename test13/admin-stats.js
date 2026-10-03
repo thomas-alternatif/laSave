@@ -53,7 +53,7 @@
     const [t, cls] = prevOk ? delta(c, p) : ['', '']; if (t) k.append(el('em', 'dl ' + cls, t));
     if (sous) k.append(el('small', '', sous)); return k;
   }
-  const pas = m => { const t = Math.max(1, m) / 4, p = 10 ** Math.floor(Math.log10(t)); const s = [1, 2, 5, 10].map(x => x * p).find(x => x >= t); return s; };
+  const pas = m => { const t = Math.max(4, m) / 4, p = 10 ** Math.floor(Math.log10(t)); const s = [1, 2, 5, 10].map(x => x * p).find(x => x >= t); return s; };
   function barres(box, labels, vals, nom, W = 720, H = 190) {
     const X0 = 36, B = 24, T = 12, n = vals.length, st = pas(Math.max(...vals)), top = st * Math.max(1, Math.ceil(Math.max(...vals, 1) / st));
     const bw = (W - X0) / n, y = v => T + (H - B - T) * (1 - v / top), moy = vals.reduce((a, v) => a + v, 0) / n;
@@ -71,7 +71,7 @@
     if (!l.length) { box.append(el('p', 'd-vide', vide)); return; }
     l.forEach(([k, n]) => { const row = el('div', 'row'), tr = el('div', 'tr'), i = el('i'); i.className = 'w-' + Math.max(1, Math.round(n / l[0][1] * 20)); tr.append(i); row.append(el('span', '', k), el('b', '', fr(n)), el('small', '', Math.round(n / tot * 100) + ' %'), tr); box.append(row); });
   }
-  const parCanal = (rows, f, noms) => { const m = {}; rows.forEach(r => { if (f(r)) { const k = r.canal || ''; m[k] = (m[k] || 0) + r.n; } }); return Object.entries(m).map(([k, n]) => [noms[k] || k, n]); };
+  const parCanal = (rows, f, noms) => { const m = {}; rows.forEach(r => { if (f(r)) { const k = r.canal || ''; m[k] = (m[k] || 0) + r.n; } }); return Object.entries(m).map(([k, n]) => [noms[k] || k || 'Non précisé', n]); };
   const titreEv = id => { const e = L.ov.events.find(x => x.id === id); return e ? e : null; };
 
   /* ───────────── Vue d'ensemble ───────────── */
@@ -187,7 +187,8 @@
   async function rStats() {
     enteteStats();
     const kp = $('#t-kpis'); kp.replaceChildren(el('p', 'd-note', 'Chargement des chiffres…'));
-    let d; try { d = await donnees(periode); } catch (e) { kp.replaceChildren(el('p', 'd-err-l', e.status === 404 ? 'Le Worker n’est pas à jour : collez la dernière version dans Cloudflare.' : e.message)); return; }
+    const per0 = periode; let d; try { d = await donnees(periode); } catch (e) { kp.replaceChildren(el('p', 'd-err-l', e.status === 404 ? 'Le Worker n’est pas à jour : collez la dernière version dans Cloudflare.' : e.message)); return; }
+    if (per0 !== periode) return; // l'utilisateur a changé de période pendant le chargement
     dCour = d;
     $('#t-txt').textContent = `Du ${court(d.jours[0])} au ${court(d.fin)}${d.prevOk ? ` · comparé aux ${periode} jours d’avant` : ' · pas assez d’historique pour comparer'}`;
     kp.replaceChildren();
@@ -223,7 +224,7 @@
     liste($('#t-apercus'), parCanal(d.cur, r => r.type === 'apercu', CANAUX), 'Aucun lien partagé pour l’instant.');
     liste($('#t-kit'), parCanal(d.cur, r => r.type === 'kit_action', KIT), 'Aucun bouton du kit utilisé pour l’instant.');
     liste($('#t-cal'), parCanal(d.cur, r => r.type === 'agenda', AGENDA), 'Aucun ajout au calendrier pour l’instant.');
-    $('#t-nl').textContent = d.inscrits != null ? `Lettre : ${fr(d.inscrits)} inscrit${d.inscrits > 1 ? 's' : ''} au total, ${fr(S('lettre'))} sur la période.` : `Lettre : ${fr(S('lettre'))} nouvel${S('lettre') > 1 ? 's' : ''} inscrit${S('lettre') > 1 ? 's' : ''} sur la période.`;
+    $('#t-nl').textContent = d.inscrits != null ? `Lettre : ${fr(d.inscrits)} inscrit${d.inscrits > 1 ? 's' : ''} au total, ${fr(S('lettre'))} sur la période.` : `Lettre : ${fr(S('lettre'))} nouve${S('lettre') > 1 ? 'aux' : 'l'} inscrit${S('lettre') > 1 ? 's' : ''} sur la période.`;
     tableEv(); jamaisOuverts(); tableJours();
   }
 
@@ -235,6 +236,7 @@
     return Object.values(m).map(o => ({ ...o, e: titreEv(o.id), venir: L.venir(o.id) }));
   }
   function tableEv() {
+    if (!dCour) return;
     const t = $('#t-ev'); t.replaceChildren();
     const norm = s => nettoie(s);
     let rows = parEvenement().filter(o => !qEv || norm([o.e && o.e.titre, o.e && o.e.orga, o.e && o.e.commune].join(' ')).includes(norm(qEv)));
@@ -257,6 +259,7 @@
   $('#t-more').addEventListener('click', () => { toutEv = !toutEv; tableEv(); });
   $('#t-q').addEventListener('input', e => { qEv = e.target.value.trim(); tableEv(); });
   function jamaisOuverts() {
+    if (!dCour) return;
     const vus = new Set(dCour.cur.filter(r => r.type === 'fiche').map(r => r.id));
     const l = L.ov.events.filter(e => L.cle(e) === 'enligne' && !vus.has(e.id));
     $('#t-zero-n').textContent = `${l.length} sur ${L.ov.events.filter(e => L.cle(e) === 'enligne').length}`;
