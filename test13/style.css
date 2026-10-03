@@ -1692,3 +1692,12 @@ main { padding-top: clamp(10px, 4vw, 64px); }
 /* ════ v78 : correctifs ════ */
 .hero { touch-action: pan-y; } /* le glissement horizontal change d'événement, le défilement vertical reste libre */
 .ev:has(.ev-media.none) { grid-template-columns: 1fr; } /* fiche sans affiche : le texte prend toute la largeur */
+
+/* ════ v80 : défilement rapide — les rangées de thèmes ne retiennent plus la molette ════ */
+.track { overflow-y: hidden; } /* la rangée ne défile qu'horizontalement : la molette verticale passe toujours à la page */
+.row-sec .track, .hero-cards { overscroll-behavior-x: contain; overscroll-behavior-y: auto; }
+@media (min-width: 901px) {
+  html.rv-on:not(.still) .rv:not(.in) { pointer-events: none; } /* pas de survol sur une section encore en train d'apparaître */
+  html.rv-on:not(.still) .rv-zoom:not(.in) .poster-img img { transition: none; }
+}
+.row-sec.open .track { overflow: visible; }
