@@ -988,10 +988,12 @@
   function renderAgenda() {
     const root = $('#ag-list'); if (!root || !Array.isArray(UP)) return;
     const rng = agRange(AG.when), t = ymd(new Date());
-    const dated = [], reg = [];
-    UP.forEach(e => { if (agMatch(e, rng)) (evStart(e) ? dated : reg).push(e); });
+    // Trois familles : les sorties ponctuelles (jour par jour), puis ce qui dure (expos, festivals de plusieurs jours), puis les rendez-vous qui reviennent
+    const dated = [], multi = [], reg = [];
+    UP.forEach(e => { if (!agMatch(e, rng)) return; (isRec(e) || !evStart(e) ? reg : evEnd(e) > evStart(e) ? multi : dated).push(e); });
     const k = e => { const s = evStart(e); return s < t ? t : s; };
     dated.sort((a, b) => k(a).localeCompare(k(b)) || (parseInt(a.Heure, 10) || 0) - (parseInt(b.Heure, 10) || 0) || String(a.Titre).localeCompare(String(b.Titre), 'fr'));
+    multi.sort((a, b) => evEnd(a).localeCompare(evEnd(b)) || String(a.Titre).localeCompare(String(b.Titre), 'fr'));
     reg.sort((a, b) => String(a.Titre).localeCompare(String(b.Titre), 'fr'));
     root.replaceChildren();
     const section = (heading, list) => {
@@ -1004,8 +1006,9 @@
       if (g === t) hd = 'Aujourd’hui · ' + hd; else if (g === addDays(t, 1)) hd = 'Demain · ' + hd;
       section(hd, list);
     });
+    if (multi.length) section('Sur plusieurs jours', multi);
     if (reg.length) section('Rendez-vous réguliers', reg);
-    const n = dated.length + reg.length;
+    const n = dated.length + multi.length + reg.length;
     if (!n) {
       const p = el('p', 'ag-empty', 'Rien ne correspond à ces filtres pour le moment. '); const r = el('button', 'ag-reset', 'Tout effacer'); r.type = 'button';
       r.addEventListener('click', () => $('#ag-reset').click()); p.appendChild(r); root.appendChild(p);
