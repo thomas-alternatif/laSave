@@ -1814,3 +1814,16 @@ html.still .menu-back, html.still .menu-nav a { transition: none; }
 .hpoll:hover, .hpoll:focus-visible { background: #3f73f0; border: 0; outline: 2px solid #fff; outline-offset: 2px; }
 .hpoll-m { color: rgba(255,255,255,.8); }
 .hpoll-go { color: #fff; }
+
+/* v93 · cartes sondages façon bento : bleu laSave, texte noir, gros arrondis */
+.hpolls-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: clamp(10px, 1.2vw, 16px); max-width: 1100px; padding: 0 var(--pad, 20px); margin-inline: auto; }
+.hpoll { max-width: none; width: 100%; background: #5C96AB; color: #0a0a0a; border: 0; border-radius: calc(var(--rad, 28px) - 8px); padding: clamp(18px, 2vw, 26px) clamp(20px, 2.2vw, 30px); min-height: 104px; align-items: flex-end; transition: transform .25s, background .2s; }
+.hpoll:hover, .hpoll:focus-visible { background: #6ba5ba; outline: 0; transform: translateY(-3px); border: 0; }
+.hpoll:focus-visible { box-shadow: 0 0 0 3px var(--or); }
+.hpoll-t { font: 800 clamp(20px, 2vw, 26px)/1.1 var(--display); font-stretch: 85%; white-space: normal; overflow: visible; text-wrap: balance; }
+.hpoll-m { color: #0a0a0a; opacity: .7; font-weight: 500; }
+.hpoll-go { color: #0a0a0a; background: #0a0a0a; color: #fff; padding: 8px 14px; border-radius: 99px; align-self: flex-end; }
+.hpolls { padding-inline: 0; }
+/* v94 · la section sondages n'a pas de panneau noir */
+#home-polls.hpolls { background: none !important; box-shadow: none !important; border: 0 !important; border-radius: 0 !important; margin-inline: var(--side, 0) !important; padding-block: 20px 0 !important; }
+#home-polls .kick { color: #fff; }
