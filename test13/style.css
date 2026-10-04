@@ -1806,3 +1806,11 @@ html.still .menu-back, html.still .menu-nav a { transition: none; }
 .hpoll-t { font-size: 16px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .hpoll-m { font-size: 13px; color: var(--texte-2); }
 .hpoll-go { flex: none; font-size: 13px; font-weight: 700; color: var(--or-txt, #d9bf86); }
+
+/* v92 · cartes sondages : bleues, côte à côte, sans fond */
+.hpolls { background: none; border: 0; }
+.hpolls-list { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; max-width: 1000px; }
+.hpoll { width: auto; flex: 1 1 280px; max-width: 480px; background: #2f63e0; border: 0; color: #fff; }
+.hpoll:hover, .hpoll:focus-visible { background: #3f73f0; border: 0; outline: 2px solid #fff; outline-offset: 2px; }
+.hpoll-m { color: rgba(255,255,255,.8); }
+.hpoll-go { color: #fff; }
