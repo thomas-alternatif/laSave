@@ -1832,3 +1832,7 @@ html.still .menu-back, html.still .menu-nav a { transition: none; }
 #view-home { --gap-sec: clamp(44px, 6.5svh, 68px); }
 #view-home #rendez-vous, #view-home #rows .row-sec, #view-home #rows .row-sec:last-child, #view-home #organisateurs, #view-home .bento, #view-home > section.avis-line { margin-bottom: var(--gap-sec); }
 #home-polls.hpolls { margin-bottom: var(--gap-sec) !important; padding-block: 0 !important; }
+
+/* v96 · un seul écart entre toutes les sections de l'accueil */
+#view-home { --gap-sec: clamp(64px, 9svh, 92px); }
+#view-home > section.avis-line { margin-bottom: var(--gap-sec); }
