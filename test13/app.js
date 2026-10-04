@@ -1100,6 +1100,7 @@
     });
     $('#poll-empty').hidden = !!list.length;
   }
+  let pollTok = 0;
   function openPoll(e, from) {
     const d = $('#pollsheet'), link = pollLink(e), google = /^https:\/\/(forms\.gle\/|docs\.google\.com\/forms\/)/.test(link);
     $('#poll-org').textContent = orgName(e.Organisation) || e.Commune || 'Sondage';
@@ -1116,10 +1117,11 @@
     $('#poll-acts').hidden = !hasLink;
     if (google) {
       frame.appendChild(el('p', 'poll-loading', 'Chargement du questionnaire…'));
+      const tok = ++pollTok;
       (async () => {
         let embed = embedOf(link);
         if (!embed && /^https:\/\/forms\.gle\//.test(link)) { try { embed = (await api('/forms/resolve?u=' + encodeURIComponent(link))).embed || ''; } catch (_) { embed = ''; } }
-        if (!$('#pollsheet').hidden && ext.href === link) {
+        if (pollTok === tok) {
           if (!embed) { frame.replaceChildren(); help.textContent = 'Ce questionnaire ne peut pas s’afficher ici.'; note.textContent = 'Utilisez le lien : vos réponses arriveront quand même à l’organisateur.'; return; }
           const f = el('iframe'); f.src = embed; f.title = 'Questionnaire : ' + (e.Titre || 'sondage'); f.referrerPolicy = 'strict-origin-when-cross-origin';
           f.setAttribute('sandbox', 'allow-scripts allow-forms allow-same-origin allow-popups allow-popups-to-escape-sandbox');
