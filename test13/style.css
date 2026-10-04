@@ -1836,3 +1836,7 @@ html.still .menu-back, html.still .menu-nav a { transition: none; }
 /* v96 · un seul écart entre toutes les sections de l'accueil */
 #view-home { --gap-sec: clamp(64px, 9svh, 92px); }
 #view-home > section.avis-line { margin-bottom: var(--gap-sec); }
+
+/* v97 · formulaire Google en mode sombre (Google n'en propose pas : on inverse les couleurs) */
+.poll-frame { background: #141414; border-radius: 12px; overflow: hidden; }
+.poll-frame iframe { filter: invert(.92) hue-rotate(180deg) saturate(.9); color-scheme: dark; background: #fff; }
