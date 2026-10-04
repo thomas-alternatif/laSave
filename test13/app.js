@@ -644,7 +644,33 @@
 
   /* ── Page « Partager » ── */
   function setupForm() {
-    const dl = $('#communes-list'); COMMUNES.forEach(c => { const o = el('option'); o.value = c; dl.appendChild(o); });
+    // Choix de la commune : recherche tolérante (tirets, accents, « st » pour « saint »), la commune de la mairie en premier
+    {
+      const inp = $('#f-commune'), ul = $('#communes-list'); let act = -1, shown = [];
+      const key = s => norm(s).replace(/\bst\b/g, 'saint').replace(/\bste\b/g, 'sainte');
+      const HOME = 'Saint-Paul-sur-Save';
+      const close = () => { ul.hidden = true; inp.setAttribute('aria-expanded', 'false'); act = -1; };
+      const pick = c => { inp.value = c; close(); inp.dispatchEvent(new Event('input', { bubbles: true })); };
+      const paint = () => { [...ul.children].forEach((li, i) => { li.classList.toggle('on', i === act); li.setAttribute('aria-selected', String(i === act)); }); };
+      const open = () => {
+        const q = key(inp.value), ws = q.split(' ').filter(Boolean);
+        shown = COMMUNES.filter(c => { const k = key(c); return ws.every(w => k.includes(w)); })
+          .sort((a, b) => (key(b).startsWith(q) - key(a).startsWith(q)) || (b === HOME) - (a === HOME) || a.localeCompare(b, 'fr'));
+        if (!q) shown.sort((a, b) => (b === HOME) - (a === HOME) || a.localeCompare(b, 'fr'));
+        ul.replaceChildren(...shown.map((c, i) => { const li = el('li', '', c); li.setAttribute('role', 'option'); li.addEventListener('mousedown', ev => { ev.preventDefault(); pick(c); }); return li; }));
+        ul.hidden = !shown.length; inp.setAttribute('aria-expanded', String(!!shown.length)); act = -1;
+      };
+      inp.addEventListener('input', open); inp.addEventListener('focus', open);
+      inp.addEventListener('blur', () => { close(); const k = key(inp.value); const m = COMMUNES.find(c => key(c) === k); if (m) inp.value = m; });
+      inp.addEventListener('keydown', ev => {
+        if (ul.hidden && ev.key === 'ArrowDown') { open(); return; }
+        if (ul.hidden) return;
+        if (ev.key === 'ArrowDown') { ev.preventDefault(); act = (act + 1) % shown.length; paint(); }
+        else if (ev.key === 'ArrowUp') { ev.preventDefault(); act = (act - 1 + shown.length) % shown.length; paint(); }
+        else if (ev.key === 'Enter' && act >= 0) { ev.preventDefault(); pick(shown[act]); }
+        else if (ev.key === 'Escape') { close(); }
+      });
+    }
     // Code organisateur
     const say = (node, txt, kind) => { node.textContent = txt || ''; node.className = 'form-msg' + (kind ? ' ' + kind : ''); };
     let memberCode = '';
