@@ -17,7 +17,7 @@
   const CATS = {
     'Concert': ['#FFA823', '/images/cat-concert.webp'], 'Festival': ['#FFA823', '/images/cat-festival.webp'], 'Spectacle': ['#FFA823', '/images/cat-festival.webp'],
     'Guinguette': ['#C8A96E', '/images/cat-guinguette.webp'], 'Fête & Célébration': ['#E4572E', '/images/cat-fete.webp'], 'Marché': ['#C8A96E', '/images/cat-marche.webp'],
-    'Exposition': ['#C955E0', null], 'Conférence / Atelier': ['#C955E0', null], 'Sport / Loisir': ['#5C96AB', '/images/cat-sport.webp'],
+    'Exposition': ['#C955E0', null], 'Sondage': ['#5C96AB', null], 'Conférence / Atelier': ['#C955E0', null], 'Sport / Loisir': ['#5C96AB', '/images/cat-sport.webp'],
   };
   const catOf = e => CATS[e['Catégorie']] || ['#9C988F', null];
   const RUBRIQUES = [
@@ -301,11 +301,20 @@
       b.addEventListener('click', () => openEvent(e));
       box.appendChild(b);
     });
+    const pb = $('#pro-polls'); pb.replaceChildren();
+    const pm = pollsOf(o); $('#pro-psub').hidden = !pm.length;
+    pm.slice(0, 5).forEach(e => {
+      const b = el('button', 'pro-ev pro-poll'); b.type = 'button';
+      const th = el('span', 'pro-ev-img poll-ico'); th.setAttribute('aria-hidden', 'true'); th.innerHTML = '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 20V10M12 20V4M19 20v-7"/></svg>'; b.appendChild(th);
+      const t = el('span', 'pro-ev-t'); t.appendChild(el('small', null, pollWhen(e) || 'Sondage')); t.appendChild(tel('b', null, e.Titre || 'Sondage')); b.appendChild(t);
+      b.addEventListener('click', () => openPoll(e, b));
+      pb.appendChild(b);
+    });
     const d = $('#profile'), card = d.querySelector('.pro');
     const game = !motion.still && !reduce;
     d.classList.toggle('game', game);
     [...card.children].filter(n => !n.classList.contains('x')).forEach((n, i) => n.style.setProperty('--d', (0.42 + i * 0.07).toFixed(2) + 's'));
-    [...ul.children, ...box.children].forEach((n, i) => n.style.setProperty('--d', (0.62 + i * 0.05).toFixed(2) + 's'));
+    [...ul.children, ...box.children, ...pb.children].forEach((n, i) => n.style.setProperty('--d', (0.62 + i * 0.05).toFixed(2) + 's'));
     openDialog(d);
     if (game) {
       const r = card.getBoundingClientRect();
@@ -795,6 +804,7 @@
       }
       if (k === 1) {
         const bil = $('#f-billet').value.trim();
+        if ($('#f-cat').value === 'Sondage' && !bil) { err('Ajoutez le lien du questionnaire Google Forms.', ['#f-billet']); return false; }
         if (bil && !/^https:\/\/[^\s]+\.[^\s]+/.test(bil)) { err('Le lien de billetterie doit commencer par https://', ['#f-billet']); return false; }
       }
       err(''); return true;
@@ -810,6 +820,20 @@
       $('#form-err').textContent = txt || '';
       if (ids[0]) $(ids[0]).focus();
     };
+    // Catégorie « Sondage » : le formulaire se simplifie (titre, lien du questionnaire, date limite)
+    {
+      const catSel = $('#f-cat'), lab = id => form.querySelector(`label[for="${id}"]`);
+      const base = { t: lab('f-titre').textContent, b: lab('f-billet').innerHTML, f: lab('f-date-fin').textContent, tp: $('#f-titre').placeholder, bp: $('#f-billet').placeholder, dp: $('#f-desc').placeholder };
+      const pollMode = () => {
+        const on = catSel.value === 'Sondage';
+        form.classList.toggle('is-poll', on);
+        lab('f-titre').textContent = on ? 'Titre du sondage *' : base.t; $('#f-titre').placeholder = on ? 'Quelles dates pour le stage de dessin ?' : base.tp;
+        lab('f-billet').innerHTML = on ? 'Lien du questionnaire Google Forms *' : base.b; $('#f-billet').placeholder = on ? 'https://forms.gle/…' : base.bp;
+        lab('f-date-fin').textContent = on ? 'Répondre avant le' : base.f;
+        $('#f-desc').placeholder = on ? 'Dites en deux lignes pourquoi vous posez ces questions…' : base.dp;
+      };
+      catSel.addEventListener('change', pollMode);
+    }
     wizGo(0, false);
 
     form.addEventListener('input', ev => { if (ev.target.hasAttribute('aria-invalid')) ev.target.removeAttribute('aria-invalid'); });
@@ -819,18 +843,20 @@
       const titre = $('#f-titre').value.trim(), cat = $('#f-cat').value, commune = $('#f-commune').value.trim();
       const miss = [!titre && '#f-titre', !cat && '#f-cat', !commune && '#f-commune'].filter(Boolean);
       if (miss.length) return err('Il manque ' + miss.map(i => ({ '#f-titre': 'le nom de l’événement', '#f-cat': 'la catégorie', '#f-commune': 'la commune' })[i]).join(', ') + '.', miss);
-      const d1 = $('#f-date').value, d2 = $('#f-date-fin').value;
+      const poll = cat === 'Sondage';
+      const d1 = poll ? '' : $('#f-date').value, d2 = $('#f-date-fin').value;
       if (d1 && d2 && d2 < d1) return err('La date de fin est avant la date de début.', ['#f-date-fin']);
       if (!$('#f-consent').checked) return err('Cochez la case d’accord pour que la mairie puisse publier votre événement.', ['#f-consent']);
       if (uploading) return err('L’affiche est encore en cours d’envoi, patientez une seconde.');
       err('');
       const fields = { 'Titre': titre, 'Catégorie': cat, 'Commune': commune };
       const put = (k, id) => { const v = $(id).value.trim(); if (v) fields[k] = v; };
-      put('Date', '#f-date'); put('Date de fin', '#f-date-fin'); put('Heure', '#f-heure'); put('Lieu', '#f-lieu');
-      put('Description', '#f-desc'); put('Tarif', '#f-tarif'); put('Organisation', '#f-org');
+      if (!poll) { put('Date', '#f-date'); put('Heure', '#f-heure'); put('Lieu', '#f-lieu'); } put('Date de fin', '#f-date-fin');
+      put('Description', '#f-desc'); if (!poll) put('Tarif', '#f-tarif'); put('Organisation', '#f-org');
       const bil = $('#f-billet').value.trim();
+      if (poll && !bil) return err('Ajoutez le lien du questionnaire Google Forms.', ['#f-billet']);
       if (bil) { if (!/^https:\/\/[^\s]+\.[^\s]+/.test(bil)) return err('Le lien de billetterie doit commencer par https://', ['#f-billet']); fields['Billetterie'] = bil; }
-      if ($('#f-rec').value !== 'Aucune') { fields['Récurrence'] = $('#f-rec').value; put('Jour/Période', '#f-periode'); }
+      if (!poll && $('#f-rec').value !== 'Aucune') { fields['Récurrence'] = $('#f-rec').value; put('Jour/Période', '#f-periode'); }
       const ig = $('#f-ig').value.trim().replace(/^https?:\/\/(www\.)?instagram\.com\//, '').replace(/\/?$/, '').replace(/^@/, '');
       const fb = $('#f-fb').value.trim().replace(/^https?:\/\/(www\.)?(facebook|fb)\.com\//, '').replace(/\/?(\?.*)?$/, '').replace(/^@/, '');
       let site = $('#f-site').value.trim(); if (site && !/^https?:/.test(site)) site = 'https://' + site;
@@ -1046,6 +1072,59 @@
     const l = $('#ag-lede'); if (l) l.textContent = `${UP.length} événement${UP.length > 1 ? 's' : ''} à venir dans la vallée de la Save, jour après jour.`;
   }
 
+  /* ── Sondages : questionnaires Google Forms affichés dans le site ── */
+  let POLLS = [];
+  const isPoll = e => e['Catégorie'] === 'Sondage';
+  const pollEnd = e => String(e['Date de fin'] || e.Date || '').slice(0, 10);
+  const pollActive = e => { const d = pollEnd(e); return !d || new Date(d + 'T23:59:59') >= new Date(); };
+  const pollsOf = o => POLLS.filter(e => { const n = norm(orgName(e.Organisation)); return n && (n === norm(o.Nom) || n.includes(norm(o.Nom))); });
+  const pollWhen = e => { const d = pollEnd(e); return d ? 'Jusqu’au ' + fmt(d + 'T12:00:00', { day: 'numeric', month: 'long' }) : ''; };
+  const pollLink = e => String(e.Billetterie || '').trim() || ((String(e.Description || '').match(/https:\/\/(?:forms\.gle|docs\.google\.com\/forms)\/[^\s)]+/) || [''])[0]);
+  const pollText = e => String(e.Description || '').replace(/https?:\/\/\S+/g, '').replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
+  const embedOf = u => { try { const t = new URL(u); if (t.protocol !== 'https:' || t.hostname !== 'docs.google.com' || !/^\/forms\/d\/e\/[^/]+\/viewform\/?$/.test(t.pathname)) return ''; t.searchParams.set('embedded', 'true'); return t.href; } catch (_) { return ''; } };
+  function buildPolls() {
+    const root = $('#poll-list'); if (!root) return;
+    const list = POLLS.slice().sort((a, b) => (pollEnd(a) || '9999').localeCompare(pollEnd(b) || '9999'));
+    root.replaceChildren();
+    list.forEach(e => {
+      const b = el('button', 'poll-item'); b.type = 'button';
+      const m = el('span', 'poll-item-main');
+      const when = pollWhen(e); if (when) m.appendChild(el('span', 'poll-item-when', when));
+      m.appendChild(tel('b', 'poll-item-t', e.Titre || 'Sondage'));
+      const meta = [orgName(e.Organisation), e.Commune].filter(Boolean).join(' · '); if (meta) m.appendChild(el('span', 'poll-item-meta', meta));
+      const ex = pollText(e).replace(/\s+/g, ' ').slice(0, 170); if (ex) m.appendChild(el('span', 'poll-item-desc', ex + (pollText(e).length > 170 ? '…' : '')));
+      b.appendChild(m);
+      b.appendChild(el('span', 'poll-item-go', 'Répondre'));
+      b.addEventListener('click', () => openPoll(e, b));
+      root.appendChild(b);
+    });
+    $('#poll-empty').hidden = !!list.length;
+  }
+  function openPoll(e, from) {
+    const d = $('#pollsheet'), link = pollLink(e), google = /^https:\/\/(forms\.gle\/|docs\.google\.com\/forms\/)/.test(link);
+    $('#poll-org').textContent = orgName(e.Organisation) || e.Commune || 'Sondage';
+    title($('#poll-title'), e.Titre || 'Sondage');
+    $('#poll-when').textContent = pollWhen(e); $('#poll-when').hidden = !pollWhen(e);
+    const desc = pollText(e); $('#poll-desc').textContent = desc; $('#poll-desc').hidden = !desc;
+    const go = $('#poll-go'), ext = $('#poll-ext'), frame = $('#poll-frame'), note = $('#poll-note'), acts = $('#poll-acts');
+    frame.replaceChildren(); acts.hidden = false; note.hidden = !google;
+    const gt = go.querySelector('.glow-t'); gt.textContent = 'Répondre ici'; go.disabled = false;
+    if (/^https:\/\//.test(link)) { ext.href = link; ext.hidden = false; } else { ext.removeAttribute('href'); ext.hidden = true; }
+    ext.firstChild.textContent = google ? 'Ouvrir dans Google Forms' : 'Répondre sur le site de l’organisateur';
+    go.hidden = !google;
+    go.onclick = async () => {
+      go.disabled = true; gt.textContent = 'Chargement…';
+      let embed = embedOf(link);
+      if (!embed && /^https:\/\/forms\.gle\//.test(link)) { try { embed = (await api('/forms/resolve?u=' + encodeURIComponent(link))).embed || ''; } catch (_) { embed = ''; } }
+      if (!embed) { go.disabled = false; gt.textContent = 'Répondre ici'; note.textContent = 'Ce questionnaire ne peut pas s’afficher ici : utilisez « Ouvrir dans Google Forms ». Vos réponses arriveront quand même à l’organisateur.'; return; }
+      const f = el('iframe'); f.src = embed; f.title = 'Questionnaire : ' + (e.Titre || 'sondage'); f.loading = 'lazy'; f.referrerPolicy = 'strict-origin-when-cross-origin';
+      f.setAttribute('sandbox', 'allow-scripts allow-forms allow-same-origin allow-popups allow-popups-to-escape-sandbox');
+      frame.replaceChildren(f); acts.hidden = true;
+      requestAnimationFrame(() => frame.scrollIntoView({ block: 'start', behavior: reduce ? 'auto' : 'smooth' }));
+    };
+    openDialog(d);
+  }
+
   /* ── Navigation entre les pages ── */
   const LEGAL = { mentions: 'Mentions légales', confidentialite: 'Confidentialité', cookies: 'Cookies', accessibilite: 'Accessibilité' };
   const HOME_ANCHORS = ['rendez-vous', 'envies', 'organisateurs', 'lettre', 'top', 'contenu'];
@@ -1055,6 +1134,7 @@
     let view = 'home';
     if (h === 'partager' || h === 'proposer') view = 'partager';
     else if (h === 'agenda') view = 'agenda';
+    else if (h === 'sondages') view = 'sondages';
     else if (LEGAL[h]) view = 'legal';
     const was = $$('.view').find(v => !v.hidden);
     $$('.view').forEach(v => { v.hidden = v.id !== 'view-' + view; });
@@ -1066,6 +1146,7 @@
       $('#legal-title').textContent = LEGAL[h];
       document.title = `${LEGAL[h]} · laSave`;
     } else if (view === 'agenda') document.title = 'Tout l’agenda · laSave';
+    else if (view === 'sondages') document.title = 'Les sondages · laSave';
     else if (view === 'partager') document.title = 'Proposer un événement · laSave';
     else document.title = 'laSave · Agenda de la Save';
     const changed = was && was.id !== 'view-' + view;
@@ -1073,7 +1154,9 @@
     if (view === 'home') {
       flowRender(); fitAll();
       const m = h.match(/^event-(rec\w+)$/);
-      if (m) { const e = ALL.find(x => x.id === m[1]); if (e) openEvent(e); else pendingEvent = m[1]; }
+      const pl = m && POLLS.find(x => x.id === m[1]);
+      if (pl) { location.replace('#sondages'); setTimeout(() => openPoll(pl), 80); }
+      else if (m) { const e = ALL.find(x => x.id === m[1]); if (e) openEvent(e); else pendingEvent = m[1]; }
       else if (h && HOME_ANCHORS.includes(h)) { const t = document.getElementById(h); if (t) requestAnimationFrame(() => t.scrollIntoView({ behavior: changed || reduce ? 'auto' : 'smooth' })); }
       else if (changed || !h) window.scrollTo({ top: 0, behavior: 'instant' });
     } else {
@@ -1182,6 +1265,7 @@
     let loadErr = false;
     try { ALL = await api('/events'); } catch (e) { console.warn('events', e); loadErr = true; }
     if (!Array.isArray(ALL)) { ALL = []; loadErr = true; }
+    POLLS = ALL.filter(e => isPoll(e) && pollActive(e)); ALL = ALL.filter(e => !isPoll(e)); // les sondages ont leur page : ils n'apparaissent pas dans l'agenda
     // « Agenda mis à jour le … » : signe de fraîcheur dans le pied de page
     api('/health').then(d => {
       const t = d && d.copie && new Date(d.copie), n = $('#foot-maj');
@@ -1197,7 +1281,7 @@
     if (loadErr) { const st = $('#flow-stage'); st.textContent = ''; st.appendChild(el('p', 'empty', 'Impossible de charger l’agenda pour le moment. Vérifiez votre connexion puis rechargez la page.')); const fc = $('.flow-ctrl'); if (fc) fc.hidden = true; }
     buildRows(UP);
     buildOrgs(ORGAS);
-    agSetup(); renderAgenda();
+    agSetup(); renderAgenda(); buildPolls();
     // vrais chiffres dans les titres de section
     { const n = UP.length, o = (ORGAS || []).length, ka = $('#kick-agenda'), ko = $('#kick-orgs');
       if (ka && n >= 3) ka.textContent = `${n} événements à venir dans la vallée`;
@@ -1205,6 +1289,7 @@
     fitAll();
     setupReveal();
     endIntro();
+    if (pendingEvent && POLLS.some(x => x.id === pendingEvent)) { const pl = POLLS.find(x => x.id === pendingEvent); pendingEvent = null; location.replace('#sondages'); setTimeout(() => openPoll(pl), 80); }
     if (pendingEvent) { const e = ALL.find(x => x.id === pendingEvent); pendingEvent = null; if (e && !$('#view-home').hidden) openEvent(e); }
   })();
 })();

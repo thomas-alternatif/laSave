@@ -1723,3 +1723,37 @@ main { padding-top: clamp(10px, 4vw, 64px); }
 .orgs-ctrl #orgs-prev:hover { transform: translateX(-3px); }
 .orgs-ctrl #orgs-next:hover { transform: translateX(3px); }
 .orgs-ctrl .circle:focus-visible { outline: 2px solid var(--or, #c8a96e); outline-offset: 2px; border-radius: 50%; }
+
+/* ════ v87 : page « Sondages » (questionnaires Google Forms intégrés) ════ */
+.poll-list { display: grid; gap: 12px; margin-top: 8px; }
+.poll-item { display: flex; align-items: center; gap: 22px; width: 100%; padding: 22px 24px; text-align: left; color: inherit; font: inherit; cursor: pointer; background: rgba(12,12,12,.5); border: 1px solid rgba(255,255,255,.12); border-radius: 18px; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); transition: border-color .25s, background .25s, transform .25s; }
+.poll-item:hover { border-color: rgba(200,169,110,.6); background: rgba(20,18,14,.62); transform: translateY(-2px); }
+.poll-item:focus-visible { outline: 2px solid var(--or, #c8a96e); outline-offset: 3px; }
+.poll-item-main { flex: 1; min-width: 0; display: grid; gap: 6px; }
+.poll-item-when { font-size: 11px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--or-txt, #d9bf86); }
+.poll-item-t { font: 800 clamp(22px, 3vw, 30px)/1.02 var(--display); font-stretch: 75%; text-transform: uppercase; text-wrap: balance; }
+.poll-item-meta { font-size: 13px; color: var(--texte-2); }
+.poll-item-desc { font-size: 14px; line-height: 1.55; color: rgba(255,255,255,.7); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.poll-item-go { flex: none; padding: 12px 20px; border-radius: 999px; background: var(--or, #c8a96e); color: #0a0a0a; font-weight: 700; font-size: 14px; }
+.poll-empty, .poll-more { margin-top: 28px; color: var(--texte-2); font-size: 15px; }
+.poll-more a { color: var(--or-txt, #d9bf86); }
+@media (max-width: 600px) { .poll-item { flex-direction: column; align-items: stretch; gap: 14px; padding: 20px; } .poll-item-go { text-align: center; } }
+
+.pollbox { position: relative; width: min(760px, 100%); max-height: calc(100svh - 32px); overflow: auto; overscroll-behavior: contain; background: var(--noir-2); border-radius: 22px; padding: 52px 40px 36px; display: grid; gap: 16px; align-content: start; }
+.poll-head { display: grid; gap: 8px; }
+.poll-title { font: 800 clamp(30px, 4.4vw, 46px)/.95 var(--display); font-stretch: 72%; text-transform: uppercase; text-wrap: balance; }
+.poll-when { color: var(--or-txt, #d9bf86); font-weight: 600; font-size: 14px; }
+.poll-desc { white-space: pre-line; font-size: 15px; line-height: 1.65; color: #d0cec8; }
+.poll-acts { display: flex; align-items: center; flex-wrap: wrap; gap: 14px 24px; }
+.poll-ext { display: inline-flex; align-items: center; gap: 6px; color: var(--texte-2); font-size: 14px; text-underline-offset: 4px; }
+.poll-ext:hover { color: var(--texte); }
+.poll-note { font-size: 12.5px; line-height: 1.5; color: var(--texte-2); }
+.poll-frame:empty { display: none; }
+.poll-frame iframe { display: block; width: 100%; height: min(72svh, 880px); min-height: 480px; border: 0; border-radius: 14px; background: #fff; }
+@media (max-width: 600px) { .pollbox { padding: 52px 18px 24px; } }
+
+.pro-poll .poll-ico { display: grid; place-items: center; width: 56px; height: 56px; border-radius: 14px; background: rgba(92,150,171,.2); color: #8cc4d8; }
+
+/* formulaire : catégorie « Sondage » = pas de date de début, d'heure, de lieu, de tarif ni de récurrence */
+.ev-form.is-poll [data-ev] { display: none; }
+.ev-form.is-poll .grid-3 { grid-template-columns: 1fr; }
