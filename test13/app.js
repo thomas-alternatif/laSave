@@ -1102,6 +1102,7 @@
   }
   let pollTok = 0;
   function openPoll(e, from) {
+    pollTok++; // un chargement encore en cours pour un autre sondage ne doit pas s'afficher ici
     const d = $('#pollsheet'), link = pollLink(e), google = /^https:\/\/(forms\.gle\/|docs\.google\.com\/forms\/)/.test(link);
     $('#poll-org').textContent = orgName(e.Organisation) || e.Commune || 'Sondage';
     title($('#poll-title'), e.Titre || 'Sondage');
