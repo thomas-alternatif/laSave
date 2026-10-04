@@ -1080,7 +1080,7 @@
   const pollsOf = o => POLLS.filter(e => { const n = norm(orgName(e.Organisation)); return n && (n === norm(o.Nom) || n.includes(norm(o.Nom))); });
   const pollWhen = e => { const d = pollEnd(e); return d ? 'Jusqu’au ' + fmt(d + 'T12:00:00', { day: 'numeric', month: 'long' }) : ''; };
   const pollLink = e => String(e.Billetterie || '').trim() || ((String(e.Description || '').match(/https:\/\/(?:forms\.gle|docs\.google\.com\/forms)\/[^\s)]+/) || [''])[0]);
-  const pollText = e => String(e.Description || '').replace(/https?:\/\/\S+/g, '').replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
+  const pollText = e => String(e.Description || '').split('\n').map(l => { if (!/https?:\/\//.test(l)) return l; const r = l.replace(/https?:\/\/\S+/g, '').trim(); return /[:：]$/.test(r) ? null : r; }).filter(l => l !== null).join('\n').replace(/\n{3,}/g, '\n\n').trim();
   const embedOf = u => { try { const t = new URL(u); if (t.protocol !== 'https:' || t.hostname !== 'docs.google.com' || !/^\/forms\/d\/e\/[^/]+\/viewform\/?$/.test(t.pathname)) return ''; t.searchParams.set('embedded', 'true'); return t.href; } catch (_) { return ''; } };
   function buildPolls() {
     const root = $('#poll-list'); if (!root) return;
