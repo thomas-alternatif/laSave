@@ -1840,3 +1840,6 @@ html.still .menu-back, html.still .menu-nav a { transition: none; }
 /* v97 · formulaire Google en mode sombre (Google n'en propose pas : on inverse les couleurs) */
 .poll-frame { background: #141414; border-radius: 12px; overflow: hidden; }
 .poll-frame iframe { filter: invert(.92) hue-rotate(180deg) saturate(.9); color-scheme: dark; background: #fff; }
+
+/* v98 · tout en haut de l'accueil : pas de bande noire derrière la barre (elle réapparaît dès qu'on défile) */
+.top:not(.solid):not(.on-page) { background: none !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; box-shadow: none !important; border-color: transparent !important; }
