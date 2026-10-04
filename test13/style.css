@@ -1827,3 +1827,8 @@ html.still .menu-back, html.still .menu-nav a { transition: none; }
 /* v94 · la section sondages n'a pas de panneau noir */
 #home-polls.hpolls { background: none !important; box-shadow: none !important; border: 0 !important; border-radius: 0 !important; margin-inline: var(--side, 0) !important; padding-block: 20px 0 !important; }
 #home-polls .kick { color: #fff; }
+
+/* v95 · sections de l'accueil plus rapprochées (mais pas collées) */
+#view-home { --gap-sec: clamp(44px, 6.5svh, 68px); }
+#view-home #rendez-vous, #view-home #rows .row-sec, #view-home #rows .row-sec:last-child, #view-home #organisateurs, #view-home .bento, #view-home > section.avis-line { margin-bottom: var(--gap-sec); }
+#home-polls.hpolls { margin-bottom: var(--gap-sec) !important; padding-block: 0 !important; }
