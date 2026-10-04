@@ -13,7 +13,7 @@
   <link rel="icon" href="../favicon.ico" sizes="48x48" />
   <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
-  <link rel="stylesheet" href="style.css?v=88" />
+  <link rel="stylesheet" href="style.css?v=89" />
 </head>
 <body class="intro-on">
   <div class="backdrop" aria-hidden="true"><i></i><i></i></div>
@@ -25,17 +25,23 @@
 
   <header class="top" id="top">
     <a class="top-logo" href="#" data-route="home" aria-label="laSave, accueil"><img src="../test7/logo.png" alt="laSave" width="130" height="32" /></a>
-    <nav class="top-links" aria-label="Sections de l'agenda">
-      <a href="#rendez-vous" data-spy="rendez-vous">Agenda</a>
-      <a href="#envies" data-spy="envies">Thèmes</a>
-      <a href="#organisateurs" data-spy="organisateurs">Organisateurs</a>
-      <a href="#sondages" data-nav="sondages">Sondages</a>
-      <a href="#lettre" data-spy="lettre">Newsletter</a>
-    </nav>
     <div class="top-tools">
       <a class="top-cta glow dark sm" href="#partager" data-nav="partager"><span class="glow-t"><span class="lg-only">Proposer un événement</span><span class="sm-only">Proposer</span></span></a>
+      <button class="burger" id="burger" type="button" aria-expanded="false" aria-controls="menu" aria-label="Ouvrir le menu"><span></span><span></span><span></span></button>
     </div>
   </header>
+
+  <div class="menu" id="menu" hidden>
+    <div class="menu-back" data-menu-close></div>
+    <nav class="menu-nav" aria-label="Menu principal">
+      <a href="#rendez-vous" data-spy="rendez-vous"><span>Agenda</span></a>
+      <a href="#agenda" data-nav="agenda"><span>Tout l’agenda</span></a>
+      <a href="#envies" data-spy="envies"><span>Thèmes</span></a>
+      <a href="#organisateurs" data-spy="organisateurs"><span>Organisateurs</span></a>
+      <a href="#sondages" data-nav="sondages"><span>Sondages</span></a>
+      <a href="#lettre" data-spy="lettre"><span>Newsletter</span></a>
+    </nav>
+  </div>
 
   <main id="contenu" tabindex="-1">
     <!-- ════════ ACCUEIL ════════ -->
@@ -186,7 +192,6 @@
         <header class="page-head">
           <p class="kicker"><span class="kicker-line" aria-hidden="true"></span>Votre avis compte</p>
           <h1 class="page-title" id="poll-page-title">Les sondages</h1>
-          <p class="page-lede">Associations et mairie vous posent leurs questions. Répondez ici, sans quitter laSave : vos réponses arrivent directement chez celles et ceux qui organisent.</p>
         </header>
         <div id="poll-list" class="poll-list"></div>
         <p class="poll-empty" id="poll-empty" hidden>Aucun sondage en cours pour le moment. Passez nous voir bientôt !</p>
@@ -502,7 +507,7 @@
 
   <!-- ════════ AVIS ════════ -->
 
-  <script src="app.js?v=52" defer></script>
+  <script src="app.js?v=53" defer></script>
 <!-- Cloudflare Web Analytics (sans cookies) --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "75911b4b41574e2cafe93d48df5d8ae0"}'></script>
 <script src="visite.js?v=1" defer></script>
 </body>

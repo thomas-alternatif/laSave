@@ -1208,6 +1208,31 @@
   }
   setTimeout(endIntro, 4500); // au pire, on n'attend pas plus
 
+  /* ── Menu : trois traits en haut à droite, la liste complète s'ouvre en grand ── */
+  (function menu() {
+    const btn = $('#burger'), box = $('#menu'); if (!btn || !box) return;
+    const links = [...box.querySelectorAll('.menu-nav a')];
+    const setOpen = on => {
+      if (on === !box.hidden) return;
+      if (on && openDlg) closeDialog();
+      box.hidden = !on; document.body.classList.toggle('locked', on); document.body.classList.toggle('menu-open', on);
+      btn.setAttribute('aria-expanded', String(on)); btn.setAttribute('aria-label', on ? 'Fermer le menu' : 'Ouvrir le menu');
+      requestAnimationFrame(() => box.classList.toggle('in', on));
+      if (on) links[0].focus({ preventScroll: true }); else btn.focus({ preventScroll: true });
+    };
+    btn.addEventListener('click', () => setOpen(box.hidden));
+    box.addEventListener('click', ev => {
+      if (ev.target.closest('[data-menu-close]')) return setOpen(false);
+      const a = ev.target.closest('a'); if (!a) return;
+      const same = a.getAttribute('href') === location.hash; setOpen(false);
+      if (same) { const t = document.getElementById(a.getAttribute('href').slice(1)); if (t) t.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' }); }
+    });
+    document.addEventListener('keydown', ev => { if (ev.key === 'Escape' && !box.hidden) { ev.stopPropagation(); setOpen(false); } }, true);
+    window.addEventListener('hashchange', () => { if (!box.hidden) setOpen(false); });
+    // (re)ouverture d'une fiche : on referme le menu
+    window.addEventListener('resize', () => { if (!box.hidden && window.innerHeight < 300) setOpen(false); });
+  })();
+
   /* ── Barre du haut : la section visible est soulignée ── */
   (function spy() {
     const links = $$('[data-spy]'); if (!links.length || !('IntersectionObserver' in window)) return;
