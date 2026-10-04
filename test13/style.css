@@ -1794,3 +1794,15 @@ html.still .menu-back, html.still .menu-nav a { transition: none; }
 @media (prefers-reduced-motion: reduce) { .menu-back, .menu-nav a { transition: none; } }
 .menu-open .top { z-index: 30; }
 .menu-open .top.on-page, .menu-open .top.solid { background: transparent; backdrop-filter: none; -webkit-backdrop-filter: none; }
+
+/* v91 · sondages sur l'accueil : petites cartes rectangulaires */
+.hpolls[hidden] { display: none; }
+.hpolls { padding: clamp(36px, 5vw, 64px) var(--pad, 20px) 0; }
+.hpolls .kick { margin-bottom: 16px; }
+.hpolls-list { display: grid; gap: 10px; max-width: 760px; margin: 0 auto; }
+.hpoll { display: flex; align-items: center; justify-content: space-between; gap: 16px; width: 100%; text-align: left; font: inherit; color: inherit; cursor: pointer; background: rgba(255,255,255,.04); border: 1px solid var(--ligne); border-radius: 10px; padding: 14px 18px; transition: background .2s, border-color .2s; }
+.hpoll:hover, .hpoll:focus-visible { background: rgba(255,255,255,.08); border-color: var(--or, #c8a96e); }
+.hpoll-main { display: grid; gap: 3px; min-width: 0; }
+.hpoll-t { font-size: 16px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hpoll-m { font-size: 13px; color: var(--texte-2); }
+.hpoll-go { flex: none; font-size: 13px; font-weight: 700; color: var(--or-txt, #d9bf86); }

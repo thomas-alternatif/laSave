@@ -1099,6 +1099,20 @@
       root.appendChild(b);
     });
     $('#poll-empty').hidden = !!list.length;
+    const hs = $('#home-polls'), hl = $('#hpolls-list');
+    if (hs && hl) {
+      hl.replaceChildren();
+      list.forEach(e => {
+        const c = el('button', 'hpoll'); c.type = 'button';
+        const t = el('span', 'hpoll-main');
+        t.appendChild(tel('b', 'hpoll-t', e.Titre || 'Sondage'));
+        const meta = [orgName(e.Organisation), pollWhen(e)].filter(Boolean).join(' · '); if (meta) t.appendChild(el('span', 'hpoll-m', meta));
+        c.appendChild(t); c.appendChild(el('span', 'hpoll-go', 'Répondre →'));
+        c.addEventListener('click', () => openPoll(e, c));
+        hl.appendChild(c);
+      });
+      hs.hidden = !list.length;
+    }
   }
   let pollTok = 0;
   function openPoll(e, from) {
