@@ -1713,3 +1713,13 @@ main { padding-top: clamp(10px, 4vw, 64px); }
 
 /* ════ v83 : le village sous la date du rendez-vous du milieu ════ */
 .fd-txt .fd-lieu { color: var(--or-txt, #d9bf86); font-weight: 600; }
+
+/* ════ v84 : « Celles et ceux qui font vivre la Save » — barre de progression à la place des flèches ════ */
+.orgs-ctrl { width: min(360px, calc(100% - 2 * var(--pad, 20px))); margin: 22px auto 0; position: relative; z-index: 120; }
+.orgs-bar { position: relative; height: 30px; cursor: grab; touch-action: none; outline: none; }
+.orgs-bar::before { content: ''; position: absolute; left: 0; right: 0; top: 50%; height: 2px; margin-top: -1px; border-radius: 2px; background: rgba(255,255,255,.2); transition: height .25s, margin .25s; }
+.orgs-thumb { position: absolute; left: 0; top: 50%; width: 26%; height: 4px; margin-top: -2px; border-radius: 4px; background: var(--or, #c8a96e); box-shadow: 0 0 14px rgba(200,169,110,.55); transition: height .25s, margin .25s; }
+.orgs-bar:hover::before, .orgs-bar.grab::before { height: 4px; margin-top: -2px; }
+.orgs-bar:hover .orgs-thumb, .orgs-bar.grab .orgs-thumb { height: 8px; margin-top: -4px; }
+.orgs-bar.grab { cursor: grabbing; }
+.orgs-bar:focus-visible .orgs-thumb { outline: 2px solid #fff; outline-offset: 3px; }
