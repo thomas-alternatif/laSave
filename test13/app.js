@@ -554,7 +554,7 @@
       const ph = attUrl(o.Photo && o.Photo[0]);
       if (ph) { const i = img(ph); i.draggable = false; b.appendChild(i); } else { b.appendChild(el('span', 'org-ini', initials(o.Nom))); b.style.background = tintOf(o.Nom); }
       b.appendChild(el('span', 'org-name', o.Nom));
-      b.addEventListener('click', () => { const d = gapTo(slotOf(b)); if (Math.abs(d) < .5) openProfile(o._dup ? ORGAS.find(x => x.id === o.id) || o : o, b); else { vel = 0; goal = off + d; } });
+      b.addEventListener('click', () => openProfile(o._dup ? ORGAS.find(x => x.id === o.id) || o : o, b));
       row.appendChild(b); return b;
     };
     while (k < list.length) {
@@ -562,6 +562,7 @@
       else { slots.push([bubble(list[k])]); k++; }
     }
     const N = slots.length;
+    let orgsProgress = () => {};
     const erf = x => { const t = 1 / (1 + .3275911 * Math.abs(x)); const y = 1 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - .284496736) * t + .254829592) * t * Math.exp(-x * x); return x < 0 ? -y : y; };
     let off = 0, last = 0, hold = false, paused = motion.still, vel = 0, goal = null, drag = null, moved = false;
     const unit = () => row.clientWidth < 720 ? 100 : 150; // pixels pour passer d'une bulle à la suivante
@@ -606,7 +607,7 @@
       if (goal != null) { off += (goal - off) * Math.min(1, dt * .012); if (Math.abs(goal - off) < .002) { off = goal; goal = null; } }
       else if (!drag && Math.abs(vel) > 1e-5) { off += vel * dt; vel *= Math.pow(.93, dt / 16); }
       else if (!paused && !hold && !over && !drag && !openDlg) off += dt * 0.00028;
-      layout(dt);
+      layout(dt); orgsProgress();
       requestAnimationFrame(frame);
     }
     // Souris sur la ronde : elle s'arrête, pour viser tranquillement même les petites photos
@@ -634,15 +635,25 @@
       ev.preventDefault(); goal = null; vel = 0; off += d / unit();
     }, { passive: false });
     // Flèches discrètes
-    // Cliquer une bulle sur le côté la fait rouler jusqu'au centre ; cliquer celle du centre ouvre sa fiche
-    const slotOf = b => slots.findIndex(sl => sl.includes(b));
-    const gapTo = i => { let d = (((i - off) % N) + N) % N; if (d > N / 2) d -= N; return d; };
-    // Curseur « Glisser » sur ordinateur : une pastille dorée suit la souris au-dessus de la ronde
-    const cur = el('div', 'orgs-cur'); cur.setAttribute('aria-hidden', 'true'); document.body.appendChild(cur);
-    const curTxt = ev => { const b = ev.target.closest && ev.target.closest('.org'); return drag && moved ? 'Glisser' : !b ? 'Glisser' : Math.abs(gapTo(slotOf(b))) < .5 ? 'Ouvrir' : 'Voir'; };
-    if (hover) {
-      row.addEventListener('pointermove', ev => { if (ev.pointerType !== 'mouse') return; cur.textContent = curTxt(ev); cur.style.transform = `translate(${ev.clientX}px, ${ev.clientY}px) translate(-50%, -50%)`; cur.classList.add('on'); cur.classList.toggle('drag', !!(drag && moved)); });
-      row.addEventListener('pointerleave', () => cur.classList.remove('on'));
+    // Barre de progression : le trait doré suit la ronde ; on peut le saisir ou cliquer sur la barre pour aller ailleurs (flèches du clavier aussi)
+    {
+      const bar = $('#orgs-bar'), th = bar.querySelector('.orgs-thumb'); let scrub = false, shownP = -1;
+      const frac = () => ((off / N) % 1 + 1) % 1;
+      const to = x => { const r = bar.getBoundingClientRect(), tw = th.offsetWidth; const f = Math.max(0, Math.min(1, (x - r.left - tw / 2) / Math.max(1, r.width - tw))); let d = f * N - (((off % N) + N) % N); if (d > N / 2) d -= N; else if (d < -N / 2) d += N; vel = 0; goal = off + d; };
+      bar.addEventListener('pointerdown', ev => { scrub = true; bar.setPointerCapture(ev.pointerId); bar.classList.add('grab'); to(ev.clientX); });
+      bar.addEventListener('pointermove', ev => { if (scrub) to(ev.clientX); });
+      const end = () => { scrub = false; bar.classList.remove('grab'); };
+      bar.addEventListener('pointerup', end); bar.addEventListener('pointercancel', end);
+      bar.addEventListener('keydown', ev => {
+        const k = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[ev.key]; if (!k) return;
+        ev.preventDefault(); vel = 0; goal = Math.round(goal ?? off) + k;
+      });
+      bar.addEventListener('focus', () => { hold = true; }); bar.addEventListener('blur', () => { hold = false; });
+      orgsProgress = () => {
+        const p = frac(); if (Math.abs(p - shownP) < .0005) return; shownP = p;
+        th.style.left = (p * (bar.clientWidth - th.offsetWidth)).toFixed(1) + 'px';
+        bar.setAttribute('aria-valuenow', String(Math.round(p * 100)));
+      };
     }
     row.addEventListener('focusin', ev => { if (!keyFocus(ev.target)) return; hold = true; const i = slots.findIndex(sl => sl.includes(ev.target)); if (i >= 0) goal = i; });
     row.addEventListener('focusout', ev => { if (!row.contains(ev.relatedTarget)) hold = false; });
@@ -1151,7 +1162,7 @@
     $$('#rows .row-sec').forEach(sec => add(sec, [
       mark(sec.querySelector('.row-block'), 0, 'wipe'), mark(sec.querySelector('.row-title'), .28), mark(sec.querySelector('.stamp'), .6, 'pop'),
       ...[...sec.querySelectorAll('.track > *')].slice(0, 6).map((c, i) => mark(c, .4 + i * .09, 'zoom'))]));
-    add($('#organisateurs'), [mark($('#orgs-title'), 0), mark($('#orgs-row'), .2, 'zoom')]);
+    add($('#organisateurs'), [mark($('#orgs-title'), 0), mark($('#orgs-row'), .2, 'zoom'), mark($('.orgs-ctrl'), .5, 'fade')]);
     add($('.bento'), [...$$('.bento > .bx').map((b, i) => mark(b, i * .14, 'zoom')), mark($('.bx-head'), .4, 'wipe'), mark($('.bx-head .row-title'), .68), mark($('.bx-head .stamp'), .95, 'pop')]);
     add($('#avis-line'), [mark($('#avis-line'), 0, 'fade')]);
     add($('.foot'), [mark($('.foot'), 0, 'fade')]);
