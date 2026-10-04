@@ -1713,3 +1713,13 @@ main { padding-top: clamp(10px, 4vw, 64px); }
 
 /* ════ v83 : le village sous la date du rendez-vous du milieu ════ */
 .fd-txt .fd-lieu { color: var(--or-txt, #d9bf86); font-weight: 600; }
+
+/* ════ v86 : « Celles et ceux qui font vivre la Save » — flèches minimalistes : deux chevrons seuls, sans cercle ni phrase ════ */
+.orgs-ctrl { gap: 6px; margin-top: 18px; }
+.orgs-hint { display: none; }
+.orgs-ctrl .circle { width: 44px; height: 44px; border: 0; background: none; box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none; color: rgba(255,255,255,.5); transition: color .25s, transform .25s; }
+.orgs-ctrl .circle svg { width: 22px; height: 22px; stroke-width: 1.4; }
+.orgs-ctrl .circle:hover { color: var(--or, #c8a96e); background: none; }
+.orgs-ctrl #orgs-prev:hover { transform: translateX(-3px); }
+.orgs-ctrl #orgs-next:hover { transform: translateX(3px); }
+.orgs-ctrl .circle:focus-visible { outline: 2px solid var(--or, #c8a96e); outline-offset: 2px; border-radius: 50%; }
