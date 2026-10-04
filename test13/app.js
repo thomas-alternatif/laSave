@@ -1274,7 +1274,7 @@
       mark(sec.querySelector('.row-block'), 0, 'wipe'), mark(sec.querySelector('.row-title'), .28), mark(sec.querySelector('.stamp'), .6, 'pop'),
       ...[...sec.querySelectorAll('.track > *')].slice(0, 6).map((c, i) => mark(c, .4 + i * .09, 'zoom'))]));
     add($('#organisateurs'), [mark($('#orgs-title'), 0), mark($('#orgs-row'), .2, 'zoom'), mark($('.orgs-ctrl'), .5, 'fade')]);
-    add($('.bento'), [...$$('.bento > .bx').map((b, i) => mark(b, i * .14, 'zoom')), mark($('.bx-head'), .4, 'wipe'), mark($('.bx-head .row-title'), .68), mark($('.bx-head .stamp'), .95, 'pop')]);
+    // la section lettre / avis / proposer (bento) apparaît sans animation
     add($('#avis-line'), [mark($('#avis-line'), 0, 'fade')]);
     add($('.foot'), [mark($('.foot'), 0, 'fade')]);
     groups.forEach(g => { g.wait = Math.max(...g.items.map(n => parseFloat(n.style.getPropertyValue('--d')) || 0)); });

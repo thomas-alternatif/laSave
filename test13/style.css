@@ -1843,3 +1843,9 @@ html.still .menu-back, html.still .menu-nav a { transition: none; }
 
 /* v98 · tout en haut de l'accueil : pas de bande noire derrière la barre (elle réapparaît dès qu'on défile) */
 .top:not(.solid):not(.on-page) { background: none !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; box-shadow: none !important; border-color: transparent !important; }
+
+/* v99 · citation : icône de guillemets et écriture penchée */
+.epi blockquote { display: grid; justify-items: center; gap: 10px; }
+.epi-q { color: var(--or); opacity: .9; }
+.epi p { font: italic 400 clamp(22px, 2.4vw, 28px)/1.4 var(--serif); letter-spacing: .005em; }
+@media (max-width: 720px) { .epi p { font-size: 22px; } }
