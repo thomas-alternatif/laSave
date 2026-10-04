@@ -1757,3 +1757,10 @@ main { padding-top: clamp(10px, 4vw, 64px); }
 /* formulaire : catégorie « Sondage » = pas de date de début, d'heure, de lieu, de tarif ni de récurrence */
 .ev-form.is-poll [data-ev] { display: none; }
 .ev-form.is-poll .grid-3 { grid-template-columns: 1fr; }
+
+/* v88 : le questionnaire s'ouvre directement ; petit lien de secours dessous */
+.poll-loading { margin: 0; padding: 40px 0; text-align: center; color: var(--texte-2); font-size: 14px; }
+.poll-frame:has(iframe) { margin-top: 4px; }
+.poll-acts { justify-content: center; gap: 4px 12px; font-size: 13px; color: var(--texte-2); text-align: center; }
+.poll-ext.big { padding: 13px 22px; border-radius: 999px; background: var(--or, #c8a96e); color: #0a0a0a; font-weight: 700; font-size: 15px; text-decoration: none; }
+.poll-note { text-align: center; }

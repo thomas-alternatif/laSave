@@ -1106,22 +1106,27 @@
     title($('#poll-title'), e.Titre || 'Sondage');
     $('#poll-when').textContent = pollWhen(e); $('#poll-when').hidden = !pollWhen(e);
     const desc = pollText(e); $('#poll-desc').textContent = desc; $('#poll-desc').hidden = !desc;
-    const go = $('#poll-go'), ext = $('#poll-ext'), frame = $('#poll-frame'), note = $('#poll-note'), acts = $('#poll-acts');
-    frame.replaceChildren(); acts.hidden = false; note.hidden = !google;
-    const gt = go.querySelector('.glow-t'); gt.textContent = 'Répondre ici'; go.disabled = false;
-    if (/^https:\/\//.test(link)) { ext.href = link; ext.hidden = false; } else { ext.removeAttribute('href'); ext.hidden = true; }
-    ext.firstChild.textContent = google ? 'Ouvrir dans Google Forms' : 'Répondre sur le site de l’organisateur';
-    go.hidden = !google;
-    go.onclick = async () => {
-      go.disabled = true; gt.textContent = 'Chargement…';
-      let embed = embedOf(link);
-      if (!embed && /^https:\/\/forms\.gle\//.test(link)) { try { embed = (await api('/forms/resolve?u=' + encodeURIComponent(link))).embed || ''; } catch (_) { embed = ''; } }
-      if (!embed) { go.disabled = false; gt.textContent = 'Répondre ici'; note.textContent = 'Ce questionnaire ne peut pas s’afficher ici : utilisez « Ouvrir dans Google Forms ». Vos réponses arriveront quand même à l’organisateur.'; return; }
-      const f = el('iframe'); f.src = embed; f.title = 'Questionnaire : ' + (e.Titre || 'sondage'); f.loading = 'lazy'; f.referrerPolicy = 'strict-origin-when-cross-origin';
-      f.setAttribute('sandbox', 'allow-scripts allow-forms allow-same-origin allow-popups allow-popups-to-escape-sandbox');
-      frame.replaceChildren(f); acts.hidden = true;
-      requestAnimationFrame(() => frame.scrollIntoView({ block: 'start', behavior: reduce ? 'auto' : 'smooth' }));
-    };
+    const ext = $('#poll-ext'), frame = $('#poll-frame'), note = $('#poll-note'), help = $('#poll-help');
+    frame.replaceChildren(); note.hidden = !google; help.hidden = !google;
+    note.textContent = 'Le questionnaire s’affiche depuis Google Forms. Vos réponses vont directement à l’organisateur : laSave ne les voit pas.';
+    const hasLink = /^https:\/\//.test(link);
+    if (hasLink) ext.href = link; else ext.removeAttribute('href');
+    ext.hidden = !hasLink; ext.classList.toggle('big', !google);
+    $('#poll-ext-t').textContent = google ? 'Ouvrir sur Google Forms' : 'Répondre sur le site de l’organisateur';
+    $('#poll-acts').hidden = !hasLink;
+    if (google) {
+      frame.appendChild(el('p', 'poll-loading', 'Chargement du questionnaire…'));
+      (async () => {
+        let embed = embedOf(link);
+        if (!embed && /^https:\/\/forms\.gle\//.test(link)) { try { embed = (await api('/forms/resolve?u=' + encodeURIComponent(link))).embed || ''; } catch (_) { embed = ''; } }
+        if (!$('#pollsheet').hidden && ext.href === link) {
+          if (!embed) { frame.replaceChildren(); help.textContent = 'Ce questionnaire ne peut pas s’afficher ici.'; note.textContent = 'Utilisez le lien : vos réponses arriveront quand même à l’organisateur.'; return; }
+          const f = el('iframe'); f.src = embed; f.title = 'Questionnaire : ' + (e.Titre || 'sondage'); f.referrerPolicy = 'strict-origin-when-cross-origin';
+          f.setAttribute('sandbox', 'allow-scripts allow-forms allow-same-origin allow-popups allow-popups-to-escape-sandbox');
+          frame.replaceChildren(f);
+        }
+      })();
+    }
     openDialog(d);
   }
 
