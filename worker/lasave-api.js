@@ -41,7 +41,7 @@ const F_CONF = 'Envoyer la confirmation', F_CONF_TXT = 'Confirmation par mail'; 
 const MAIL_FROM = { name: 'Agenda de laSave', email: 'agenda@la-save.fr' };
 const MAIL_ADMIN = 'agenda@la-save.fr';
 const SITE = 'https://la-save.fr';
-const VERSION = '2026-10-02 · liens lisibles';
+const VERSION = '2026-10-04 · sondages';
 
 /* ── utilitaires ── */
 const pick = (obj, keys) => Object.fromEntries(keys.filter(k => obj[k] !== undefined && obj[k] !== null && obj[k] !== '').map(k => [k, obj[k]]));
@@ -925,6 +925,32 @@ async function route(req, env, ctx) {
     const { value, metadata } = await KV.getWithMetadata('img:' + im[1], { type: 'arrayBuffer' });
     if (!value) return new Response('Introuvable', { status: 404 });
     return new Response(value, { headers: { 'Content-Type': metadata?.type || 'image/jpeg', 'Cache-Control': 'public, max-age=31536000, immutable', 'Access-Control-Allow-Origin': '*' } });
+  }
+
+  // Questionnaire Google Forms : transforme un lien court (forms.gle/…) en adresse intégrable dans la page Sondages
+  if (m === 'GET' && p === '/forms/resolve') {
+    const u = new URL(req.url).searchParams.get('u') || '';
+    let t; try { t = new URL(u); } catch (_) { return json(req, { error: 'Lien invalide.' }, 400); }
+    const okHost = h => h === 'forms.gle' || h === 'docs.google.com';
+    if (t.protocol !== 'https:' || !okHost(t.hostname) || u.length > 300) return json(req, { error: 'Lien non pris en charge.' }, 400);
+    const ck = 'forms:' + t.href;
+    if (KV) { const c = await KV.get(ck, 'json'); if (c) return json(req, c, 200, { 'Cache-Control': 'public, max-age=3600' }); }
+    let cur = t.href;
+    try {
+      for (let i = 0; i < 4 && new URL(cur).hostname === 'forms.gle'; i++) { // on ne suit les redirections que vers Google
+        const r = await fetch(cur, { redirect: 'manual', headers: { 'User-Agent': 'laSave' } });
+        const loc = r.headers.get('location'); if (!loc) break;
+        const nx = new URL(loc, cur); if (nx.protocol !== 'https:' || !okHost(nx.hostname)) break;
+        cur = nx.href;
+      }
+    } catch (e) { console.error('forms/resolve', e.message); }
+    const f = new URL(cur);
+    if (f.hostname !== 'docs.google.com' || !/^\/forms\//.test(f.pathname)) return json(req, { error: 'Questionnaire introuvable.' }, 404);
+    if (!/\/viewform\/?$/.test(f.pathname)) { if (/^\/forms\/d\/e\/[^/]+\/?$/.test(f.pathname)) f.pathname = f.pathname.replace(/\/?$/, '/viewform'); else return json(req, { error: 'Ce lien ouvre l’éditeur du questionnaire, pas le questionnaire lui-même.' }, 400); }
+    f.searchParams.set('embedded', 'true');
+    const out = { url: cur, embed: f.href };
+    if (KV) { try { await KV.put(ck, JSON.stringify(out), { expirationTtl: 2592000 }); } catch (_) {} }
+    return json(req, out, 200, { 'Cache-Control': 'public, max-age=3600' });
   }
 
   // Organisateurs publiés (sans leur code membre)
