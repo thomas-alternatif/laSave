@@ -386,7 +386,6 @@
       const inner = el('div', 'fcard-in');
       const p = photoOf(e); if (p) inner.appendChild(img(p));
       const cap = el('div', 'fcard-cap');
-      cap.appendChild(el('small', null, [whenOf(e), e.Commune].filter(Boolean).join(' · ')));
       cap.appendChild(tel('strong', null, e.Titre || 'Événement'));
       inner.appendChild(cap);
       c.appendChild(inner);
@@ -423,13 +422,14 @@
       const rel = n < 0 ? (fin && fin >= t0 ? 'En ce moment' : '') : n === 0 ? 'Aujourd’hui' : n === 1 ? 'Demain' : `Dans ${n} jours`;
       const jour = d.toLocaleDateString('fr-FR', { weekday: 'long' });
       const mois = d.toLocaleDateString('fr-FR', { month: 'short' }).replace('.', '');
-      const key = [e.id, rel, jour, d.getDate(), mois, e.Heure || ''].join('|');
+      const key = [e.id, rel, jour, d.getDate(), mois, e.Heure || '', e.Commune || ''].join('|');
       if (key === lastDate) return; lastDate = key;
       // Petite page de calendrier (mois + jour) qui se tourne, et le jour de la semaine à côté
       const cal = el('span', 'fd-cal'); cal.setAttribute('aria-hidden', 'true');
       cal.append(el('span', 'fd-m', mois), el('span', 'fd-d', String(d.getDate())));
       const txt = el('span', 'fd-txt');
       txt.append(el('b', null, jour), el('small', null, [e.Heure ? hour(e) : '', rel].filter(Boolean).join(' · ')));
+      if (e.Commune) txt.appendChild(el('small', 'fd-lieu', e.Commune));
       const sr = el('span', 'sr', `${d.getDate()} ${d.toLocaleDateString('fr-FR', { month: 'long' })}`);
       // Sur téléphone, toute la date est un bouton qui ouvre directement l'agenda : Calendrier (Apple) ou Google Agenda, avec leurs couleurs
       const os = !touch ? '' : isApple ? 'apple' : /Android/i.test(navigator.userAgent) ? 'google' : 'other';
