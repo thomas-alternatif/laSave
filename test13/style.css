@@ -1868,3 +1868,8 @@ html.still .menu-back, html.still .menu-nav a { transition: none; }
   .ag-big .ag-thumb { aspect-ratio: 1; }
   .ag-big .ag-name { font-size: 21px; }
 }
+
+/* v101 · rendez-vous réguliers classés par jour de la semaine */
+.ag-wd { font: 800 18px/1.2 var(--display); font-stretch: 85%; text-transform: uppercase; letter-spacing: .04em; color: var(--texte); margin: 26px 0 2px; }
+.ag-wd::before { content: ''; display: inline-block; width: 18px; height: 2px; background: var(--or); margin-right: 10px; vertical-align: middle; }
+.ag-reg .ag-time { text-transform: none; letter-spacing: .02em; font-size: 13px; }

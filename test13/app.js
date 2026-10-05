@@ -41,8 +41,32 @@
   const fullPhoto = e => (e.Photo && e.Photo[0] && e.Photo[0].url) || photoOf(e);
   const hour = e => e.Heure ? String(e.Heure).replace(':', 'h') : '';
   const fmt = (d, o) => new Date(d).toLocaleDateString('fr-FR', o).replace(/\./g, '');
+  /* ── Rendez-vous réguliers : rythme lisible (jour + fréquence + horaires) ──
+     Régulier = récurrence renseignée, OU durée d'au moins 4 mois entre début et fin (cours et activités de la saison). */
+  const JOURS = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+  const LONG_DAYS = 120;
+  const spanDays = e => (e.Date && e['Date de fin']) ? Math.round((new Date(e['Date de fin'] + 'T12:00:00') - new Date(e.Date + 'T12:00:00')) / 864e5) : 0;
+  const isLong = e => !isRec(e) && spanDays(e) >= LONG_DAYS;
+  const hoursOf = e => e.Heure ? String(e.Heure).replace(/(\d):(\d\d)/g, '$1h$2').replace(/(\d{1,2}):(\d\d)/g, '$1h$2').replace(/\b0(\d)h/g, '$1h').replace(/\s*-\s*/g, ' – ') : '';
+  const rhDay = e => e.Jour || (isLong(e) ? JOURS[new Date(e.Date + 'T12:00:00').getDay()] : '');
+  const rhFreq = e => {
+    const per = String(e['Période'] || '').trim(), rc = e['Récurrence'];
+    if (per) return per.charAt(0).toUpperCase() + per.slice(1);
+    if (rc === 'Hebdomadaire') return 'Chaque semaine';
+    if (rc === 'Mensuelle') return 'Chaque mois';
+    if (rc === 'Annuelle') return 'Chaque année';
+    if (isLong(e)) return 'De ' + fmt(e.Date, { month: 'long' }) + ' à ' + fmt(e['Date de fin'], { month: 'long' });
+    return '';
+  };
+  // Phrase complète : « Chaque lundi », « 1er lundi du mois · Lundi », « Lundi · De septembre à juin »
+  const rhythm = e => {
+    const d = rhDay(e), f = rhFreq(e);
+    if (e['Récurrence'] === 'Hebdomadaire' && d && !e['Période']) return 'Chaque ' + d.toLowerCase();
+    if (!d) return f;
+    return f.toLowerCase().includes(d.toLowerCase()) ? f : d + (f ? ' · ' + f : '');
+  };
   const whenOf = e => {
-    if (!e.Date || stale(e)) return isRec(e) ? (e['Jour/Période'] || e['Période'] || e['Récurrence'] || '') : '';
+    if (!e.Date || stale(e)) return isRec(e) ? rhythm(e) : '';
     let s = fmt(e.Date, { weekday: 'short', day: 'numeric', month: 'short' });
     if (e.Heure) s += ' · ' + hour(e);
     return s;
@@ -224,7 +248,7 @@
       const fin = e['Date de fin'] && e['Date de fin'] !== e.Date ? fmt(e['Date de fin'], { weekday: 'long', day: 'numeric', month: 'long' }) : '';
       fact('cal', fin ? `Du ${a} au ${fin}` : a.charAt(0).toUpperCase() + a.slice(1), e.Heure ? 'À ' + hour(e) : '');
     }
-    if (isRec(e)) fact('rep', e['Jour/Période'] || e['Période'] || e['Récurrence'], e.Date ? '' : (e.Heure ? 'À ' + hour(e) : ''));
+    if (isRec(e) || isLong(e)) fact('rep', rhythm(e), (e.Date && !isLong(e)) ? '' : (e.Heure ? 'À ' + hoursOf(e) : ''));
     fact('pin', e.Lieu || e.Commune, e.Lieu ? e.Commune : '');
     fact('tag', e.Tarif);
     const ob = $('#ev-org'), o = findOrga(e.Organisation), on = orgName(e.Organisation);
@@ -1011,8 +1035,10 @@
     const th = el('span', 'ag-thumb'); th.setAttribute('aria-hidden', 'true'); bg(th, photoOf(e)); b.appendChild(th);
     const m = el('span', 'ag-main');
     const s = evStart(e), en = evEnd(e);
-    let when = e.Date ? hour(e) : (e['Jour/Période'] || e['Période'] || e['Récurrence'] || '');
-    if (s && en > s) when += (when ? ' · ' : '') + 'jusqu’au ' + fmt(en, { day: 'numeric', month: 'short' });
+    const regular = isRec(e) || isLong(e) || !s;
+    let when;
+    if (regular) when = [isRec(e) || isLong(e) ? rhFreq(e) : '', hoursOf(e)].filter(Boolean).join(' · ') || (e['Date de fin'] ? 'Jusqu’au ' + fmt(e['Date de fin'], { day: 'numeric', month: 'long' }) : '');
+    else { when = hour(e); if (s && en > s) when += (when ? ' · ' : '') + 'jusqu’au ' + fmt(en, { day: 'numeric', month: 'short' }); }
     if (when) m.appendChild(el('span', 'ag-time', when));
     m.appendChild(tel('b', 'ag-name', e.Titre || 'Événement'));
     const meta = [e.Commune, e.Tarif].filter(Boolean).join(' · ');
@@ -1042,17 +1068,23 @@
     const rng = agRange(AG.when), t = ymd(new Date());
     // Trois familles : les sorties ponctuelles (jour par jour), puis ce qui dure (expos, festivals de plusieurs jours), puis les rendez-vous qui reviennent
     const dated = [], multi = [], reg = [];
-    UP.forEach(e => { if (!agMatch(e, rng)) return; (isRec(e) || !evStart(e) ? reg : evEnd(e) > evStart(e) ? multi : dated).push(e); });
+    UP.forEach(e => { if (!agMatch(e, rng)) return; (isRec(e) || isLong(e) || !evStart(e) ? reg : evEnd(e) > evStart(e) ? multi : dated).push(e); });
     const k = e => { const s = evStart(e); return s < t ? t : s; };
     dated.sort((a, b) => k(a).localeCompare(k(b)) || (parseInt(a.Heure, 10) || 0) - (parseInt(b.Heure, 10) || 0) || String(a.Titre).localeCompare(String(b.Titre), 'fr'));
     multi.sort((a, b) => evEnd(a).localeCompare(evEnd(b)) || String(a.Titre).localeCompare(String(b.Titre), 'fr'));
-    reg.sort((a, b) => String(a.Titre).localeCompare(String(b.Titre), 'fr'));
+    const wd = e => { const i = JOURS.indexOf(rhDay(e)); return i < 0 ? 9 : (i + 6) % 7; }; // lundi d'abord, dimanche en dernier
+    const hr = e => { const m = String(e.Heure || '').match(/(\d{1,2})[h:](\d{2})?/); return m ? +m[1] * 60 + (+m[2] || 0) : 9999; };
+    reg.sort((a, b) => wd(a) - wd(b) || hr(a) - hr(b) || String(a.Titre).localeCompare(String(b.Titre), 'fr'));
     root.replaceChildren();
     // « big » : les sorties (concerts, spectacles, fêtes…) en grand ; les rendez-vous réguliers (cours, sport, ateliers) restent en lignes compactes
-    const section = (heading, list, big, sub) => {
+    const section = (heading, list, big, sub, byDay) => {
       const s = el('section', 'ag-day' + (big ? ' ag-big' : ' ag-reg')); s.appendChild(el('h2', 'ag-day-t', heading));
       if (sub) s.appendChild(el('p', 'ag-day-sub', sub));
-      const ul = el('ul', 'ag-items'); list.forEach(e => ul.appendChild(agItem(e))); s.appendChild(ul); root.appendChild(s);
+      if (byDay) { // rendez-vous réguliers : un petit titre par jour de la semaine
+        const m = new Map(); list.forEach(e => { const k = rhDay(e) || 'Autres rendez-vous'; (m.get(k) || m.set(k, []).get(k)).push(e); });
+        m.forEach((l, k) => { s.appendChild(el('h3', 'ag-wd', k)); const ul = el('ul', 'ag-items'); l.forEach(e => ul.appendChild(agItem(e))); s.appendChild(ul); });
+      } else { const ul = el('ul', 'ag-items'); list.forEach(e => ul.appendChild(agItem(e))); s.appendChild(ul); }
+      root.appendChild(s);
     };
     const groups = new Map(); dated.forEach(e => { const g = k(e); (groups.get(g) || groups.set(g, []).get(g)).push(e); });
     groups.forEach((list, g) => {
@@ -1061,7 +1093,7 @@
       section(hd, list, true);
     });
     if (multi.length) section('Sur plusieurs jours', multi, true);
-    if (reg.length) section('Rendez-vous réguliers', reg, false, 'Cours, ateliers et activités à pratiquer toute l’année.');
+    if (reg.length) section('Rendez-vous réguliers', reg, false, 'Cours, ateliers et activités à pratiquer toute l’année, classés par jour.', true);
     const n = dated.length + multi.length + reg.length;
     if (!n) {
       const p = el('p', 'ag-empty', 'Rien ne correspond à ces filtres pour le moment. '); const r = el('button', 'ag-reset', 'Tout effacer'); r.type = 'button';
