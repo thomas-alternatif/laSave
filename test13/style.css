@@ -1873,3 +1873,8 @@ html.still .menu-back, html.still .menu-nav a { transition: none; }
 .ag-wd { font: 800 18px/1.2 var(--display); font-stretch: 85%; text-transform: uppercase; letter-spacing: .04em; color: var(--texte); margin: 26px 0 2px; }
 .ag-wd::before { content: ''; display: inline-block; width: 18px; height: 2px; background: var(--or); margin-right: 10px; vertical-align: middle; }
 .ag-reg .ag-time { text-transform: none; letter-spacing: .02em; font-size: 13px; }
+
+/* v102 · grand écran : le % du padding se calcule sur toute la largeur de la page, pas sur le panneau (qui a des marges latérales).
+   On retire donc les marges avant de centrer la colonne, sinon le contenu de « Tout l'agenda » est écrasé. */
+.view > .page { padding-inline: max(var(--pad), calc((100% - 2 * var(--side) - 820px) / 2)); }
+.view > .page.ag { max-width: none; padding-inline: max(var(--pad), calc((100% - 2 * var(--side) - 980px) / 2)); }
