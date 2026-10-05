@@ -1048,18 +1048,20 @@
     multi.sort((a, b) => evEnd(a).localeCompare(evEnd(b)) || String(a.Titre).localeCompare(String(b.Titre), 'fr'));
     reg.sort((a, b) => String(a.Titre).localeCompare(String(b.Titre), 'fr'));
     root.replaceChildren();
-    const section = (heading, list) => {
-      const s = el('section', 'ag-day'); s.appendChild(el('h2', 'ag-day-t', heading));
+    // « big » : les sorties (concerts, spectacles, fêtes…) en grand ; les rendez-vous réguliers (cours, sport, ateliers) restent en lignes compactes
+    const section = (heading, list, big, sub) => {
+      const s = el('section', 'ag-day' + (big ? ' ag-big' : ' ag-reg')); s.appendChild(el('h2', 'ag-day-t', heading));
+      if (sub) s.appendChild(el('p', 'ag-day-sub', sub));
       const ul = el('ul', 'ag-items'); list.forEach(e => ul.appendChild(agItem(e))); s.appendChild(ul); root.appendChild(s);
     };
     const groups = new Map(); dated.forEach(e => { const g = k(e); (groups.get(g) || groups.set(g, []).get(g)).push(e); });
     groups.forEach((list, g) => {
       let hd = cap(fmt(g + 'T12:00:00', { weekday: 'long', day: 'numeric', month: 'long' }));
       if (g === t) hd = 'Aujourd’hui · ' + hd; else if (g === addDays(t, 1)) hd = 'Demain · ' + hd;
-      section(hd, list);
+      section(hd, list, true);
     });
-    if (multi.length) section('Sur plusieurs jours', multi);
-    if (reg.length) section('Rendez-vous réguliers', reg);
+    if (multi.length) section('Sur plusieurs jours', multi, true);
+    if (reg.length) section('Rendez-vous réguliers', reg, false, 'Cours, ateliers et activités à pratiquer toute l’année.');
     const n = dated.length + multi.length + reg.length;
     if (!n) {
       const p = el('p', 'ag-empty', 'Rien ne correspond à ces filtres pour le moment. '); const r = el('button', 'ag-reset', 'Tout effacer'); r.type = 'button';

@@ -1849,3 +1849,22 @@ html.still .menu-back, html.still .menu-nav a { transition: none; }
 .epi-q { color: var(--or); opacity: .9; }
 .epi p { font: italic 400 clamp(22px, 2.4vw, 28px)/1.4 var(--serif); letter-spacing: .005em; }
 @media (max-width: 720px) { .epi p { font-size: 22px; } }
+
+/* v100 · Tout l'agenda : les sorties en grand, les rendez-vous réguliers restent compacts après elles */
+.ag-big .ag-items { display: grid; gap: 14px; margin-top: 16px; }
+.ag-big .ag-items li + li { border-top: 0; }
+.ag-big .ag-item { grid-template-columns: clamp(110px, 17vw, 170px) 1fr auto; gap: clamp(16px, 2.4vw, 28px); padding: 14px; margin: 0; background: rgba(255,255,255,.04); border: 1px solid var(--ligne); border-radius: 20px; }
+.ag-big .ag-item:hover { background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.28); }
+.ag-big .ag-thumb { width: 100%; height: auto; aspect-ratio: 1; border-radius: 14px; }
+.ag-big .ag-main { gap: 6px; }
+.ag-big .ag-time { font-size: 13px; }
+.ag-big .ag-name { font: 800 clamp(22px, 2.9vw, 32px)/1.12 var(--display); font-stretch: 85%; letter-spacing: -.005em; }
+.ag-big .ag-meta { font-size: 15px; }
+.ag-big .ag-cat { font-size: 13px; padding: 6px 14px; align-self: start; }
+.ag-reg { margin-top: clamp(56px, 8vw, 90px); }
+.ag-day-sub { margin: 10px 0 2px; font-size: 14px; color: var(--texte-2); }
+@media (max-width: 720px) {
+  .ag-big .ag-item { grid-template-columns: 96px 1fr; padding: 10px; border-radius: 16px; }
+  .ag-big .ag-thumb { aspect-ratio: 1; }
+  .ag-big .ag-name { font-size: 21px; }
+}
