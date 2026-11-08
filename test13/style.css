@@ -1912,3 +1912,22 @@ fieldset .code-box { margin: 4px 0 22px; padding: 18px 20px; border-style: dashe
 
 .done-actions { gap: 14px 18px; }
 .done-actions .link { color: var(--texte-2); }
+
+/* ── Page d'accueil : inviter à descendre + sondages mis en avant ── */
+.scroll-cue { position: absolute; left: 50%; bottom: 26px; transform: translateX(-50%); z-index: 3; display: grid; justify-items: center; gap: 6px; color: var(--texte); text-decoration: none; transition: opacity .35s ease, transform .35s ease; }
+.scroll-cue.off { opacity: 0; pointer-events: none; transform: translate(-50%, 8px); }
+.sc-t { font: 600 11.5px/1 var(--sans); letter-spacing: .14em; text-transform: uppercase; text-shadow: 0 1px 12px rgba(0,0,0,.7); }
+.sc-i { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; border: 1.5px solid rgba(255,255,255,.55); background: rgba(10,10,10,.35); backdrop-filter: blur(8px); animation: sc-rebond 1.9s ease-in-out infinite; }
+.scroll-cue:hover .sc-i, .scroll-cue:focus-visible .sc-i { border-color: var(--or); }
+@keyframes sc-rebond { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(8px); } }
+@media (max-width: 760px) { .scroll-cue { bottom: 70px; } .sc-t { font-size: 10.5px; } }
+@media (prefers-reduced-motion: reduce) { .sc-i { animation: none; } }
+.hero-poll { display: inline-flex; align-items: center; font: 700 13px/1 var(--sans); color: #0a0a0a; background: #5C96AB; border-radius: 99px; padding: 11px 16px; text-decoration: none; }
+.hero-poll[hidden] { display: none; }
+.hero-poll:hover, .hero-poll:focus-visible { background: #6ba5ba; }
+#home-polls.hpolls { margin-block: var(--gap-sec, 64px) !important; padding-block: 8px !important; }
+.hpolls-title { margin-bottom: 14px; }
+.hpolls-lede { max-width: 36em; margin: 0 auto 30px; text-align: center; color: #d4d2cc; font-size: clamp(16px, 1.6vw, 18px); padding-inline: 16px; }
+#home-polls .kick { text-align: center; }
+#home-polls .hpoll { min-height: 132px; }
+#home-polls .ag-more { text-align: center; margin-top: 26px; }

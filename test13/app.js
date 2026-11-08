@@ -1231,6 +1231,7 @@
         hl.appendChild(c);
       });
       hs.hidden = !list.length;
+      const hp = $('#hero-poll'); if (hp) { hp.hidden = !list.length; hp.textContent = list.length ? `${list.length} sondage${list.length > 1 ? 's' : ''} en cours · Donnez votre avis →` : ''; }
     }
   }
   let pollTok = 0;
@@ -1340,6 +1341,14 @@
     }, wait);
   }
   setTimeout(endIntro, 4500); // au pire, on n'attend pas plus
+
+  /* ── Indicateur « faites défiler » : il disparaît dès qu'on commence à descendre ── */
+  (function cue() {
+    const c = $('#scroll-cue'); if (!c) return;
+    const maj = () => c.classList.toggle('off', scrollY > 60);
+    addEventListener('scroll', maj, { passive: true }); maj();
+    c.addEventListener('click', ev => { const t = $('#rendez-vous'); if (t) { ev.preventDefault(); t.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' }); } });
+  })();
 
   /* ── Menu : trois traits en haut à droite, la liste complète s'ouvre en grand ── */
   (function menu() {
