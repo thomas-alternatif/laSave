@@ -1909,3 +1909,6 @@ fieldset .code-box { margin: 4px 0 22px; padding: 18px 20px; border-style: dashe
 
 /* zone d'envoi : survol pendant un glisser-déposer */
 .drop.over, .pb-drop.over { border-color: var(--or); border-style: solid; background: rgba(200,169,110,.1); }
+
+.done-actions { gap: 14px 18px; }
+.done-actions .link { color: var(--texte-2); }
