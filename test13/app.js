@@ -179,6 +179,11 @@
   /* ── Données partagées ── */
   let ALL = [], UP = [], ORGAS = [];
   const findOrga = name => { const n = norm(orgName(name)); if (!n) return null; return ORGAS.find(o => norm(o.Nom) === n) || ORGAS.find(o => n.includes(norm(o.Nom)) || norm(o.Nom).includes(n)) || null; };
+  /* noms de structures « presque identiques » : accents, majuscules, mots creux et petites fautes ne comptent pas */
+  const STRUC_VIDE = new Set(['association', 'asso', 'assoc', 'le', 'la', 'les', 'l', 'de', 'du', 'des', 'd', 'et', 'au', 'aux', 'club', 'comite', 'cie', 'compagnie', 'amicale', 'foyer', 'collectif']);
+  const strucCle = s => norm(s).split(' ').filter(w => w && !STRUC_VIDE.has(w)).join('');
+  const lev = (a, b) => { const m = a.length, n = b.length; let p = Array.from({ length: n + 1 }, (_, j) => j); for (let i = 1; i <= m; i++) { const c = [i]; for (let j = 1; j <= n; j++) c[j] = Math.min(p[j] + 1, c[j - 1] + 1, p[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)); p = c; } return p[n]; };
+  const orgaProche = name => { const k = strucCle(orgName(name)); if (k.length < 3) return null; return ORGAS.find(o => { const c = strucCle(o.Nom); if (c.length < 3) return false; return c === k || c.includes(k) || k.includes(c) || lev(c, k) <= Math.max(1, Math.floor(Math.min(c.length, k.length) * 0.2)); }) || null; };
   const eventsOf = o => UP.filter(e => { const n = norm(orgName(e.Organisation)); return n && (n === norm(o.Nom) || n.includes(norm(o.Nom))); });
 
   /* ── Agenda : Google et fichier .ics ── */
@@ -933,6 +938,10 @@
     function profilMontre(v) {
       const box = $('#profil-box'); if (!box) return;
       if (memberCode || (v.nom && findOrga(v.nom))) return; // structure déjà connue : rien à proposer
+      const proche = v.nom && orgaProche(v.nom); // nom un peu différent : on demande plutôt que d'affirmer
+      $('#pb-title').textContent = proche ? 'Votre profil existe peut-être déjà' : 'Complétez votre profil';
+      $('#pb-lede').textContent = proche ? `Votre structure est-elle « ${proche.Nom} » ? Dans ce cas elle a déjà un profil sur laSave, rien à faire. Sinon, vous pouvez en créer un.` : 'Votre structure n’a pas encore de profil sur laSave : logo, présentation, réseaux, affichés sur la page d’accueil.';
+      $('#pb-open').textContent = proche ? 'Ce n’est pas ma structure, créer un profil' : 'Créer mon profil';
       $('#pb-nom').value = v.nom || ''; $('#pb-email').value = v.email || ''; $('#pb-ig').value = v.ig || ''; $('#pb-fb').value = v.fb || ''; $('#pb-site').value = v.site || '';
       box.hidden = false;
     }

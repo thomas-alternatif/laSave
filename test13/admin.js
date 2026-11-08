@@ -177,6 +177,9 @@
       air.href = `${ORGAS}/${o.id}`; air.target = '_blank'; air.rel = 'noopener';
       const go = (act, ok, b) => async () => { b.disabled = true; try { await call(`/admin/orgas/${o.id}/${act}`, { method: 'POST' }); o.profil = false; if (act === 'publish-profile') o.publie = true; ov.profils = ov.orgas.filter(x => x.profil).length; msg(ok); rOrgas(); } catch (e) { b.disabled = false; msg(e.message, true); } };
       a.addEventListener('click', go('publish-profile', `Profil de ${o.nom} publié.`, a)); c.addEventListener('click', go('refuse-profile', `Demande de ${o.nom} refusée.`, c));
+      const cle = s => String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().split(/[^a-z0-9]+/).filter(w => w && !['association', 'asso', 'le', 'la', 'les', 'de', 'du', 'des', 'd', 'l', 'et', 'club', 'comite', 'cie', 'compagnie'].includes(w)).join('');
+      const k = cle(o.nom), sem = k.length >= 3 && ov.orgas.find(x => x.id !== o.id && x.publie && (cle(x.nom) === k || cle(x.nom).includes(k) || k.includes(cle(x.nom))) && cle(x.nom).length >= 3);
+      if (sem) t.append(el('small', '', '⚠ Ressemble à « ' + sem.nom + ' », déjà publié : doublon possible.'));
       acts.append(a, c, air); li.append(t, acts); if (o.courte || o.desc) li.append(el('p', 'msg', [o.courte, o.desc].filter(Boolean).join('\n\n'))); up.append(li);
     });
     const ul = $('#o-list'); ul.innerHTML = '';
