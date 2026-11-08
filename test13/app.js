@@ -860,6 +860,26 @@
     }
     wizGo(0, false);
 
+    /* case « lettre » : on réutilise le mail de contact privé, sans le redemander */
+    const MAIL_OK = v => /^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(v);
+    let nlAutre = false;
+    const nlSync = () => {
+      const box = $('#f-nl-box'), info = $('#f-nl-info'), inp = $('#f-nl-mail'), c = $('#f-cprive').value.trim();
+      box.hidden = !$('#f-nl').checked; if (box.hidden) return;
+      info.textContent = '';
+      if (nlAutre || !MAIL_OK(c)) {
+        inp.hidden = false;
+        info.textContent = MAIL_OK(c) ? 'À quelle adresse envoyer la lettre ?' : 'À quelle adresse envoyer la lettre ? (Vous n’avez pas indiqué de contact privé valide.)';
+      } else {
+        inp.hidden = true;
+        const b = el('button', 'link-btn', 'Utiliser une autre adresse'); b.type = 'button';
+        b.addEventListener('click', () => { nlAutre = true; nlSync(); inp.focus(); });
+        info.append('La lettre sera envoyée à ', el('b', '', c), '. ', b);
+      }
+    };
+    $('#f-nl').addEventListener('change', nlSync);
+    $('#f-cprive').addEventListener('input', nlSync);
+    form.addEventListener('reset', () => { nlAutre = false; setTimeout(nlSync); });
     form.addEventListener('input', ev => { if (ev.target.hasAttribute('aria-invalid')) ev.target.removeAttribute('aria-invalid'); });
     form.addEventListener('submit', async ev => {
       ev.preventDefault();
@@ -872,8 +892,9 @@
       if (d1 && d2 && d2 < d1) return err('La date de fin est avant la date de début.', ['#f-date-fin']);
       if (!$('#f-consent').checked) return err('Cochez la case d’accord pour que la mairie puisse publier votre événement.', ['#f-consent']);
       if (uploading) return err('L’affiche est encore en cours d’envoi, patientez une seconde.');
-      const nlOn = $('#f-nl') && $('#f-nl').checked, nlMail = $('#f-cprive').value.trim();
-      if (nlOn && !/^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(nlMail)) return err('Pour recevoir la lettre, indiquez une adresse e-mail valide dans « Contact privé » (ou décochez la case).', ['#f-cprive']);
+      const nlOn = $('#f-nl').checked, nlSaisi = $('#f-nl-mail').value.trim();
+      const cp = $('#f-cprive').value.trim(), nlMail = nlSaisi || (MAIL_OK(cp) ? cp : '');
+      if (nlOn && !MAIL_OK(nlMail)) { nlAutre = true; nlSync(); return err('Pour recevoir la lettre, indiquez une adresse e-mail valide (ou décochez la case).', ['#f-nl-mail']); }
       err('');
       const fields = { 'Titre': titre, 'Catégorie': cat, 'Commune': commune };
       const put = (k, id) => { const v = $(id).value.trim(); if (v) fields[k] = v; };
@@ -907,7 +928,7 @@
     $('#form-again').addEventListener('click', () => {
       form.reset(); photoUrl = ''; $('#drop-img').hidden = true; $('#drop-empty').hidden = false; $('#drop').classList.remove('filled'); say($('#photo-msg'), '');
       $('#f-periode-f').hidden = true; $$('[data-tarif]').forEach(x => x.setAttribute('aria-pressed', 'false'));
-      form.hidden = false; $('#code-box').hidden = false; $('#form-done').hidden = true; wizGo(0, false); memberCode = ''; $('#f-code').value = ''; say($('#code-msg'), ''); $('#code-box').classList.remove('done'); { const cr = $('#code-req'); if (cr) cr.hidden = true; } $('#f-titre').focus();
+      nlAutre = false; nlSync(); form.hidden = false; $('#code-box').hidden = false; $('#form-done').hidden = true; wizGo(0, false); memberCode = ''; $('#f-code').value = ''; say($('#code-msg'), ''); $('#code-box').classList.remove('done'); { const cr = $('#code-req'); if (cr) cr.hidden = true; } $('#f-titre').focus();
     });
   }
 

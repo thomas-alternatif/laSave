@@ -1878,3 +1878,10 @@ html.still .menu-back, html.still .menu-nav a { transition: none; }
    On retire donc les marges avant de centrer la colonne, sinon le contenu de « Tout l'agenda » est écrasé. */
 .view > .page { padding-inline: max(var(--pad), calc((100% - 2 * var(--side) - 820px) / 2)); }
 .view > .page.ag { max-width: none; padding-inline: max(var(--pad), calc((100% - 2 * var(--side) - 980px) / 2)); }
+
+/* case lettre : adresse réutilisée ou saisie à part */
+.nl-box { margin: -4px 0 0 30px; display: grid; gap: 8px; }
+.nl-info { margin: 0; font-size: 13.5px; color: #b9b6ae; }
+.nl-info b { color: #ece9e1; font-weight: 600; word-break: break-all; }
+.nl-box input[type="email"] { width: 100%; max-width: 360px; }
+.link-btn { background: none; border: 0; padding: 0; font: inherit; color: var(--or); text-decoration: underline; cursor: pointer; }
