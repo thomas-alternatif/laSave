@@ -1349,7 +1349,7 @@
           });
           t.appendChild(ue);
         }
-        const foot = el('span', 'st-foot'), pill = el('span', 'st-pill', n ? (n > 3 ? `+ ${n - 3} autre${n - 3 > 1 ? 's' : ''} · ${n} à venir` : `${n} à venir`) : 'Profil'), pl = el('button', 'st-plus', '+');
+        const foot = el('span', 'st-foot'), pill = el('span', 'st-pill', n ? (n > 3 ? `+ ${n - 3} autre${n - 3 > 1 ? 's' : ''} · ${n} à venir` : `${n} à venir`) : String(o['Thème'] || '').trim().slice(0, 28) || 'Profil'), pl = el('button', 'st-plus', '+');
         pl.type = 'button'; pl.setAttribute('aria-label', `Profil de ${o.Nom}`); pl.addEventListener('click', () => openProfile(o, pl));
         foot.appendChild(pill); foot.appendChild(pl); t.appendChild(foot); card.appendChild(t); li.appendChild(card); ul.appendChild(li);
         if (!n) card.classList.add('r' + (smallN++ % 3)); // formats variés : portrait, carré, paysage
