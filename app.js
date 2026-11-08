@@ -1287,7 +1287,9 @@
   function renderStructures() {
     const root = $('#st-list'); if (!root) return;
     const by = new Map();
-    ORGAS.filter(o => o.Nom).forEach(o => { const c = communeOf(o) || 'Autres communes'; (by.get(c) || by.set(c, []).get(c)).push(o); });
+    const lbl = new Map(); // un village écrit de plusieurs façons (tirets, majuscules) ne forme qu'un groupe
+    ORGAS.filter(o => o.Nom).forEach(o => { const c = communeOf(o) || 'Autres communes', k = norm(c); if (!lbl.has(k) || (c.includes('-') && !lbl.get(k).includes('-'))) lbl.set(k, c); (by.get(k) || by.set(k, []).get(k)).push(o); });
+    [...by.keys()].forEach(k => { by.set(lbl.get(k), by.get(k)); by.delete(k); });
     const keys = [...by.keys()].sort((p, q) => (p === 'Autres communes') - (q === 'Autres communes') || p.localeCompare(q, 'fr'));
     root.replaceChildren();
     keys.forEach(c => {
