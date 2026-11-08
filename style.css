@@ -1919,3 +1919,22 @@ fieldset .code-box { margin: 4px 0 22px; padding: 18px 20px; border-style: dashe
 .hpolls-head { display: flex; align-items: center; justify-content: center; gap: 18px; margin: 0 auto 26px; padding-inline: 16px; font: 800 clamp(34px, 5.4vw, 64px)/1 var(--display, 'Archivo', sans-serif); font-stretch: 75%; text-transform: uppercase; color: #fff; text-align: center; text-wrap: balance; }
 .hp-ico { flex: none; width: clamp(56px, 7vw, 84px); height: clamp(56px, 7vw, 84px); border-radius: 50%; display: grid; place-items: center; background: #5C96AB; color: #0a0a0a; }
 .hp-ico svg { width: 52%; height: 52%; }
+
+/* Logo + structure dans « Tout l'agenda » ; page des organisateurs par village */
+.mini-logo { flex: none; width: 22px; height: 22px; border-radius: 50%; overflow: hidden; display: inline-grid; place-items: center; background: var(--gris-1); color: #fff; font-size: 9px; font-weight: 700; letter-spacing: .02em; }
+.mini-logo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.ag-org { display: flex; align-items: center; gap: 7px; margin-top: 2px; min-width: 0; }
+.ag-org-n { font-size: 13px; color: var(--texte-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.orgs-more a { display: inline-block; text-decoration: none; color: inherit; }
+.orgs-more { display: flex; justify-content: center; margin-top: 22px; }
+.st-vil { margin-top: 36px; }
+.st-vil-t { display: inline; font-size: clamp(22px, 3vw, 30px); }
+.st-vil-n { margin-left: 12px; font-size: 13px; color: var(--texte-2); }
+.st-grid { list-style: none; margin: 16px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+.st-card { display: flex; gap: 14px; align-items: flex-start; width: 100%; height: 100%; text-align: left; background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1); border-radius: 16px; color: inherit; font: inherit; padding: 14px; cursor: pointer; }
+.st-card:hover { background: rgba(255,255,255,.09); }
+.st-card:focus-visible { outline: 2px solid var(--or); outline-offset: 3px; }
+.st-card .mini-logo { width: 48px; height: 48px; font-size: 15px; }
+.st-txt { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.st-desc { font-size: 14px; color: var(--texte-2); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.st-ev { font-size: 12.5px; color: var(--texte-2); }

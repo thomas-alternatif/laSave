@@ -1115,6 +1115,11 @@
     if (AG.when === 'weekend' && s === evEnd(e) && new Date(s + 'T12:00:00').getDay() === 5 && (parseInt(e.Heure, 10) || 0) < 17) return false; // le vendredi compte à partir de 17 h
     return true;
   }
+  function miniLogo(nom, ph) {
+    const s = el('span', 'mini-logo'); s.setAttribute('aria-hidden', 'true');
+    if (ph) { const i = img(ph); i.draggable = false; s.appendChild(i); } else { s.textContent = initials(nom); s.style.background = tintOf(nom); }
+    return s;
+  }
   function agItem(e) {
     const li = el('li'), b = el('button', 'ag-item'); b.type = 'button';
     const th = el('span', 'ag-thumb'); th.setAttribute('aria-hidden', 'true'); bg(th, photoOf(e)); b.appendChild(th);
@@ -1126,6 +1131,8 @@
     else { when = hour(e); if (s && en > s) when += (when ? ' · ' : '') + 'jusqu’au ' + fmt(en, { day: 'numeric', month: 'short' }); }
     if (when) m.appendChild(el('span', 'ag-time', when));
     m.appendChild(tel('b', 'ag-name', e.Titre || 'Événement'));
+    const orgN = orgName(e.Organisation);
+    if (orgN) { const og = findOrga(orgN), ph = og && attUrl(og.Photo && og.Photo[0]), r = el('span', 'ag-org'); r.appendChild(miniLogo(orgN, ph)); r.appendChild(el('span', 'ag-org-n', orgN)); m.appendChild(r); }
     const meta = [e.Commune, e.Tarif].filter(Boolean).join(' · ');
     if (meta) m.appendChild(el('span', 'ag-meta', meta));
     b.appendChild(m);
@@ -1270,11 +1277,41 @@
   const LEGAL = { mentions: 'Mentions légales', confidentialite: 'Confidentialité', cookies: 'Cookies', accessibilite: 'Accessibilité' };
   const HOME_ANCHORS = ['rendez-vous', 'envies', 'organisateurs', 'lettre', 'top', 'contenu'];
   let pendingEvent = null;
+  /* ── Page « Les organisateurs par village » ── */
+  function communeOf(o) {
+    if (o.Commune) return String(o.Commune);
+    const n = norm(o.Nom), m = new Map();
+    (ALL || []).forEach(e => { const x = norm(orgName(e.Organisation)); if (x && e.Commune && (x === n || x.includes(n))) m.set(e.Commune, (m.get(e.Commune) || 0) + 1); });
+    return [...m].sort((p, q) => q[1] - p[1])[0]?.[0] || '';
+  }
+  function renderStructures() {
+    const root = $('#st-list'); if (!root) return;
+    const by = new Map();
+    ORGAS.filter(o => o.Nom).forEach(o => { const c = communeOf(o) || 'Autres communes'; (by.get(c) || by.set(c, []).get(c)).push(o); });
+    const keys = [...by.keys()].sort((p, q) => (p === 'Autres communes') - (q === 'Autres communes') || p.localeCompare(q, 'fr'));
+    root.replaceChildren();
+    keys.forEach(c => {
+      const s = el('section', 'st-vil'), list = by.get(c).sort((p, q) => p.Nom.localeCompare(q.Nom, 'fr'));
+      s.appendChild(el('h2', 'st-vil-t', c)); s.appendChild(el('span', 'st-vil-n', `${list.length} structure${list.length > 1 ? 's' : ''}`));
+      const ul = el('ul', 'st-grid');
+      list.forEach(o => {
+        const li = el('li'), b = el('button', 'st-card'); b.type = 'button';
+        b.appendChild(miniLogo(o.Nom, attUrl(o.Photo && o.Photo[0])));
+        const t = el('span', 'st-txt'); t.appendChild(tel('b', 'st-nom', o.Nom));
+        const d = o['Description courte']; if (d) t.appendChild(el('span', 'st-desc', d));
+        const n = eventsOf(o).length; t.appendChild(el('span', 'st-ev', n ? `${n} événement${n > 1 ? 's' : ''} à venir` : 'Aucun événement à venir'));
+        b.appendChild(t); b.addEventListener('click', () => openProfile(o, b)); li.appendChild(b); ul.appendChild(li);
+      });
+      s.appendChild(ul); root.appendChild(s);
+    });
+    if (!keys.length) root.appendChild(el('p', 'ag-empty', 'Aucune structure pour le moment.'));
+  }
   function route() {
     let h = location.hash.slice(1); try { h = decodeURIComponent(h); } catch (_) {} // une adresse tronquée (…%) ne doit pas bloquer tout le site
     let view = 'home';
     if (h === 'partager' || h === 'proposer') view = 'partager';
     else if (h === 'agenda') view = 'agenda';
+    else if (h === 'structures') view = 'structures';
     else if (h === 'sondages') view = 'sondages';
     else if (LEGAL[h]) view = 'legal';
     const was = $$('.view').find(v => !v.hidden);
@@ -1287,11 +1324,13 @@
       $('#legal-title').textContent = LEGAL[h];
       document.title = `${LEGAL[h]} · laSave`;
     } else if (view === 'agenda') document.title = 'Tout l’agenda · laSave';
+    else if (view === 'structures') document.title = 'Les organisateurs par village · laSave';
     else if (view === 'sondages') document.title = 'Les sondages · laSave';
     else if (view === 'partager') document.title = 'Proposer un événement · laSave';
     else document.title = 'laSave · Agenda de la Save';
     const changed = was && was.id !== 'view-' + view;
     if (view === 'agenda') renderAgenda();
+    if (view === 'structures') renderStructures();
     if (view === 'home') {
       flowRender(); fitAll();
       const m = h.match(/^event-(rec\w+)$/);
