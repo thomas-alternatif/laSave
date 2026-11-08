@@ -1999,3 +1999,7 @@ fieldset .code-box { margin: 4px 0 22px; padding: 18px 20px; border-style: dashe
   .st-wide .st-card { flex-direction: column; }
   .st-wide .st-fig { flex: none; aspect-ratio: 4 / 3; min-height: 0; }
 }
+
+/* organisateurs v5 : mosaïque calculée (positions absolues) */
+.st-grid.packed { display: block; position: relative; }
+.st-grid.packed li { position: absolute; }

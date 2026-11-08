@@ -1284,6 +1284,27 @@
     (ALL || []).forEach(e => { const x = norm(orgName(e.Organisation)); if (x && e.Commune && (x === n || x.includes(n))) m.set(e.Commune, (m.get(e.Commune) || 0) + 1); });
     return [...m].sort((p, q) => q[1] - p[1])[0]?.[0] || '';
   }
+  /* Mosaïque sans trous : 3 colonnes, les grandes cartes couvrent 2 colonnes et les petites comblent les vides à côté */
+  function packSt(ul) {
+    const lis = [...ul.children], W = ul.clientWidth, g = 14, cols = W >= 900 ? 3 : W >= 640 ? 2 : 1;
+    if (!W) return;
+    if (cols === 1) { ul.classList.remove('packed'); ul.style.height = ''; lis.forEach(l => { l.style.cssText = ''; }); return; }
+    ul.classList.add('packed');
+    const cw = (W - g * (cols - 1)) / cols, span = l => (cols === 3 && l.classList.contains('st-wide')) ? 2 : 1;
+    lis.forEach(l => { l.style.width = (span(l) === 2 ? cw * 2 + g : cw) + 'px'; });
+    const h = lis.map(l => l.offsetHeight), H = Array(cols).fill(0), todo = lis.map((_, i) => i);
+    const put = (i, c) => { const n = span(lis[i]), top = Math.max(...H.slice(c, c + n)); lis[i].style.left = c * (cw + g) + 'px'; lis[i].style.top = top + 'px'; for (let k = 0; k < n; k++) H[c + k] = top + h[i] + g; };
+    while (todo.length) {
+      const i = todo.shift();
+      if (span(lis[i]) === 1) { put(i, H.indexOf(Math.min(...H))); continue; }
+      let best = 0, bs = Infinity; for (let c = 0; c <= cols - 2; c++) { const sc = Math.max(H[c], H[c + 1]) * 10 + Math.abs(H[c] - H[c + 1]); if (sc < bs) { bs = sc; best = c; } }
+      const s = H[best] < H[best + 1] ? best : best + 1; // colonne la plus basse : on y glisse des petites cartes avant la grande
+      for (let j = 0; j < todo.length; j++) { const k = todo[j]; if (span(lis[k]) === 1 && H[s] + h[k] <= Math.max(H[best], H[best + 1]) + 40) { put(k, s); todo.splice(j, 1); j = -1; } }
+      put(i, best);
+    }
+    ul.style.height = Math.max(...H) - g + 'px';
+  }
+  const rzSt = 'ResizeObserver' in window ? new ResizeObserver(es => { cancelAnimationFrame(rzSt._f); rzSt._f = requestAnimationFrame(() => $$('.st-grid').forEach(packSt)); }) : null;
   function renderStructures() {
     const root = $('#st-list'); if (!root) return;
     let smallN = 0, bigN = 0;
@@ -1325,9 +1346,9 @@
         pl.type = 'button'; pl.setAttribute('aria-label', `Profil de ${o.Nom}`); pl.addEventListener('click', () => openProfile(o, pl));
         foot.appendChild(pill); foot.appendChild(pl); t.appendChild(foot); card.appendChild(t); li.appendChild(card); ul.appendChild(li);
         if (!n) card.classList.add('r' + (smallN++ % 3)); // formats variés : portrait, carré, paysage
-        if ('ResizeObserver' in window) new ResizeObserver(() => { li.style.gridRowEnd = 'span ' + Math.ceil((card.offsetHeight + 14) / 8); }).observe(card); // mosaïque : chaque carte garde sa hauteur
+        if ('ResizeObserver' in window) rzSt.observe(card);
       });
-      s.appendChild(ul); root.appendChild(s);
+      s.appendChild(ul); root.appendChild(s); if ('ResizeObserver' in window) rzSt.observe(ul);
     });
     if (!keys.length) root.appendChild(el('p', 'ag-empty', 'Aucune structure pour le moment.'));
   }
