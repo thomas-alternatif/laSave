@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tout savoir sur laSave</title>
+<meta name="description" content="laSave : tous les événements et ateliers de la vallée de la Save au même endroit, et les outils pour les faire connaître : kit de partage, « Je viens », sondages, lettre du mois, profil d'association.">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,500..900&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--fond:#0d0a12;--carte:#16121d;--carte2:#1d1827;--ligne:rgba(255,255,255,.12);--texte:#f4f3ef;--texte2:#b6b3ac;--or:#FFA823;--violet:#B923FF;--bleu:#5C96AB;--sans:'Instrument Sans',system-ui,-apple-system,'Segoe UI',sans-serif;--disp:Archivo,'Arial Narrow',Arial,sans-serif;--r:28px}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--fond);color:var(--texte);font:400 17px/1.65 var(--sans);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0;z-index:-1;background:radial-gradient(60% 45% at 12% 0%,rgba(92,60,160,.6),transparent 70%),radial-gradient(45% 40% at 95% 12%,rgba(160,50,130,.38),transparent 70%),var(--fond)}
+a{color:var(--or)}
+.wrap{max-width:980px;margin:0 auto;padding:0 20px}
+header.top{padding:22px 0 0;display:flex;align-items:center;justify-content:space-between;gap:16px}
+header.top img{width:112px;height:auto;display:block}
+.pill{font-size:14px;font-weight:600;color:var(--texte);text-decoration:none;border:1.5px solid var(--ligne);border-radius:99px;padding:9px 16px}
+.pill:hover{border-color:var(--or)}
+.kick{font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--texte2);margin:0 0 14px}
+h1,h2{font-family:var(--disp);font-stretch:75%;font-weight:800;text-transform:uppercase;margin:0;text-wrap:balance}
+h1{font-size:clamp(46px,9.4vw,92px);line-height:.9}
+h1 em{font-style:normal;color:var(--or)}
+h2{font-size:clamp(32px,5.4vw,50px);line-height:.96}
+.hero{padding:54px 0 6px;display:grid;grid-template-columns:1.1fr .9fr;gap:30px;align-items:center}
+.lede{font-size:clamp(17px,2.2vw,20px);color:#dedad3;max-width:30em;margin:20px 0 0}
+.actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:26px}
+.btn{display:inline-block;font:600 15px/1 var(--sans);text-decoration:none;border-radius:99px;padding:15px 26px}
+.btn.or{background:var(--or);color:#141210}
+.btn.ghost{border:1.5px solid rgba(255,255,255,.3);color:var(--texte)}
+.gratuit{display:flex;flex-wrap:wrap;gap:8px;margin:22px 0 0;padding:0}
+.gratuit span{font-size:13px;font-weight:600;color:var(--texte2);border:1px solid var(--ligne);border-radius:99px;padding:7px 13px}
+.hero-visu{position:relative;display:flex;justify-content:center;padding:10px 0}
+.phone{width:min(270px,78vw);border-radius:38px;background:#0a0810;border:1.5px solid rgba(255,255,255,.22);padding:16px 14px 18px;box-shadow:0 30px 70px rgba(0,0,0,.55),0 0 0 8px rgba(255,255,255,.04);transform:rotate(3deg)}
+.ph-top{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.ph-top i{width:20px;height:20px;border-radius:50%;background:linear-gradient(140deg,var(--or),var(--violet))}
+.ph-top b{font:800 14px/1 var(--disp);font-stretch:75%;text-transform:uppercase;letter-spacing:.02em}
+.ph-une{border-radius:18px;padding:16px 14px;background:linear-gradient(150deg,#3b2a78,#9a2f80);display:grid;gap:4px;min-height:124px;align-content:end}
+.ph-une small{font:700 10px/1 var(--sans);letter-spacing:.08em;text-transform:uppercase;opacity:.85}
+.ph-une b{font:800 25px/.95 var(--disp);font-stretch:75%;text-transform:uppercase}
+.ph-une span{font-size:12px;opacity:.9}
+.ph-chips{display:flex;gap:6px;margin:12px 0 10px}
+.ph-chips s{text-decoration:none;font-size:11px;font-weight:600;border:1px solid var(--ligne);border-radius:99px;padding:5px 10px}
+.ph-chips s.on{background:var(--or);border-color:var(--or);color:#141210}
+.ph-ev{display:flex;align-items:center;gap:10px;background:#1b1626;border-radius:13px;padding:9px 10px;margin-bottom:7px;font-size:13px;line-height:1.25}
+.ph-ev div{flex:none;width:38px;text-align:center;background:#0a0810;border-radius:9px;padding:5px 0 4px}
+.ph-ev div b{display:block;font:800 17px/1 var(--disp);font-stretch:75%;color:var(--or)}
+.ph-ev div i{font:700 8.5px/1 var(--sans);font-style:normal;text-transform:uppercase;letter-spacing:.06em}
+.ph-ev span{flex:1;min-width:0}
+.ph-ev small{display:block;color:var(--texte2);font-size:11.5px}
+.ph-ev em{font-style:normal;color:#6e6580}
+.flot{position:absolute;background:#fff;color:#141210;font:600 13px/1 var(--sans);border-radius:99px;padding:11px 16px;box-shadow:0 14px 34px rgba(0,0,0,.45);white-space:nowrap}
+.flot b{font:800 19px/1 var(--disp);font-stretch:75%;color:#c46a00;margin-right:3px}
+.flot span{color:#1c9d52;margin-left:4px}
+.f1{left:-14px;top:49%}
+.f2{right:-6px;top:14%}
+.f3{right:2px;bottom:12%;background:var(--or)}
+.saut{display:flex;flex-wrap:wrap;gap:10px;margin:34px 0 0}
+.saut a{font-size:14px;font-weight:600;text-decoration:none;color:var(--texte);background:rgba(255,255,255,.07);border:1px solid var(--ligne);border-radius:99px;padding:10px 17px}
+.saut a:hover{border-color:var(--or)}
+
+/* plan 1 : ce que fait laSave */
+.plan{padding:70px 0 0}
+.plan>.kick{margin-bottom:10px}
+.plan>h2{margin-bottom:12px}
+.plan>.intro{color:var(--texte2);max-width:36em;margin:0 0 30px}
+.feat{display:grid;grid-template-columns:1.05fr 1fr;gap:28px;align-items:center;background:var(--carte);border:1px solid var(--ligne);border-radius:var(--r);padding:30px;margin-bottom:16px}
+.feat.inv{grid-template-columns:1fr 1.05fr}
+.feat.inv .visu{order:-1}
+.feat h3{font:800 clamp(24px,3.6vw,32px)/1 var(--disp);font-stretch:75%;text-transform:uppercase;margin:0 0 12px}
+.feat p{margin:0 0 12px;color:var(--texte2);font-size:16px}
+.feat ul{margin:0;padding:0 0 0 18px;color:var(--texte2);font-size:15.5px}
+.feat li{margin:4px 0}
+.tag{display:inline-block;font:700 11.5px/1 var(--sans);letter-spacing:.08em;text-transform:uppercase;border-radius:99px;padding:6px 11px 5px;margin-bottom:14px;background:rgba(255,168,35,.14);color:var(--or)}
+.tag.v{background:rgba(185,35,255,.18);color:#d98bff}
+.tag.b{background:rgba(92,150,171,.2);color:#8fc4d6}
+.visu{background:var(--carte2);border:1px solid var(--ligne);border-radius:22px;padding:18px;min-width:0}
+.exemple{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--texte2);margin:0 0 12px}
+/* mini visuels */
+.lst{display:grid;gap:8px}
+.ev{display:flex;gap:12px;align-items:center;background:#241e30;border-radius:14px;padding:10px 12px}
+.ev .d{flex:none;width:46px;text-align:center;background:#0d0a12;border-radius:10px;padding:6px 0 5px}
+.ev .d b{display:block;font:800 20px/1 var(--disp);font-stretch:75%;color:var(--or)}
+.ev .d i{font:700 10px/1 var(--sans);font-style:normal;letter-spacing:.06em;text-transform:uppercase}
+.ev span{font-size:14px;line-height:1.3;min-width:0}
+.ev span small{display:block;color:var(--texte2);font-size:12.5px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.chips s{text-decoration:none;font-size:12px;font-weight:600;border:1px solid var(--ligne);border-radius:99px;padding:5px 10px}
+.kit{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:center}
+.story{width:96px;aspect-ratio:9/16;border-radius:14px;background:linear-gradient(160deg,#3b2a78,#8f2e7f);display:flex;flex-direction:column;justify-content:flex-end;padding:9px;font:800 15px/.95 var(--disp);font-stretch:75%;text-transform:uppercase}
+.story small{font:600 8.5px/1.2 var(--sans);text-transform:none;opacity:.85;margin-top:4px}
+.kit .l{display:grid;gap:7px;font-size:13px}
+.kit .l span{background:#241e30;border-radius:10px;padding:8px 11px}
+.kit .l b{color:var(--or)}
+.venir{background:#0d0a12;border-radius:16px;padding:14px 16px}
+.venir .n{font:800 34px/1 var(--disp);font-stretch:75%;color:var(--or)}
+.venir .n small{font:600 14px var(--sans);color:var(--texte);margin-left:6px}
+.venir p{margin:8px 0 0;font-size:13.5px;color:var(--texte2);line-height:1.6}
+.venir p b{color:var(--texte);font-weight:600}
+.btnmini{display:inline-block;margin-top:10px;background:var(--or);color:#141210;font:700 12.5px/1 var(--sans);border-radius:99px;padding:9px 14px}
+.poll{background:#0d0a12;border-radius:16px;padding:14px 16px;font-size:14px}
+.poll b{display:block;margin-bottom:8px}
+.poll .o{height:30px;border-radius:9px;background:#241e30;margin-top:6px;position:relative;overflow:hidden;padding:6px 10px;font-size:12.5px}
+.poll .o::before{content:"";position:absolute;inset:0;width:var(--w);background:rgba(92,150,171,.55);border-radius:9px}
+.poll .o span{position:relative}
+.mail{background:#eceae4;border-radius:14px;padding:12px;color:#141210;font-size:13px}
+.mail .h{height:44px;border-radius:10px;background:linear-gradient(120deg,#2d2a66,#7b3a8d);color:#fff;font:800 17px/44px var(--disp);font-stretch:75%;text-transform:uppercase;padding:0 12px}
+.mail .c{background:#fff;border-radius:10px;margin-top:8px;padding:9px 11px;line-height:1.45}
+.mail .c b{display:block;font-size:12px}
+.profil{background:#0d0a12;border-radius:16px;padding:14px;display:grid;grid-template-columns:54px 1fr;gap:12px;align-items:center}
+.profil i{width:54px;height:54px;border-radius:50%;background:linear-gradient(140deg,var(--or),var(--violet))}
+.profil b{display:block;font-size:15px}
+.profil small{display:block;color:var(--texte2);font-size:12.5px;line-height:1.45;margin-top:2px}
+
+/* plan 2 : comment ça marche */
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.col{background:var(--carte);border:1px solid var(--ligne);border-radius:var(--r);padding:26px}
+.col h3{margin:0 0 18px;font:800 26px/1 var(--disp);font-stretch:75%;text-transform:uppercase}
+.col ol{list-style:none;margin:0;padding:0;display:grid;gap:14px;counter-reset:e}
+.col li{counter-increment:e;display:grid;grid-template-columns:34px 1fr;gap:12px;font-size:15.5px;color:var(--texte2)}
+.col li::before{content:counter(e);font:800 26px/1 var(--disp);font-stretch:75%;color:var(--or);padding-top:2px}
+.col li b{color:var(--texte);font-weight:600}
+
+/* plan 3 : FAQ */
+details{background:var(--carte);border:1px solid var(--ligne);border-radius:20px;padding:0 20px;margin-bottom:10px}
+summary{cursor:pointer;font-weight:600;padding:16px 0;list-style:none;display:flex;justify-content:space-between;gap:12px;font-size:16px}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";color:var(--or);font-size:22px;line-height:1}
+details[open] summary::after{content:"–"}
+details p{margin:0 0 16px;color:var(--texte2);font-size:15.5px}
+.plan.faq{padding-top:60px}
+.plan.faq h2{font-size:clamp(26px,4vw,36px);margin-bottom:18px}
+.fin{margin-top:56px;background:linear-gradient(120deg,#3b2a78,#8f2e7f);border-radius:var(--r);padding:34px 30px;display:flex;flex-wrap:wrap;gap:18px 30px;align-items:center;justify-content:space-between}
+.fin h2{font-size:clamp(28px,4.4vw,40px)}
+footer{margin-top:44px;padding:26px 0 48px;border-top:1px solid var(--ligne);color:var(--texte2);font-size:13.5px;line-height:1.8}
+footer a{color:var(--texte);text-decoration:none;font-weight:600}
+a:focus-visible,summary:focus-visible{outline:2px solid var(--or);outline-offset:3px}
+@media (max-width:760px){.hero{grid-template-columns:1fr;gap:18px;padding-top:40px}.hero-visu{padding:18px 0 6px}.f1{left:0}.f2{right:0}.feat,.feat.inv{grid-template-columns:1fr;padding:22px}.feat.inv .visu{order:0}.duo{grid-template-columns:1fr}.plan{padding-top:56px}}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a href="/"><img src="/test7/logo.png" alt="laSave"></a>
+    <a class="pill" href="/">Voir l’agenda</a>
+  </header>
+
+  <div class="hero">
+    <div class="hero-txt">
+      <p class="kick">Agenda de la vallée de la Save</p>
+      <h1>Toute la vallée,<br><em>un seul agenda.</em></h1>
+      <p class="lede">Concerts, fêtes, marchés, ateliers : les sorties de 31 communes réunies au même endroit. Et pour les organisateurs, de quoi les faire connaître sans y passer la soirée.</p>
+      <div class="actions">
+        <a class="btn or" href="/">Voir l’agenda</a>
+        <a class="btn ghost" href="/#partager">Proposer un événement</a>
+      </div>
+      <p class="gratuit"><span>Gratuit</span><span>Sans compte</span><span>Publié sous 48&nbsp;h</span></p>
+    </div>
+    <div class="hero-visu" aria-hidden="true">
+      <div class="phone">
+        <div class="ph-top"><i></i><b>laSave</b></div>
+        <div class="ph-une"><small>À la une</small><b>Marché de Noël</b><span>Sam. 5 déc. · Saint-Paul</span></div>
+        <div class="ph-chips"><s>Toutes</s><s class="on">Concert</s><s>Gratuit</s></div>
+        <div class="ph-ev"><div><b>12</b><i>déc.</i></div><span>Concert de chorales<small>Bretx</small></span><em>♥</em></div>
+        <div class="ph-ev"><div><b>19</b><i>déc.</i></div><span>Soirée contes<small>Drudas</small></span><em>♥</em></div>
+        <div class="ph-ev"><div><b>20</b><i>déc.</i></div><span>Bal de fin d’année<small>Cadours</small></span><em>♥</em></div>
+      </div>
+      <div class="flot f1"><b>23</b> personnes viennent</div>
+      <div class="flot f2">Story prête <span>✓</span></div>
+      <div class="flot f3">31 communes</div>
+    </div>
+  </div>
+  <nav class="saut" aria-label="Aller à">
+    <a href="#fonctions">Ce que fait laSave</a><a href="#mode-emploi">Comment ça marche</a><a href="#questions">Questions fréquentes</a>
+  </nav>
+
+  <!-- PLAN 1 : ce que fait laSave -->
+  <section class="plan" id="fonctions">
+    <p class="kick">Ce que laSave fait pour vous</p>
+    <h2>Six outils, un seul site</h2>
+    <p class="intro">Une vitrine pour les habitants, des outils pour les organisateurs. Rien à installer.</p>
+
+    <article class="feat">
+      <div>
+        <span class="tag">Pour tous</span>
+        <h3>Tous les événements, un seul agenda</h3>
+        <p>Concerts, fêtes, marchés, spectacles, expositions, ateliers, sorties sportives : toute la vallée est réunie. Fini les affiches éparpillées et les pages à suivre une par une.</p>
+        <ul><li>Filtre par commune, par catégorie, ou seulement le gratuit</li><li>« J’y vais » pour garder ses envies de côté</li><li>Ajout en un clic dans Google Agenda, Apple ou Outlook</li></ul>
+      </div>
+      <div class="visu" aria-hidden="true">
+        <p class="exemple">Exemple</p>
+        <div class="chips"><s>Toutes les communes</s><s>Concert</s><s>Gratuit</s></div>
+        <div class="lst">
+          <div class="ev"><div class="d"><b>05</b><i>déc.</i></div><span>Marché de Noël<small>Saint-Paul-sur-Save · Gratuit</small></span></div>
+          <div class="ev"><div class="d"><b>12</b><i>déc.</i></div><span>Concert de chorales<small>Bretx · Participation libre</small></span></div>
+          <div class="ev"><div class="d"><b>19</b><i>déc.</i></div><span>Soirée contes<small>Drudas · 5 €</small></span></div>
+        </div>
+      </div>
+    </article>
+
+    <article class="feat inv">
+      <div>
+        <span class="tag">Organisateurs</span>
+        <h3>Votre communication, déjà faite</h3>
+        <p>Dès que votre événement est en ligne, laSave vous prépare un « kit de partage » à partir de votre fiche. Vous n’avez plus qu’à publier.</p>
+        <ul><li>Une <b>story</b> prête pour Instagram et Facebook</li><li>Un <b>post</b> pour votre fil, avec l’essentiel</li><li>Un <b>lien</b> qui affiche l’affiche quand on le colle dans un message</li><li>Une <b>invitation</b> mise en forme à envoyer par mail</li></ul>
+      </div>
+      <div class="visu" aria-hidden="true">
+        <p class="exemple">Le kit de partage</p>
+        <div class="kit">
+          <div class="story">Marché<br>de Noël<small>5 déc. · Saint-Paul</small></div>
+          <div class="l"><span><b>Story</b> Instagram, Facebook</span><span><b>Post</b> pour votre fil</span><span><b>Lien</b> avec aperçu</span><span><b>Invitation</b> par mail</span></div>
+        </div>
+      </div>
+    </article>
+
+    <article class="feat">
+      <div>
+        <span class="tag">Organisateurs</span>
+        <h3>« Je viens » : sachez qui sera là</h3>
+        <p>Dans l’invitation que vous envoyez par mail, un bouton « Je viens ». Chaque invité y répond en dix secondes, sans compte : son prénom, et le nombre de personnes qui l’accompagnent.</p>
+        <ul><li>La liste est toujours à jour dans votre kit de partage</li><li>Vous voyez le total (« 23 personnes viennent ») et le prénom de chacun</li><li>Un mail de point d’étape vous prévient la veille ou l’avant-veille, dès que 5 personnes ont répondu</li><li>Pratique pour prévoir les chaises, le repas ou la jauge</li></ul>
+      </div>
+      <div class="visu" aria-hidden="true">
+        <p class="exemple">Ce que voit l’organisateur</p>
+        <div class="venir"><div class="n">23<small>personnes viennent</small></div><p><b>Marie (+2)</b> · Karim · <b>Josette (+1)</b> · Antoine · Léa (+3) · Paul<br><span style="opacity:.7">et 9 autres…</span></p></div>
+        <div class="venir" style="margin-top:8px"><p style="margin:0"><b>Invitation envoyée par mail</b></p><span class="btnmini">Je viens</span></div>
+      </div>
+    </article>
+
+    <article class="feat inv">
+      <div>
+        <span class="tag b">Pour tous</span>
+        <h3>Des sondages pour décider ensemble</h3>
+        <p>Une association ou la mairie veut tester une idée avant de la programmer ? Elle publie un sondage : un lien vers un questionnaire (Google Forms) et une date limite. Il apparaît dans l’onglet Sondages, à côté des événements.</p>
+      </div>
+      <div class="visu" aria-hidden="true">
+        <p class="exemple">Exemple</p>
+        <div class="poll"><b>Quel jour pour le prochain bal ?</b><span style="color:var(--texte2);font-size:12.5px">Jusqu’au 20 novembre</span><br><span class="btnmini">Répondre au questionnaire</span></div>
+      </div>
+    </article>
+
+    <article class="feat">
+      <div>
+        <span class="tag v">Pour tous</span>
+        <h3>La lettre du mois</h3>
+        <p>Une fois par mois, une sélection des sorties à venir dans votre boîte mail. Il suffit d’une adresse e-mail, et chaque lettre contient un lien pour se désinscrire en un clic. Les organisateurs peuvent aussi s’abonner en proposant un événement.</p>
+      </div>
+      <div class="visu" aria-hidden="true">
+        <p class="exemple">Exemple</p>
+        <div class="mail"><div class="h">La lettre du mois</div><div class="c"><b>Décembre</b>Les 3 rendez-vous à ne pas manquer, et tout ce qui se passe dans la vallée.</div></div>
+      </div>
+    </article>
+
+    <article class="feat inv">
+      <div>
+        <span class="tag">Associations</span>
+        <h3>Votre profil d’association</h3>
+        <p>Chaque structure peut avoir sa présentation sur laSave : un nom, une photo, une description et un moyen de la contacter. Les habitants découvrent ceux qui font vivre la vallée, directement depuis la page d’accueil.</p>
+        <ul><li>Sur demande à la mairie : écrivez-nous à contact@la-save.fr</li></ul>
+      </div>
+      <div class="visu" aria-hidden="true">
+        <p class="exemple">Exemple</p>
+        <div class="profil"><i></i><div><b>Les Amis du Théâtre</b><small>Troupe amateur de la vallée. Spectacles, ateliers enfants, répétitions ouvertes.</small></div></div>
+      </div>
+    </article>
+  </section>
+
+  <!-- PLAN 2 : comment ça marche -->
+  <section class="plan" id="mode-emploi">
+    <p class="kick">Mode d’emploi</p>
+    <h2>Comment ça marche</h2>
+    <p class="intro" style="margin-top:12px">Deux minutes pour comprendre, selon que vous veniez sortir ou organiser.</p>
+    <div class="duo">
+      <div class="col">
+        <h3>Je cherche une sortie</h3>
+        <ol>
+          <li><span><b>Ouvrez la-save.fr</b>, sur téléphone ou ordinateur. Aucun compte.</span></li>
+          <li><span><b>Parcourez</b> la page d’accueil, ou filtrez l’agenda par commune, catégorie et tarif.</span></li>
+          <li><span><b>Ouvrez la fiche</b> : date, lieu, tarif, affiche, billetterie.</span></li>
+          <li><span><b>Gardez-la</b> avec « J’y vais », ajoutez-la à votre agenda ou partagez-la à un ami.</span></li>
+        </ol>
+      </div>
+      <div class="col">
+        <h3>J’organise un événement</h3>
+        <ol>
+          <li><span><b>Demandez votre code</b> (facultatif) dans l’onglet « Partager » : vos informations se remplissent ensuite toutes seules.</span></li>
+          <li><span><b>Décrivez l’événement</b> : nom, date, lieu, tarif, affiche, billetterie, réseaux.</span></li>
+          <li><span><b>La mairie le relit</b> et le publie, en général sous 48 h.</span></li>
+          <li><span><b>Vous recevez un mail</b> avec le lien et votre kit de partage.</span></li>
+          <li><span><b>Partagez</b> la story, le post et l’invitation « Je viens ».</span></li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- PLAN 3 : FAQ -->
+  <section class="plan faq" id="questions">
+    <p class="kick">Questions fréquentes</p>
+    <h2>On vous répond</h2>
+    <details><summary>Faut-il un compte pour utiliser laSave ?</summary><p>Non. Consulter l’agenda, mettre des événements de côté, les partager ou répondre « Je viens » ne demande aucun compte.</p></details>
+    <details><summary>C’est vraiment gratuit ?</summary><p>Oui, pour les visiteurs comme pour les organisateurs. Le site est un service de la mairie de Saint-Paul-sur-Save.</p></details>
+    <details><summary>Qui peut proposer un événement ?</summary><p>Les associations, les communes, les compagnies et les particuliers de la vallée de la Save. Chaque proposition est relue par la mairie avant d’être publiée.</p></details>
+    <details><summary>Combien de temps avant que mon événement apparaisse ?</summary><p>En général sous 48 h. Vous recevez un mail dès qu’il est en ligne, avec votre kit de partage.</p></details>
+    <details><summary>À quoi sert le code organisateur ?</summary><p>Il remplit vos informations à votre place à chaque événement et permet à la mairie de vous prévenir à la publication. Il est facultatif : vous pouvez publier sans.</p></details>
+    <details><summary>Comment fonctionne « Je viens » ?</summary><p>Votre invitation par mail contient un bouton « Je viens ». Vos invités indiquent leur prénom et le nombre de personnes, sans compte. Vous voyez la liste dans votre kit de partage, et recevez un point d’étape par mail la veille ou l’avant-veille dès que 5 personnes ont répondu.</p></details>
+    <details><summary>Je me suis trompé, ou la date a changé.</summary><p>Répondez au mail « C’est en ligne » en indiquant ce qui change. La mairie met la fiche à jour.</p></details>
+    <details><summary>Que deviennent mes données ?</summary><p>Seules les informations du formulaire sont conservées, pour publier votre événement et vous prévenir. Votre e-mail et votre message à la mairie ne s’affichent jamais sur le site. Le détail et vos droits sont dans la politique de confidentialité.</p></details>
+    <details><summary>Je ne veux plus recevoir la lettre.</summary><p>Chaque lettre se termine par un lien « Se désinscrire ». Un clic suffit.</p></details>
+    <details><summary>Une autre question ?</summary><p>Écrivez-nous à <a href="mailto:contact@la-save.fr">contact@la-save.fr</a>.</p></details>
+  </section>
+
+  <div class="fin">
+    <h2>Prêt à faire connaître<br>votre événement ?</h2>
+    <a class="btn or" href="/#partager">Proposer un événement</a>
+  </div>
+
+  <footer>
+    Mairie de Saint-Paul-sur-Save — Commission culture<br>
+    <a href="/">la-save.fr</a> &nbsp;·&nbsp; <a href="/#mentions">Mentions légales</a> &nbsp;·&nbsp; <a href="/#confidentialite">Confidentialité</a>
+  </footer>
+</div>
+</body>
+</html>

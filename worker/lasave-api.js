@@ -41,7 +41,7 @@ const F_CONF = 'Envoyer la confirmation', F_CONF_TXT = 'Confirmation par mail'; 
 const MAIL_FROM = { name: 'Agenda de laSave', email: 'agenda@la-save.fr' };
 const MAIL_ADMIN = 'agenda@la-save.fr';
 const SITE = 'https://la-save.fr';
-const GUIDE_PATH = '/test13/guide.html'; // page « Tout savoir sur laSave » (à passer en /guide.html à la bascule)
+const GUIDE_PATH = '/guide.html'; // page « Tout savoir sur laSave » 
 const VERSION = '2026-10-04 · sondages';
 
 /* ── utilitaires ── */
@@ -49,7 +49,7 @@ const pick = (obj, keys) => Object.fromEntries(keys.filter(k => obj[k] !== undef
 const clip = (v, n) => (typeof v === 'string' ? v.slice(0, n) : v);
 const isId = s => /^rec[A-Za-z0-9]{14}$/.test(s || '');
 // Liens lisibles : « fete-des-familles-4-octobre » (titre + jour ; l'ancien format avec 5 signes d'identifiant reste valable)
-const KIT_PATH = '/test13/kit.html';
+const KIT_PATH = '/kit.html';
 const MOIS = ['janvier','fevrier','mars','avril','mai','juin','juillet','aout','septembre','octobre','novembre','decembre'];
 const slugEv = (f, id) => {
   const b = String(f.Titre || '').replace(/œ/gi, 'oe').replace(/æ/gi, 'ae').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
@@ -1085,8 +1085,8 @@ async function route(req, env, ctx) {
     if (KV) await KV.delete('admov');
     ctx.waitUntil(sendMail(env, {
       to: MAIL_ADMIN, subject: `Demande de profil : ${nom}`, replyTo: email,
-      text: `${nom} (${email}) demande la création de son profil sur laSave.\n\n${courte}\n\n${desc}\n\n${contact}\n\nÀ valider : ${SITE}/test13/admin.html#organisateurs`,
-      html: `<div style="font-family:Helvetica,Arial,sans-serif;font-size:15px;color:#16191a;line-height:1.6"><p><strong>${escH(nom)}</strong> (${escH(email)}) demande la création de son profil sur laSave.</p>${courte ? `<p><em>${escH(courte)}</em></p>` : ''}${desc ? `<p>${escH(desc)}</p>` : ''}${contact ? `<p>${escH(contact)}</p>` : ''}<p><a href="${SITE}/test13/admin.html#organisateurs">Voir la demande dans l’admin</a></p></div>`,
+      text: `${nom} (${email}) demande la création de son profil sur laSave.\n\n${courte}\n\n${desc}\n\n${contact}\n\nÀ valider : ${SITE}/admin.html#organisateurs`,
+      html: `<div style="font-family:Helvetica,Arial,sans-serif;font-size:15px;color:#16191a;line-height:1.6"><p><strong>${escH(nom)}</strong> (${escH(email)}) demande la création de son profil sur laSave.</p>${courte ? `<p><em>${escH(courte)}</em></p>` : ''}${desc ? `<p>${escH(desc)}</p>` : ''}${contact ? `<p>${escH(contact)}</p>` : ''}<p><a href="${SITE}/admin.html#organisateurs">Voir la demande dans l’admin</a></p></div>`,
     }).catch(e => console.error('alerte profil', e)));
     return ok;
   }
