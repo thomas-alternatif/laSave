@@ -1336,7 +1336,7 @@
         const li = el('li', n ? 'st-wide ' + (bigN++ % 2 ? 'st-wR' : 'st-wL') : ''), card = el('div', 'st-card');
         card.style.setProperty('--c', PAL[[...o.Nom].reduce((x, ch) => x + ch.charCodeAt(0), 0) % PAL.length]);
         const ph = attUrl(o.Photo && o.Photo[0]), fig = el('button', 'st-fig'); fig.type = 'button'; fig.setAttribute('aria-label', `${o.Nom}, voir le profil`);
-        if (ph) { fig.style.setProperty('--img', `url("${ph}")`); const im = img(ph); im.draggable = false; fig.appendChild(im); } else fig.appendChild(el('span', 'st-ini', initials(o.Nom)));
+        if (ph) { fig.style.setProperty('--img', `url("${ph}")`); const im = img(ph); im.draggable = false; fig.appendChild(im); const fit = () => { if (im.naturalWidth && im.naturalHeight) fig.style.aspectRatio = String(Math.min(2, Math.max(0.7, im.naturalWidth / im.naturalHeight)).toFixed(3)); }; im.complete ? fit() : im.addEventListener('load', fit); } // la zone prend la forme du logo else fig.appendChild(el('span', 'st-ini', initials(o.Nom)));
         fig.addEventListener('click', () => openProfile(o, fig)); card.appendChild(fig);
         const t = el('div', 'st-txt'), nm = el('button', 'st-nom'); nm.type = 'button'; nm.textContent = o.Nom; nm.addEventListener('click', () => openProfile(o, nm)); t.appendChild(nm);
         const d = o['Description courte']; if (d) t.appendChild(el('span', 'st-desc', d));

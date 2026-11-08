@@ -2009,3 +2009,7 @@ fieldset .code-box { margin: 4px 0 22px; padding: 18px 20px; border-style: dashe
 .st-grid:not(.w3) .st-wide .st-fig { flex: none; aspect-ratio: 4 / 3; min-height: 0; }
 .st-grid.w3 .st-wide .st-card { flex-direction: row; }
 .st-grid.w3 .st-wide .st-fig { flex: 0 0 40%; aspect-ratio: auto; min-height: 220px; }
+
+/* v6 : la zone image suit les proportions du logo ; sur les grandes cartes elle remplit la hauteur */
+.st-grid:not(.w3) .st-wide .st-fig { aspect-ratio: auto; }
+.st-fig img { object-fit: contain; }
