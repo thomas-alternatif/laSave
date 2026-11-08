@@ -273,10 +273,9 @@ function publishedMail(f, id, k = '') {
   const titre = f.Titre || 'Votre événement', quand = quandTexte(f), ou = [f.Lieu, f.Commune].filter(Boolean).join(', ');
   const ph = Array.isArray(f.Photo) && f.Photo[0] ? (f.Photo[0].thumbnails?.large?.url || f.Photo[0].url) : '';
   const S = "'Instrument Sans','Helvetica Neue',Helvetica,Arial,sans-serif", D = "Archivo,'Arial Narrow','Helvetica Neue',Arial,sans-serif";
-  const W = '#f4f3ef', G = '#a3a19b', P = '#0e0e0e', L = '#262626';
+  const W = '#141210', G = '#6d6b65', P = '#ffffff', L = '#e4e1d9', T = '#3d3b36'; // thème clair
   const gros = (t, px, c = W, large = false) => `<div style="font-family:${D};font-stretch:${large ? '125%' : '75%'};font-size:${px}px;line-height:.95;font-weight:800;text-transform:uppercase;letter-spacing:${large ? '.01em' : '-.01em'};color:${c};">${t}</div>`;
-  const ep = Array.from({ length: 8 }, (_, i) => `${(i + 1) * .05}em ${(i + 1) * .05}em 0 #0a0a0a`).join(',');
-  const tampon = t => `<span style="display:inline-block;font-family:${D};font-stretch:75%;font-size:14px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;background:#ffffff;color:#0a0a0a;border-radius:.26em;padding:.28em .6em .2em;box-shadow:0 0 0 .06em #0a0a0a,${ep},.4em .4em 0 .06em #ffffff;">${escH(t)}</span>`;
+    const tampon = t => `<span style="display:inline-block;font-family:${D};font-stretch:75%;font-size:14px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;background:#141210;color:#ffffff;border-radius:6px;padding:6px 11px 5px;">${escH(t)}</span>`;
   const btnOr = (h, t) => `<table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td style="border-radius:99px;background:#FFA823;"><a href="${h}" style="display:inline-block;padding:14px 26px;font-family:${S};font-size:15px;font-weight:600;color:#141210;text-decoration:none;border-radius:99px;">${t}</a></td></tr></table>`;
   const btnVerre = (h, t) => `<td style="padding:0 8px 8px 0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td style="border-radius:99px;background:#1a1a1a;border:1.5px solid rgba(255,255,255,.3);"><a href="${h}" style="display:inline-block;padding:11px 16px;font-family:${S};font-size:14px;font-weight:600;color:${W};text-decoration:none;border-radius:99px;white-space:nowrap;">${t}</a></td></tr></table></td>`;
   const meta = (g, d) => `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="font-family:${S};font-size:12px;font-weight:600;color:${W};">${g}</td><td align="right" style="font-family:${S};font-size:12px;color:${G};">${d}</td></tr><tr><td colspan="2" style="padding-top:12px;border-bottom:1px solid ${L};font-size:0;line-height:0;">&nbsp;</td></tr></table>`;
@@ -288,26 +287,25 @@ function publishedMail(f, id, k = '') {
   const msgWa = [`*${titre}*`, quand, ou, f.Tarif].filter(Boolean).join('\n') + `\n\nToutes les infos : ${PS('mailpub')}`;
   const btnApp = (h, ico, petit, nom, bg, fg) => `<td width="49%" valign="top" style="border-radius:14px;background:${bg};"><a href="${h}" style="display:block;padding:14px 14px;text-decoration:none;border-radius:14px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td valign="middle" style="padding-right:10px;"><img src="${SITE}/images/partage/${ico}.png" width="24" height="24" alt="" style="display:block;width:24px;height:24px;border:0;"></td><td valign="middle" style="font-family:${S};color:${fg};line-height:1.15;"><span style="font-size:11px;opacity:.85;">${petit}</span><br><span style="font-size:15px;font-weight:600;">${nom}</span></td></tr></table></a></td>`;
 
-  const html = `<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="dark"><meta name="supported-color-schemes" content="dark"><title>Votre événement est en ligne</title>
+  const html = `<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><meta name="supported-color-schemes" content="light"><title>Votre événement est en ligne</title>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,500..900&family=Instrument+Sans:wght@400;600&display=swap" rel="stylesheet"></head>
-<body style="margin:0;padding:0;background:#050505;">
+<body style="margin:0;padding:0;background:#eceae4;">
 <div style="display:none;max-height:0;overflow:hidden;opacity:0;">${escH(titre)} est maintenant visible sur l’agenda de la vallée de la Save.</div>
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#050505;"><tr><td align="center" style="padding:30px 12px 44px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#eceae4;"><tr><td align="center" style="padding:30px 12px 44px;">
 <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px;">
-  <tr><td style="padding:4px 6px 22px;"><a href="${SITE}"><img src="${SITE}/test7/logo.png" width="118" alt="laSave" style="display:block;width:118px;height:auto;border:0;"></a></td></tr>
+  <tr><td style="padding:0 0 16px;"><a href="${SITE}"><img src="${SITE}/images/mail/mail-en-ligne-header.jpg" width="600" alt="laSave : c’est en ligne !" style="display:block;width:100%;max-width:600px;height:auto;border:0;border-radius:26px;"></a></td></tr>
 
-  <tr><td style="padding:0 0 16px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${P};border-radius:26px;"><tr><td style="padding:26px 26px 30px;">
+  <tr><td style="padding:0 0 16px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${P};border:1px solid ${L};border-radius:26px;"><tr><td style="padding:26px 26px 30px;">
     ${meta('Bonne nouvelle', 'Publication')}
-    <div style="padding-top:26px;">${gros('C’est en ligne&nbsp;!', 64, '#FFA823')}</div>
-    <p style="margin:18px 0 0;font-family:${S};font-size:16px;line-height:1.6;color:#d6d4ce;">${qui}<br>votre événement a été relu par la mairie. Il est maintenant visible par tous sur laSave, l’agenda de la vallée de la Save.${mot ? ` ${escH(MOT_AUTEUR)} vous a laissé un petit message juste en dessous.` : ''}</p>
+    <p style="margin:22px 0 0;font-family:${S};font-size:16px;line-height:1.6;color:${T};">${qui}<br>votre événement a été relu par la mairie. Il est maintenant visible par tous sur laSave, l’agenda de la vallée de la Save.${mot ? ` ${escH(MOT_AUTEUR)} vous a laissé un petit message juste en dessous.` : ''}</p>
   </td></tr></table></td></tr>
 
   ${mot ? `<tr><td style="padding:0 0 16px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#5C96AB;border-radius:26px;"><tr><td style="padding:24px 26px 26px;">
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="font-family:${S};font-size:12px;font-weight:600;color:#ffffff;">Message de ${escH(MOT_AUTEUR)}</td><td align="right" style="font-family:${S};font-size:12px;color:#ffffff;opacity:.8;">À lire</td></tr><tr><td colspan="2" style="padding-top:12px;border-bottom:1px solid #ffffff;font-size:0;line-height:0;">&nbsp;</td></tr></table>
-    <p style="margin:18px 0 0;font-family:${S};font-size:16px;line-height:1.6;color:#ffffff;">${escH(mot).replace(/\n/g, '<br>')}</p>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="font-family:${S};font-size:12px;font-weight:600;color:#0b2a35;">Message de ${escH(MOT_AUTEUR)}</td><td align="right" style="font-family:${S};font-size:12px;color:#0b2a35;opacity:.8;">À lire</td></tr><tr><td colspan="2" style="padding-top:12px;border-bottom:1px solid #0b2a35;font-size:0;line-height:0;">&nbsp;</td></tr></table>
+    <p style="margin:18px 0 0;font-family:${S};font-size:16px;line-height:1.6;color:#0b2a35;">${escH(mot).replace(/\n/g, '<br>')}</p>
   </td></tr></table></td></tr>` : ''}
 
-  <tr><td style="padding:0 0 16px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${P};border-radius:26px;"><tr><td style="padding:26px 26px 30px;">
+  <tr><td style="padding:0 0 16px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${P};border:1px solid ${L};border-radius:26px;"><tr><td style="padding:26px 26px 30px;">
     ${meta('Votre événement', escH(f.Commune || ''))}
     ${ph ? `<a href="${lien}"><img src="${escH(ph)}" width="548" alt="${escH(titre)}" style="display:block;width:100%;max-width:548px;height:auto;border-radius:16px;border:0;margin-top:22px;"></a>` : ''}
     <div style="padding-top:22px;">${tampon(f['Catégorie'] || 'Événement')}</div>
@@ -316,33 +314,33 @@ function publishedMail(f, id, k = '') {
     <div style="padding-top:24px;">${btnOr(lien, 'Voir mon événement')}</div>
   </td></tr></table></td></tr>
 
-  <tr><td style="padding:0 0 16px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${P};border-radius:26px;"><tr><td style="padding:26px 26px 28px;">
+  <tr><td style="padding:0 0 16px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${P};border:1px solid ${L};border-radius:26px;"><tr><td style="padding:26px 26px 28px;">
     ${meta('Faites-le connaître', 'Partage')}
-    <div style="padding-top:22px;">${gros('Partagez-le', 34, '#C955E0', true)}</div>
-    <p style="margin:12px 0 0;font-family:${S};font-size:15px;line-height:1.6;color:#d6d4ce;">Plus il circule, plus il y aura de monde. Tout est prêt pour le partager en deux clics.</p>
+    <div style="padding-top:22px;">${gros('Partagez-le', 34, '#B923FF', true)}</div>
+    <p style="margin:12px 0 0;font-family:${S};font-size:15px;line-height:1.6;color:${T};">Plus il circule, plus il y aura de monde. Tout est prêt pour le partager en deux clics.</p>
 
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:22px;background:#181818;border:1px solid #2c2c2c;border-radius:18px;"><tr><td style="padding:22px 22px 24px;">
-      <div style="font-family:${S};font-size:16px;font-weight:600;line-height:1.4;color:${W};">Votre kit de partage</div>
-      <p style="margin:8px 0 0;font-family:${S};font-size:14px;line-height:1.6;color:#d6d4ce;">Une story Instagram, un visuel avec sa légende, le lien avec l’aperçu de l’affiche et une invitation mail à copier-coller.</p>
-      <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-top:18px;"><tr><td style="border-radius:99px;background:#C955E0;"><a href="${kitUrl}" style="display:inline-block;padding:14px 26px;font-family:${S};font-size:15px;font-weight:600;color:#141210;text-decoration:none;border-radius:99px;">Ouvrir mon kit</a></td></tr></table>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:22px;background:#B923FF;border-radius:18px;"><tr><td style="padding:22px 22px 24px;">
+      <div style="font-family:${S};font-size:16px;font-weight:600;line-height:1.4;color:#ffffff;">Votre kit de partage</div>
+      <p style="margin:8px 0 0;font-family:${S};font-size:14px;line-height:1.6;color:#ffffff;">Une story Instagram, un visuel avec sa légende, le lien avec l’aperçu de l’affiche et une invitation mail à copier-coller.</p>
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-top:18px;"><tr><td style="border-radius:99px;background:#141210;"><a href="${kitUrl}" style="display:inline-block;padding:14px 26px;font-family:${S};font-size:15px;font-weight:600;color:#ffffff;text-decoration:none;border-radius:99px;">Ouvrir mon kit</a></td></tr></table>
     </td></tr></table>
 
     <p style="margin:26px 0 0;font-family:${S};font-size:12px;font-weight:600;color:${W};">Ou en un clic</p>
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:14px;">
       <tr>${btnApp(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(PS('mailpub'))}`, 'facebook', 'Partager sur', 'Facebook', '#1877F2', '#ffffff')}<td width="12" style="width:12px;font-size:0;line-height:0;">&nbsp;</td>${btnApp(`https://wa.me/?text=${encodeURIComponent(msgWa)}`, 'whatsapp', 'Envoyer sur', 'WhatsApp', '#128C7E', '#ffffff')}</tr>
       <tr><td colspan="3" height="10" style="font-size:0;line-height:0;">&nbsp;</td></tr>
-      <tr>${btnApp(`sms:?&body=${encodeURIComponent(msg)}`, 'sms', 'Envoyer par', 'SMS', '#262626', '#ffffff')}<td width="12" style="width:12px;font-size:0;line-height:0;">&nbsp;</td>${btnApp(`mailto:?subject=${encodeURIComponent(titre)}&body=${encodeURIComponent(msg)}`, 'mail', 'Envoyer par', 'E-mail', '#FFA823', '#141210')}</tr>
+      <tr>${btnApp(`sms:?&body=${encodeURIComponent(msg)}`, 'sms', 'Envoyer par', 'SMS', '#3b3a37', '#ffffff')}<td width="12" style="width:12px;font-size:0;line-height:0;">&nbsp;</td>${btnApp(`mailto:?subject=${encodeURIComponent(titre)}&body=${encodeURIComponent(msg)}`, 'mail', 'Envoyer par', 'E-mail', '#FFA823', '#141210')}</tr>
     </table>
 
   </td></tr></table></td></tr>
 
-  <tr><td style="padding:6px 20px 0;font-family:${S};font-size:14px;line-height:1.6;color:#d6d4ce;">Une erreur ou un changement ? <strong style="color:${W};">Répondez simplement à ce mail</strong>, la mairie s’occupe de la correction.</td></tr>
+  <tr><td style="padding:6px 20px 0;font-family:${S};font-size:14px;line-height:1.6;color:${T};">Une erreur ou un changement ? <strong style="color:${W};">Répondez simplement à ce mail</strong>, la mairie s’occupe de la correction.</td></tr>
 
-  <tr><td align="center" style="padding:30px 16px 0;font-family:${S};font-size:12px;line-height:1.8;color:#77756f;">
+  <tr><td style="padding:30px 0 0;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#3a2b45" style="background:#3a2b45;border-radius:26px;"><tr><td align="center" style="padding:24px 18px;font-family:${S};font-size:12px;line-height:1.8;color:#e9e3ee;">
     Mairie de Saint-Paul-sur-Save — Commission culture<br>
-    <a href="${SITE}" style="color:${W};text-decoration:none;font-weight:600;">la-save.fr</a> &nbsp;/&nbsp; <a href="https://linktr.ee/mairiesaintpaulsursave" style="color:${W};text-decoration:none;font-weight:600;">Suivez-nous</a><br>
+    <a href="${SITE}" style="color:#ffffff;text-decoration:none;font-weight:600;">la-save.fr</a> &nbsp;/&nbsp; <a href="https://linktr.ee/mairiesaintpaulsursave" style="color:#ffffff;text-decoration:none;font-weight:600;">Suivez-nous</a><br>
     Vous recevez ce mail car vous avez proposé cet événement sur laSave.
-  </td></tr>
+  </td></tr></table></td></tr>
 </table>
 </td></tr></table></body></html>`;
 
