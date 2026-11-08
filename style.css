@@ -1986,3 +1986,16 @@ fieldset .code-box { margin: 4px 0 22px; padding: 18px 20px; border-style: dashe
 .st-card.r1 .st-fig { aspect-ratio: 1 / 1; }
 .st-card.r2 .st-fig { aspect-ratio: 16 / 10; }
 .st-card.r0 .st-nom { font-size: clamp(22px, 2.6vw, 30px); }
+
+/* organisateurs v4 : trois colonnes, les grandes cartes se décalent à gauche puis à droite */
+@media (min-width: 900px) {
+  .st-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .st-grid li.st-wL { grid-column: 1 / span 2; }
+  .st-grid li.st-wR { grid-column: 2 / span 2; }
+}
+@media (min-width: 640px) and (max-width: 899px) {
+  .st-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .st-grid li.st-wide { grid-column: auto; }
+  .st-wide .st-card { flex-direction: column; }
+  .st-wide .st-fig { flex: none; aspect-ratio: 4 / 3; min-height: 0; }
+}

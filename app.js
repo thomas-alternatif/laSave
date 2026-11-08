@@ -1286,7 +1286,7 @@
   }
   function renderStructures() {
     const root = $('#st-list'); if (!root) return;
-    let smallN = 0;
+    let smallN = 0, bigN = 0;
     const by = new Map();
     const lbl = new Map(); // un village écrit de plusieurs façons (tirets, majuscules) ne forme qu'un groupe
     ORGAS.filter(o => o.Nom).forEach(o => { const c = communeOf(o) || 'Autres communes', k = norm(c); if (!lbl.has(k) || (c.includes('-') && !lbl.get(k).includes('-'))) lbl.set(k, c); (by.get(k) || by.set(k, []).get(k)).push(o); });
@@ -1305,7 +1305,7 @@
       }
       list.forEach(o => {
         const reg = e => isRec(e) || isLong(e) || !evStart(e), evs = eventsOf(o).sort((p, q) => reg(p) - reg(q) || (evStart(p) || '9').localeCompare(evStart(q) || '9')), n = evs.length;
-        const li = el('li', n ? 'st-wide' : ''), card = el('div', 'st-card');
+        const li = el('li', n ? 'st-wide ' + (bigN++ % 2 ? 'st-wR' : 'st-wL') : ''), card = el('div', 'st-card');
         card.style.setProperty('--c', PAL[[...o.Nom].reduce((x, ch) => x + ch.charCodeAt(0), 0) % PAL.length]);
         const ph = attUrl(o.Photo && o.Photo[0]), fig = el('button', 'st-fig'); fig.type = 'button'; fig.setAttribute('aria-label', `${o.Nom}, voir le profil`);
         if (ph) { fig.style.setProperty('--img', `url("${ph}")`); const im = img(ph); im.draggable = false; fig.appendChild(im); } else fig.appendChild(el('span', 'st-ini', initials(o.Nom)));
