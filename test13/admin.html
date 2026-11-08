@@ -42,6 +42,7 @@
       <a href="#evenements" data-s="evenements">Événements <span class="d-badge" id="b-ev" hidden></span></a>
       <a href="#organisateurs" data-s="organisateurs">Organisateurs <span class="d-badge" id="b-org" hidden></span></a>
       <a href="#stats" data-s="stats">Statistiques</a>
+      <a href="#lettre" data-s="lettre">Lettre</a>
       <a href="#archives" data-s="archives">Archives</a>
       <a href="#outils" data-s="outils">Outils</a>
       <a href="#systeme" data-s="systeme">Système</a>
@@ -136,6 +137,17 @@
       </section>
 
       <!-- Archives -->
+      <!-- Lettre -->
+      <section class="d-sec" id="s-lettre" hidden>
+        <h1 class="d-h1">Lettre <span id="n-n"></span></h1>
+        <div class="d-card">
+          <p class="d-sub" id="n-txt">Chargement…</p>
+          <div class="acts"><button type="button" class="d-btn sm" id="n-copy" disabled>Copier toutes les adresses</button> <button type="button" class="d-btn sm ghost" id="n-csv" disabled>Télécharger en CSV</button></div>
+        </div>
+        <div class="d-card flush"><ul class="d-rows" id="n-list"></ul></div>
+        <p class="d-note">Ce sont les inscrits à la liste de diffusion (site et formulaire d’événement). Chaque mail contient un lien de désinscription.</p>
+      </section>
+
       <section class="d-sec" id="s-archives" hidden>
         <h1 class="d-h1">Archives</h1>
         <div class="d-card">
@@ -224,7 +236,7 @@
   <!-- Fiche d'un événement -->
   <div class="d-sheet" id="d-sheet" hidden><div class="d-sheet-box" role="dialog" aria-modal="true" aria-label="Fiche de l’événement" id="d-sheet-box"></div></div>
 
-  <script src="admin.js?v=3"></script>
+  <script src="admin.js?v=4"></script>
   <script src="admin-sys.js?v=1"></script>
   <script src="admin-stats.js?v=1"></script>
 </body>

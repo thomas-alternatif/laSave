@@ -1068,7 +1068,7 @@ async function route(req, env, ctx) {
     catch (e) { console.error('newsletter', e.message); return json(req, { error: 'L’inscription n’a pas marché, réessayez dans un moment.' }, 502); }
     const nouveau = r.status === 201;
     if (nouveau) {
-      stat(env, 'newsletter', 'site', ['site', 'test'].includes(b.src) ? b.src : 'site');
+      stat(env, 'newsletter', 'site', ['site', 'test', 'formulaire'].includes(b.src) ? b.src : 'site');
       const stop = `${API_ORIGIN}/newsletter/stop?e=${encodeURIComponent(email)}&t=${await nlSig(env, email)}`;
       ctx.waitUntil(sendMail(env, { to: email, ...bienvenueMail(stop), replyTo: 'contact@la-save.fr' }).catch(e => console.error('bienvenue', e.message)));
     }
@@ -1223,6 +1223,18 @@ async function route(req, env, ctx) {
       if (env.DB) { try { await rsvpTable(env.DB); for (const x of (await env.DB.prepare('SELECT ev, COUNT(*) AS n, SUM(nb) AS total FROM rsvp GROUP BY ev').all()).results || []) rsvp[x.ev] = { n: x.n, total: x.total }; } catch {} }
       const snap = KV ? await KV.get('snap', 'json') : null;
       return json(req, { ...ov, rsvp, copie: snap ? new Date(snap.at).toISOString() : null, enLigne: snap ? (snap.events || []).length : null, journal: KV ? ((await KV.get('jrnl', 'json')) || []).slice(0, 8) : [], services: { kv: !!KV, d1: !!env.DB, brevo: !!env.BREVO_KEY, stats: !!(env.STATS || env.DB) } }, 200, { 'Cache-Control': 'no-store' });
+    }
+    // Newsletter : liste des abonnés (liste Brevo)
+    if (m === 'GET' && p === '/admin/newsletter') {
+      if (!env.BREVO_KEY) return json(req, { error: 'Brevo n’est pas configuré.' }, 503);
+      const id = await nlListe(env), out = []; let total = 0;
+      for (let off = 0; off < 5000; off += 500) {
+        const d = (await brevo(env, `/contacts/lists/${id}/contacts?limit=500&offset=${off}&sort=desc`)).d;
+        total = d.count || 0;
+        for (const c of d.contacts || []) if (!c.emailBlacklisted) out.push({ email: c.email, date: c.createdAt || '' });
+        if (!(d.contacts || []).length || off + 500 >= total) break;
+      }
+      return json(req, { total: out.length, abonnes: out });
     }
     // Affiches à sauvegarder : liste (avec les liens frais d'Airtable) puis téléchargement d'un fichier par le Worker
     if (m === 'GET' && p === '/admin/affiches') {

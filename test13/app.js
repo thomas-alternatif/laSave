@@ -872,6 +872,8 @@
       if (d1 && d2 && d2 < d1) return err('La date de fin est avant la date de début.', ['#f-date-fin']);
       if (!$('#f-consent').checked) return err('Cochez la case d’accord pour que la mairie puisse publier votre événement.', ['#f-consent']);
       if (uploading) return err('L’affiche est encore en cours d’envoi, patientez une seconde.');
+      const nlOn = $('#f-nl') && $('#f-nl').checked, nlMail = $('#f-cprive').value.trim();
+      if (nlOn && !/^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(nlMail)) return err('Pour recevoir la lettre, indiquez une adresse e-mail valide dans « Contact privé » (ou décochez la case).', ['#f-cprive']);
       err('');
       const fields = { 'Titre': titre, 'Catégorie': cat, 'Commune': commune };
       const put = (k, id) => { const v = $(id).value.trim(); if (v) fields[k] = v; };
@@ -893,6 +895,7 @@
       const btn = $('#f-send'), bt = btn.querySelector('.glow-t'); btn.disabled = true; bt.textContent = 'Envoi…';
       try {
         await api('/events', { method: 'POST', body: JSON.stringify(fields) });
+        if (nlOn) api('/newsletter', { method: 'POST', body: JSON.stringify({ email: nlMail, website: '', src: 'formulaire' }) }).catch(() => {}); // l'abonnement ne doit jamais bloquer l'envoi de l'événement
         form.hidden = true; $('#code-box').hidden = true;
         const done = $('#form-done'); done.hidden = false; done.focus();
         done.scrollIntoView({ block: 'center', behavior: reduce ? 'auto' : 'smooth' });

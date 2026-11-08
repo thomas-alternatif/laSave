@@ -80,7 +80,7 @@
   }
 
   /* ── navigation ── */
-  const TITRES = { vue: 'Vue d’ensemble', evenements: 'Événements', organisateurs: 'Organisateurs', stats: 'Statistiques', archives: 'Archives', outils: 'Outils', systeme: 'Système', raccourcis: 'Raccourcis' };
+  const TITRES = { vue: 'Vue d’ensemble', evenements: 'Événements', organisateurs: 'Organisateurs', stats: 'Statistiques', lettre: 'Lettre', archives: 'Archives', outils: 'Outils', systeme: 'Système', raccourcis: 'Raccourcis' };
   function section() { const h = location.hash.slice(1); return TITRES[h] ? h : 'vue'; }
   function afficher() {
     if (!ov) return;
@@ -89,7 +89,7 @@
     $$('#d-nav a').forEach(a => { const on = a.dataset.s === s; a.classList.toggle('on', on); on ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current'); });
     document.title = TITRES[s] + ' · Tableau de bord · laSave';
     const actif = $('#d-nav a.on'); if (actif) { const nav = $('#d-nav'); nav.scrollLeft = actif.offsetLeft - (nav.clientWidth - actif.offsetWidth) / 2; }
-    ({ vue: () => LS.rend.vue && LS.rend.vue(), evenements: rEvenements, organisateurs: rOrgas, stats: () => LS.rend.stats && LS.rend.stats(), archives: rArchives, outils: () => {}, systeme: () => LS.rend.systeme && LS.rend.systeme(), raccourcis: () => LS.rend.raccourcis && LS.rend.raccourcis() })[s]();
+    ({ vue: () => LS.rend.vue && LS.rend.vue(), evenements: rEvenements, organisateurs: rOrgas, stats: () => LS.rend.stats && LS.rend.stats(), lettre: rLettre, archives: rArchives, outils: () => {}, systeme: () => LS.rend.systeme && LS.rend.systeme(), raccourcis: () => LS.rend.raccourcis && LS.rend.raccourcis() })[s]();
   }
   window.addEventListener('hashchange', () => { afficher(); window.scrollTo({ top: 0 }); });
   const aller = (h, f) => { if (f) { filtre = f; q = ''; $('#e-q').value = ''; } if (location.hash === '#' + h) afficher(); else location.hash = h; };
@@ -195,6 +195,20 @@
       li.append(t, acts); all.append(li);
     });
   }
+
+  /* ── lettre : abonnés de la liste de diffusion ── */
+  let abonnes = [];
+  async function rLettre() {
+    const ul = $('#n-list'), txt = $('#n-txt'), cp = $('#n-copy'), cv = $('#n-csv');
+    cp.disabled = cv.disabled = true; txt.textContent = 'Chargement…';
+    try { abonnes = (await call('/admin/newsletter')).abonnes; } catch (e) { txt.textContent = e.message; return; }
+    ul.innerHTML = ''; $('#n-n').textContent = `(${abonnes.length})`;
+    txt.textContent = abonnes.length ? pl(abonnes.length, 'abonné', 'abonnés') : 'Personne n’est encore inscrit.';
+    abonnes.forEach(a => { const li = el('li'), t = el('div', 't'); t.append(el('b', '', a.email), el('small', '', a.date ? 'inscrit ' + new Date(a.date).toLocaleDateString('fr-FR') : '')); li.append(t); ul.append(li); });
+    cp.disabled = cv.disabled = !abonnes.length;
+  }
+  $('#n-copy').addEventListener('click', async () => { try { await navigator.clipboard.writeText(abonnes.map(a => a.email).join(', ')); msg('Adresses copiées.'); } catch { msg('Copie impossible, sélectionnez à la main.', true); } });
+  $('#n-csv').addEventListener('click', () => { const u = URL.createObjectURL(new Blob(['email,inscription\n' + abonnes.map(a => a.email + ',' + a.date).join('\n')], { type: 'text/csv' })); const a = el('a'); a.href = u; a.download = 'abonnes-lasave.csv'; a.click(); setTimeout(() => URL.revokeObjectURL(u), 1000); });
 
   /* ── archives : sauvegarde des affiches ── */
   let listeAff = [];
