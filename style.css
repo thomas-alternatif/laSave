@@ -1938,3 +1938,22 @@ fieldset .code-box { margin: 4px 0 22px; padding: 18px 20px; border-style: dashe
 .st-txt { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
 .st-desc { font-size: 14px; color: var(--texte-2); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .st-ev { font-size: 12.5px; color: var(--texte-2); }
+
+/* Page des organisateurs : mosaïque de cartes colorées */
+.st-grid { grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); grid-auto-flow: dense; gap: 14px; }
+.st-grid li { display: flex; }
+@media (min-width: 640px) { .st-grid li.st-wide { grid-column: span 2; } }
+.st-grid .st-card { flex-direction: column; gap: 14px; padding: 12px 12px 14px; border-radius: 20px; background: var(--c); border: 0; color: #111; align-items: stretch; }
+.st-grid .st-card:hover { background: var(--c); filter: brightness(1.06); transform: translateY(-2px); }
+.st-grid .st-card { transition: transform .18s ease, filter .18s ease; }
+.st-fig { display: grid; place-items: center; aspect-ratio: 4 / 3; border-radius: 14px; overflow: hidden; background: rgba(0,0,0,.14); }
+.st-fig img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.st-ini { font: 800 44px/1 var(--display); color: rgba(0,0,0,.45); }
+.st-txt { flex: 1; display: flex; flex-direction: column; gap: 6px; padding: 0 4px; }
+.st-nom { font: 800 clamp(20px, 2.2vw, 26px)/.98 var(--display); font-stretch: 78%; text-transform: uppercase; text-wrap: balance; overflow-wrap: anywhere; }
+.st-grid .st-desc { color: rgba(0,0,0,.72); font-size: 14px; }
+.st-foot { margin-top: auto; padding-top: 10px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.st-pill { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; border: 1px solid rgba(0,0,0,.7); border-radius: 99px; padding: 4px 10px; }
+.st-plus { width: 30px; height: 30px; border-radius: 50%; border: 1.5px solid #111; display: grid; place-items: center; font-size: 20px; line-height: 1; padding-bottom: 2px; }
+@media (min-width: 640px) { .st-wide .st-card { flex-direction: row; } .st-wide .st-fig { flex: 0 0 46%; aspect-ratio: auto; min-height: 190px; } .st-wide .st-txt { padding-top: 4px; } }
+@media (prefers-reduced-motion: reduce) { .st-grid .st-card { transition: none; } .st-grid .st-card:hover { transform: none; } }

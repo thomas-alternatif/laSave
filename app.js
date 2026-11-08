@@ -1296,13 +1296,18 @@
       const s = el('section', 'st-vil'), list = by.get(c).sort((p, q) => p.Nom.localeCompare(q.Nom, 'fr'));
       s.appendChild(el('h2', 'st-vil-t', c)); s.appendChild(el('span', 'st-vil-n', `${list.length} structure${list.length > 1 ? 's' : ''}`));
       const ul = el('ul', 'st-grid');
-      list.forEach(o => {
-        const li = el('li'), b = el('button', 'st-card'); b.type = 'button';
-        b.appendChild(miniLogo(o.Nom, attUrl(o.Photo && o.Photo[0])));
+      const PAL = ['#6b9bf5', '#e9573a', '#c48ac9', '#f4b32a', '#9aa63f', '#d98c80', '#efe3cd'];
+      list.forEach((o, ix) => {
+        const li = el('li', ix % 5 === 1 ? 'st-wide' : ''), b = el('button', 'st-card'); b.type = 'button';
+        b.style.setProperty('--c', PAL[[...o.Nom].reduce((x, ch) => x + ch.charCodeAt(0), 0) % PAL.length]);
+        const ph = attUrl(o.Photo && o.Photo[0]), fig = el('span', 'st-fig'); fig.setAttribute('aria-hidden', 'true');
+        if (ph) { const im = img(ph); im.draggable = false; fig.appendChild(im); } else fig.appendChild(el('span', 'st-ini', initials(o.Nom)));
+        b.appendChild(fig);
         const t = el('span', 'st-txt'); t.appendChild(tel('b', 'st-nom', o.Nom));
         const d = o['Description courte']; if (d) t.appendChild(el('span', 'st-desc', d));
-        const n = eventsOf(o).length; t.appendChild(el('span', 'st-ev', n ? `${n} événement${n > 1 ? 's' : ''} à venir` : 'Aucun événement à venir'));
-        b.appendChild(t); b.addEventListener('click', () => openProfile(o, b)); li.appendChild(b); ul.appendChild(li);
+        const n = eventsOf(o).length, foot = el('span', 'st-foot');
+        foot.appendChild(el('span', 'st-pill', n ? `${n} événement${n > 1 ? 's' : ''}` : 'Profil')); foot.appendChild(el('span', 'st-plus', '+'));
+        t.appendChild(foot); b.appendChild(t); b.addEventListener('click', () => openProfile(o, b)); li.appendChild(b); ul.appendChild(li);
       });
       s.appendChild(ul); root.appendChild(s);
     });
