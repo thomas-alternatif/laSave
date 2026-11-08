@@ -207,6 +207,12 @@
     abonnes.forEach(a => { const li = el('li'), t = el('div', 't'); t.append(el('b', '', a.email), el('small', '', a.date ? 'inscrit ' + new Date(a.date).toLocaleDateString('fr-FR') : '')); li.append(t); ul.append(li); });
     cp.disabled = cv.disabled = !abonnes.length;
   }
+  $('#n-test').addEventListener('click', async e => {
+    const to = $('#n-to').value.trim(); if (!to) return msg('Indiquez une adresse e-mail.', true);
+    e.target.disabled = true;
+    try { await call('/admin/test-lettre', { method: 'POST', body: JSON.stringify({ to }) }); msg('Exemple envoyé à ' + to + '.'); } catch (x) { msg(x.message, true); }
+    e.target.disabled = false;
+  });
   $('#n-copy').addEventListener('click', async () => { try { await navigator.clipboard.writeText(abonnes.map(a => a.email).join(', ')); msg('Adresses copiées.'); } catch { msg('Copie impossible, sélectionnez à la main.', true); } });
   $('#n-csv').addEventListener('click', () => { const u = URL.createObjectURL(new Blob(['email,inscription\n' + abonnes.map(a => a.email + ',' + a.date).join('\n')], { type: 'text/csv' })); const a = el('a'); a.href = u; a.download = 'abonnes-lasave.csv'; a.click(); setTimeout(() => URL.revokeObjectURL(u), 1000); });
 

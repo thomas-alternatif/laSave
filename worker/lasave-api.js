@@ -415,6 +415,52 @@ function bienvenueMail(stop) {
   const text = `Bienvenue !\n\nMerci pour votre inscription à la lettre de laSave. Chaque début de mois, vous recevrez les sorties de la vallée de la Save.\n\nL'agenda : ${SITE}\n\nSe désinscrire : ${stop}`;
   return { subject: 'Bienvenue dans la lettre de laSave', html, text };
 }
+
+/* ── La lettre du mois (maquette : contenu fictif tant que la vraie lettre n'est pas écrite) ── */
+const LETTRE_EXEMPLE = {
+  mois: 'Décembre 2026',
+  edito: 'Les soirées raccourcissent, mais l’agenda, lui, ne se repose pas. Voici une sélection de ce qui se passe dans la vallée ce mois-ci : de quoi sortir de chez soi, se retrouver et faire vivre nos villages.',
+  vedettes: [
+    { jour: '05', mois: 'déc.', titre: 'Marché de Noël des producteurs', lieu: 'Place de la mairie, Saint-Paul-sur-Save', tarif: 'Entrée libre' },
+    { jour: '12', mois: 'déc.', titre: 'Concert de chorales de la vallée', lieu: 'Église, Bretx', tarif: 'Participation libre' },
+    { jour: '19', mois: 'déc.', titre: 'Soirée contes et soupe à l’oignon', lieu: 'Salle des fêtes, Drudas', tarif: '5 €' },
+  ],
+  aussi: ['Samedi 6 déc. : Loto des écoles, Mondonville', 'Dimanche 7 déc. : Randonnée de l’Avent, Lasserre-Pradère', 'Mercredi 17 déc. : Atelier créatif enfants, médiathèque', 'Samedi 20 déc. : Bal de fin d’année, Cadours'],
+  nouvelle: { titre: 'Un événement à proposer ?', texte: 'Associations, mairies, particuliers : publier une date sur laSave prend deux minutes et c’est gratuit. La commission culture la relit et vous prévient dès qu’elle est en ligne.' },
+};
+function lettreMail(stop, d = LETTRE_EXEMPLE, exemple = false) {
+  const S = "'Instrument Sans','Helvetica Neue',Helvetica,Arial,sans-serif", D = "Archivo,'Arial Narrow','Helvetica Neue',Arial,sans-serif";
+  const W = '#141210', G = '#6d6b65', P = '#ffffff', L = '#e4e1d9', T = '#3d3b36';
+  const carte = (inner, extra = '') => `<tr><td style="padding:0 0 16px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${P};border:1px solid ${L};border-radius:26px;${extra}"><tr><td style="padding:26px;">${inner}</td></tr></table></td></tr>`;
+  const titreSec = t => `<div style="font-family:${S};font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:${G};padding-bottom:14px;border-bottom:1px solid ${L};">${t}</div>`;
+  const vedette = v => `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:18px;"><tr>
+    <td width="64" valign="top"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="background:${W};border-radius:12px;"><tr><td align="center" style="width:58px;padding:9px 0 8px;"><div style="font-family:${D};font-stretch:75%;font-size:28px;line-height:1;font-weight:800;color:#FFA823;">${escH(v.jour)}</div><div style="font-family:${S};font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#ffffff;padding-top:3px;">${escH(v.mois)}</div></td></tr></table></td>
+    <td valign="top" style="padding-left:14px;"><div style="font-family:${D};font-stretch:75%;font-size:21px;line-height:1.05;font-weight:800;text-transform:uppercase;color:${W};">${escH(v.titre)}</div><div style="font-family:${S};font-size:14px;line-height:1.5;color:${T};padding-top:5px;">${escH(v.lieu)}${v.tarif ? ' · ' + escH(v.tarif) : ''}</div></td></tr></table>`;
+  const html = `<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><meta name="supported-color-schemes" content="light"><title>La lettre de laSave · ${escH(d.mois)}</title>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,500..900&family=Instrument+Sans:wght@400;600&display=swap" rel="stylesheet"></head>
+<body style="margin:0;padding:0;background:#eceae4;">
+<div style="display:none;max-height:0;overflow:hidden;opacity:0;">${escH(d.edito.slice(0, 110))}</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#eceae4;"><tr><td align="center" style="padding:30px 12px 44px;">
+<table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px;">
+  ${exemple ? `<tr><td align="center" style="padding:0 0 12px;font-family:${S};font-size:12px;color:${G};">Maquette de test : le contenu de cette lettre est fictif.</td></tr>` : ''}
+  <tr><td style="padding:0 0 16px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${W};border-radius:26px;"><tr><td style="padding:28px 26px 30px;">
+    <img src="${SITE}/test7/logo.png" width="104" alt="laSave" style="display:block;width:104px;height:auto;border:0;">
+    <div style="padding-top:26px;font-family:${S};font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#a3a19b;">La lettre de laSave</div>
+    <div style="padding-top:8px;font-family:${D};font-stretch:75%;font-size:58px;line-height:.92;font-weight:800;text-transform:uppercase;color:#FFA823;">${escH(d.mois)}</div>
+  </td></tr></table></td></tr>
+  ${carte(`<p style="margin:0;font-family:${S};font-size:16px;line-height:1.6;color:${T};">${escH(d.edito)}</p>`)}
+  ${carte(titreSec('À ne pas manquer') + d.vedettes.map(vedette).join('') + `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-top:24px;"><tr><td style="border-radius:99px;background:#FFA823;"><a href="${SITE}" style="display:inline-block;padding:14px 26px;font-family:${S};font-size:15px;font-weight:600;color:#141210;text-decoration:none;border-radius:99px;">Tout l’agenda du mois</a></td></tr></table>`)}
+  ${carte(titreSec('Et aussi') + `<ul style="margin:14px 0 0;padding:0 0 0 18px;font-family:${S};font-size:15px;line-height:1.7;color:${T};">${d.aussi.map(a => `<li>${escH(a)}</li>`).join('')}</ul>`)}
+  ${carte(`<div style="font-family:${D};font-stretch:75%;font-size:26px;line-height:1;font-weight:800;text-transform:uppercase;color:#0b2a35;">${escH(d.nouvelle.titre)}</div><p style="margin:12px 0 0;font-family:${S};font-size:15px;line-height:1.6;color:#0b2a35;">${escH(d.nouvelle.texte)}</p><p style="margin:14px 0 0;font-family:${S};font-size:15px;"><a href="${SITE}/#proposer" style="color:#0b2a35;font-weight:600;">Proposer un événement</a></p>`, 'background:#5C96AB;border-color:#5C96AB;')}
+  <tr><td align="center" style="padding:14px 16px 0;font-family:${S};font-size:12px;line-height:1.8;color:${G};">
+    Mairie de Saint-Paul-sur-Save — Commission culture<br>
+    <a href="${SITE}" style="color:${W};text-decoration:none;font-weight:600;">la-save.fr</a><br>
+    Vous recevez ce mail car vous êtes inscrit à la lettre de laSave.<br><a href="${stop}" style="color:${G};">Se désinscrire</a>
+  </td></tr>
+</table></td></tr></table></body></html>`;
+  const text = `La lettre de laSave · ${d.mois}\n\n${d.edito}\n\nÀ ne pas manquer :\n${d.vedettes.map(v => `- ${v.jour} ${v.mois} : ${v.titre} (${v.lieu}${v.tarif ? ', ' + v.tarif : ''})`).join('\n')}\n\nEt aussi :\n${d.aussi.map(a => '- ' + a).join('\n')}\n\nTout l'agenda : ${SITE}\n\nSe désinscrire : ${stop}`;
+  return { subject: `La lettre de laSave · ${d.mois}`, html, text };
+}
 const pageSimple = (titre, texte) => new Response(`<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>${titre} · laSave</title></head>
 <body style="margin:0;min-height:100vh;display:grid;place-items:center;background:#050505;color:#f4f3ef;font:16px/1.6 'Helvetica Neue',Arial,sans-serif;padding:24px;box-sizing:border-box;">
 <main style="max-width:440px;text-align:center;"><h1 style="font-size:28px;margin:0 0 12px;">${titre}</h1><p style="color:#d6d4ce;margin:0 0 24px;">${texte}</p><a href="${SITE}" style="display:inline-block;padding:13px 24px;border-radius:99px;background:#FFA823;color:#141210;font-weight:600;text-decoration:none;">Retour à l’agenda</a></main></body></html>`,
@@ -1223,6 +1269,16 @@ async function route(req, env, ctx) {
       if (env.DB) { try { await rsvpTable(env.DB); for (const x of (await env.DB.prepare('SELECT ev, COUNT(*) AS n, SUM(nb) AS total FROM rsvp GROUP BY ev').all()).results || []) rsvp[x.ev] = { n: x.n, total: x.total }; } catch {} }
       const snap = KV ? await KV.get('snap', 'json') : null;
       return json(req, { ...ov, rsvp, copie: snap ? new Date(snap.at).toISOString() : null, enLigne: snap ? (snap.events || []).length : null, journal: KV ? ((await KV.get('jrnl', 'json')) || []).slice(0, 8) : [], services: { kv: !!KV, d1: !!env.DB, brevo: !!env.BREVO_KEY, stats: !!(env.STATS || env.DB) } }, 200, { 'Cache-Control': 'no-store' });
+    }
+    // Lettre du mois : envoi d'une maquette (contenu fictif) pour voir le rendu dans une vraie boîte mail
+    if (m === 'POST' && p === '/admin/test-lettre') {
+      if (!env.BREVO_KEY) return json(req, { error: "La clé Brevo n'est pas configurée." }, 500);
+      const to = String((await body()).to || '').trim().toLowerCase();
+      if (!isEmail(to)) return json(req, { error: 'Adresse e-mail invalide.' }, 400);
+      const stop = `${API_ORIGIN}/newsletter/stop?e=${encodeURIComponent(to)}&t=${await nlSig(env, to)}`;
+      const mail = lettreMail(stop, LETTRE_EXEMPLE, true);
+      await sendMail(env, { to, ...mail, subject: '[Exemple] ' + mail.subject, replyTo: 'contact@la-save.fr' });
+      return json(req, { ok: true });
     }
     // Newsletter : liste des abonnés (liste Brevo)
     if (m === 'GET' && p === '/admin/newsletter') {
