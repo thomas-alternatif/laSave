@@ -1486,7 +1486,7 @@
     if (loadErr) { const st = $('#flow-stage'); st.textContent = ''; st.appendChild(el('p', 'empty', 'Impossible de charger l’agenda pour le moment. Vérifiez votre connexion puis rechargez la page.')); const fc = $('.flow-ctrl'); if (fc) fc.hidden = true; }
     buildRows(UP);
     buildOrgs(ORGAS);
-    agSetup(); renderAgenda(); buildPolls();
+    agSetup(); renderAgenda(); renderStructures(); buildPolls();
     // vrais chiffres dans les titres de section
     { const n = UP.length, o = (ORGAS || []).length, ka = $('#kick-agenda'), ko = $('#kick-orgs');
       if (ka && n >= 3) ka.textContent = `${n} événements à venir dans la vallée`;
