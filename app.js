@@ -1289,7 +1289,6 @@
     const lis = [...ul.children], W = ul.clientWidth, g = 14, cols = W >= 760 ? 3 : W >= 480 ? 2 : 1;
     if (!W) return;
     ul.classList.toggle('w3', cols === 3);
-    if (cols === 1) { ul.classList.remove('packed'); ul.style.height = ''; lis.forEach(l => { l.style.cssText = ''; }); return; }
     ul.classList.add('packed');
     const cw = (W - g * (cols - 1)) / cols, span = l => (cols === 3 && l.classList.contains('st-wide')) ? 2 : 1;
     lis.forEach(l => { l.style.width = (span(l) === 2 ? cw * 2 + g : cw) + 'px'; l.firstElementChild.style.minHeight = ''; });
