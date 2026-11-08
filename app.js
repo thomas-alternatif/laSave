@@ -1286,8 +1286,9 @@
   }
   /* Mosaïque sans trous : 3 colonnes, les grandes cartes couvrent 2 colonnes et les petites comblent les vides à côté */
   function packSt(ul) {
-    const lis = [...ul.children], W = ul.clientWidth, g = 14, cols = W >= 900 ? 3 : W >= 640 ? 2 : 1;
+    const lis = [...ul.children], W = ul.clientWidth, g = 14, cols = W >= 760 ? 3 : W >= 480 ? 2 : 1;
     if (!W) return;
+    ul.classList.toggle('w3', cols === 3);
     if (cols === 1) { ul.classList.remove('packed'); ul.style.height = ''; lis.forEach(l => { l.style.cssText = ''; }); return; }
     ul.classList.add('packed');
     const cw = (W - g * (cols - 1)) / cols, span = l => (cols === 3 && l.classList.contains('st-wide')) ? 2 : 1;

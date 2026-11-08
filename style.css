@@ -2003,3 +2003,9 @@ fieldset .code-box { margin: 4px 0 22px; padding: 18px 20px; border-style: dashe
 /* organisateurs v5 : mosaïque calculée (positions absolues) */
 .st-grid.packed { display: block; position: relative; }
 .st-grid.packed li { position: absolute; }
+
+/* v5b : la disposition large ne dépend que de la largeur réelle de la grille */
+.st-grid:not(.w3) .st-wide .st-card { flex-direction: column; }
+.st-grid:not(.w3) .st-wide .st-fig { flex: none; aspect-ratio: 4 / 3; min-height: 0; }
+.st-grid.w3 .st-wide .st-card { flex-direction: row; }
+.st-grid.w3 .st-wide .st-fig { flex: 0 0 40%; aspect-ratio: auto; min-height: 220px; }
