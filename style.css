@@ -2013,3 +2013,5 @@ fieldset .code-box { margin: 4px 0 22px; padding: 18px 20px; border-style: dashe
 /* v6 : la zone image suit les proportions du logo ; sur les grandes cartes elle remplit la hauteur */
 .st-grid:not(.w3) .st-wide .st-fig { aspect-ratio: auto; }
 .st-fig img { object-fit: contain; }
+.st-pills { display: flex; flex-wrap: wrap; gap: 6px; min-width: 0; }
+.st-theme { background: #111; color: var(--c); border-color: #111; }
