@@ -24,15 +24,42 @@ h1,h2{font-family:var(--disp);font-stretch:75%;font-weight:800;text-transform:up
 h1{font-size:clamp(46px,9.4vw,92px);line-height:.9}
 h1 em{font-style:normal;color:var(--or)}
 h2{font-size:clamp(32px,5.4vw,50px);line-height:.96}
-.hero{padding:58px 0 8px}
-.lede{font-size:clamp(18px,2.4vw,22px);color:#dedad3;max-width:32em;margin:22px 0 0}
-.actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:28px}
+.hero{padding:54px 0 6px;display:grid;grid-template-columns:1.1fr .9fr;gap:30px;align-items:center}
+.lede{font-size:clamp(17px,2.2vw,20px);color:#dedad3;max-width:30em;margin:20px 0 0}
+.actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:26px}
 .btn{display:inline-block;font:600 15px/1 var(--sans);text-decoration:none;border-radius:99px;padding:15px 26px}
 .btn.or{background:var(--or);color:#141210}
 .btn.ghost{border:1.5px solid rgba(255,255,255,.3);color:var(--texte)}
-.chiffres{display:flex;flex-wrap:wrap;gap:10px 28px;margin:34px 0 0;padding:0;list-style:none}
-.chiffres li{font-size:14px;color:var(--texte2)}
-.chiffres b{display:block;font:800 30px/1 var(--disp);font-stretch:75%;color:var(--texte);margin-bottom:3px}
+.gratuit{display:flex;flex-wrap:wrap;gap:8px;margin:22px 0 0;padding:0}
+.gratuit span{font-size:13px;font-weight:600;color:var(--texte2);border:1px solid var(--ligne);border-radius:99px;padding:7px 13px}
+.hero-visu{position:relative;display:flex;justify-content:center;padding:10px 0}
+.phone{width:min(270px,78vw);border-radius:38px;background:#0a0810;border:1.5px solid rgba(255,255,255,.22);padding:16px 14px 18px;box-shadow:0 30px 70px rgba(0,0,0,.55),0 0 0 8px rgba(255,255,255,.04);transform:rotate(3deg)}
+.ph-top{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.ph-top i{width:20px;height:20px;border-radius:50%;background:linear-gradient(140deg,var(--or),var(--violet))}
+.ph-top b{font:800 14px/1 var(--disp);font-stretch:75%;text-transform:uppercase;letter-spacing:.02em}
+.ph-une{border-radius:18px;padding:16px 14px;background:linear-gradient(150deg,#3b2a78,#9a2f80);display:grid;gap:4px;min-height:124px;align-content:end}
+.ph-une small{font:700 10px/1 var(--sans);letter-spacing:.08em;text-transform:uppercase;opacity:.85}
+.ph-une b{font:800 25px/.95 var(--disp);font-stretch:75%;text-transform:uppercase}
+.ph-une span{font-size:12px;opacity:.9}
+.ph-chips{display:flex;gap:6px;margin:12px 0 10px}
+.ph-chips s{text-decoration:none;font-size:11px;font-weight:600;border:1px solid var(--ligne);border-radius:99px;padding:5px 10px}
+.ph-chips s.on{background:var(--or);border-color:var(--or);color:#141210}
+.ph-ev{display:flex;align-items:center;gap:10px;background:#1b1626;border-radius:13px;padding:9px 10px;margin-bottom:7px;font-size:13px;line-height:1.25}
+.ph-ev div{flex:none;width:38px;text-align:center;background:#0a0810;border-radius:9px;padding:5px 0 4px}
+.ph-ev div b{display:block;font:800 17px/1 var(--disp);font-stretch:75%;color:var(--or)}
+.ph-ev div i{font:700 8.5px/1 var(--sans);font-style:normal;text-transform:uppercase;letter-spacing:.06em}
+.ph-ev span{flex:1;min-width:0}
+.ph-ev small{display:block;color:var(--texte2);font-size:11.5px}
+.ph-ev em{font-style:normal;color:#6e6580}
+.flot{position:absolute;background:#fff;color:#141210;font:600 13px/1 var(--sans);border-radius:99px;padding:11px 16px;box-shadow:0 14px 34px rgba(0,0,0,.45);white-space:nowrap}
+.flot b{font:800 19px/1 var(--disp);font-stretch:75%;color:#c46a00;margin-right:3px}
+.flot span{color:#1c9d52;margin-left:4px}
+.f1{left:-14px;top:49%}
+.f2{right:-6px;top:14%}
+.f3{right:2px;bottom:12%;background:var(--or)}
+.saut{display:flex;flex-wrap:wrap;gap:10px;margin:34px 0 0}
+.saut a{font-size:14px;font-weight:600;text-decoration:none;color:var(--texte);background:rgba(255,255,255,.07);border:1px solid var(--ligne);border-radius:99px;padding:10px 17px}
+.saut a:hover{border-color:var(--or)}
 
 /* plan 1 : ce que fait laSave */
 .plan{padding:70px 0 0}
@@ -110,7 +137,7 @@ details p{margin:0 0 16px;color:var(--texte2);font-size:15.5px}
 footer{margin-top:44px;padding:26px 0 48px;border-top:1px solid var(--ligne);color:var(--texte2);font-size:13.5px;line-height:1.8}
 footer a{color:var(--texte);text-decoration:none;font-weight:600}
 a:focus-visible,summary:focus-visible{outline:2px solid var(--or);outline-offset:3px}
-@media (max-width:760px){.feat,.feat.inv{grid-template-columns:1fr;padding:22px}.feat.inv .visu{order:0}.duo{grid-template-columns:1fr}.plan{padding-top:56px}}
+@media (max-width:760px){.hero{grid-template-columns:1fr;gap:18px;padding-top:40px}.hero-visu{padding:18px 0 6px}.f1{left:0}.f2{right:0}.feat,.feat.inv{grid-template-columns:1fr;padding:22px}.feat.inv .visu{order:0}.duo{grid-template-columns:1fr}.plan{padding-top:56px}}
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
 </style>
 </head>
@@ -122,20 +149,33 @@ a:focus-visible,summary:focus-visible{outline:2px solid var(--or);outline-offset
   </header>
 
   <div class="hero">
-    <p class="kick">Agenda de la vallée de la Save</p>
-    <h1>Toutes les sorties<br>de la vallée,<br><em>au même endroit.</em></h1>
-    <p class="lede">laSave rassemble les événements et les ateliers de 31 communes. Et pour ceux qui les organisent, c’est aussi une boîte à outils pour remplir la salle.</p>
-    <div class="actions">
-      <a class="btn or" href="/#partager">Proposer un événement</a>
-      <a class="btn ghost" href="/">Voir l’agenda</a>
+    <div class="hero-txt">
+      <p class="kick">Agenda de la vallée de la Save</p>
+      <h1>Toute la vallée,<br><em>un seul agenda.</em></h1>
+      <p class="lede">Concerts, fêtes, marchés, ateliers : les sorties de 31 communes réunies au même endroit. Et pour les organisateurs, de quoi les faire connaître sans y passer la soirée.</p>
+      <div class="actions">
+        <a class="btn or" href="/">Voir l’agenda</a>
+        <a class="btn ghost" href="/#partager">Proposer un événement</a>
+      </div>
+      <p class="gratuit"><span>Gratuit</span><span>Sans compte</span><span>Publié sous 48&nbsp;h</span></p>
     </div>
-    <ul class="chiffres">
-      <li><b>31</b>communes</li>
-      <li><b>0&nbsp;€</b>pour tous</li>
-      <li><b>0</b>compte à créer</li>
-      <li><b>48&nbsp;h</b>pour être publié</li>
-    </ul>
+    <div class="hero-visu" aria-hidden="true">
+      <div class="phone">
+        <div class="ph-top"><i></i><b>laSave</b></div>
+        <div class="ph-une"><small>À la une</small><b>Marché de Noël</b><span>Sam. 5 déc. · Saint-Paul</span></div>
+        <div class="ph-chips"><s>Toutes</s><s class="on">Concert</s><s>Gratuit</s></div>
+        <div class="ph-ev"><div><b>12</b><i>déc.</i></div><span>Concert de chorales<small>Bretx</small></span><em>♥</em></div>
+        <div class="ph-ev"><div><b>19</b><i>déc.</i></div><span>Soirée contes<small>Drudas</small></span><em>♥</em></div>
+        <div class="ph-ev"><div><b>20</b><i>déc.</i></div><span>Bal de fin d’année<small>Cadours</small></span><em>♥</em></div>
+      </div>
+      <div class="flot f1"><b>23</b> personnes viennent</div>
+      <div class="flot f2">Story prête <span>✓</span></div>
+      <div class="flot f3">31 communes</div>
+    </div>
   </div>
+  <nav class="saut" aria-label="Aller à">
+    <a href="#fonctions">Ce que fait laSave</a><a href="#mode-emploi">Comment ça marche</a><a href="#questions">Questions fréquentes</a>
+  </nav>
 
   <!-- PLAN 1 : ce que fait laSave -->
   <section class="plan" id="fonctions">
