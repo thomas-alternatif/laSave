@@ -1292,15 +1292,17 @@
     if (cols === 1) { ul.classList.remove('packed'); ul.style.height = ''; lis.forEach(l => { l.style.cssText = ''; }); return; }
     ul.classList.add('packed');
     const cw = (W - g * (cols - 1)) / cols, span = l => (cols === 3 && l.classList.contains('st-wide')) ? 2 : 1;
-    lis.forEach(l => { l.style.width = (span(l) === 2 ? cw * 2 + g : cw) + 'px'; });
-    const h = lis.map(l => l.offsetHeight), H = Array(cols).fill(0), todo = lis.map((_, i) => i);
-    const put = (i, c) => { const n = span(lis[i]), top = Math.max(...H.slice(c, c + n)); lis[i].style.left = c * (cw + g) + 'px'; lis[i].style.top = top + 'px'; for (let k = 0; k < n; k++) H[c + k] = top + h[i] + g; };
+    lis.forEach(l => { l.style.width = (span(l) === 2 ? cw * 2 + g : cw) + 'px'; l.firstElementChild.style.minHeight = ''; });
+    const h = lis.map(l => l.offsetHeight), H = Array(cols).fill(0), last = Array(cols).fill(-1), todo = lis.map((_, i) => i);
+    const put = (i, c) => { const n = span(lis[i]), top = Math.max(...H.slice(c, c + n)); lis[i].style.left = c * (cw + g) + 'px'; lis[i].style.top = top + 'px'; for (let k = 0; k < n; k++) { H[c + k] = top + h[i] + g; last[c + k] = n === 1 ? i : -1; } };
     while (todo.length) {
       const i = todo.shift();
       if (span(lis[i]) === 1) { put(i, H.indexOf(Math.min(...H))); continue; }
       let best = 0, bs = Infinity; for (let c = 0; c <= cols - 2; c++) { const sc = Math.max(H[c], H[c + 1]) * 10 + Math.abs(H[c] - H[c + 1]); if (sc < bs) { bs = sc; best = c; } }
       const s = H[best] < H[best + 1] ? best : best + 1; // colonne la plus basse : on y glisse des petites cartes avant la grande
       for (let j = 0; j < todo.length; j++) { const k = todo[j]; if (span(lis[k]) === 1 && H[s] + h[k] <= Math.max(H[best], H[best + 1]) + 40) { put(k, s); todo.splice(j, 1); j = -1; } }
+      const gap = Math.max(H[best], H[best + 1]) - H[s]; // vide restant : on étire la carte du dessus plutôt que de le laisser
+      if (gap > 0 && last[s] >= 0) { const q = last[s]; h[q] += gap; lis[q].firstElementChild.style.minHeight = h[q] - 0 + 'px'; H[s] += gap; }
       put(i, best);
     }
     ul.style.height = Math.max(...H) - g + 'px';
