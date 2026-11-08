@@ -1299,6 +1299,10 @@
       const i = todo.shift();
       if (span(lis[i]) === 1) { put(i, H.indexOf(Math.min(...H))); continue; }
       let best = 0, bs = Infinity; for (let c = 0; c <= cols - 2; c++) { const sc = Math.max(H[c], H[c + 1]) * 10 + Math.abs(H[c] - H[c + 1]); if (sc < bs) { bs = sc; best = c; } }
+      { // tant que les deux colonnes ne sont pas presque à niveau, on pose d'abord des petites cartes
+        const gp = Math.abs(H[best] - H[best + 1]), j = todo.findIndex(k => span(lis[k]) === 1);
+        if (gp > 40 && j >= 0) { const k = todo.splice(j, 1)[0]; put(k, H.indexOf(Math.min(...H))); todo.unshift(i); continue; }
+      }
       const s = H[best] < H[best + 1] ? best : best + 1; // colonne la plus basse : on y glisse des petites cartes avant la grande
       for (let j = 0; j < todo.length; j++) { const k = todo[j]; if (span(lis[k]) === 1 && H[s] + h[k] <= Math.max(H[best], H[best + 1]) + 40) { put(k, s); todo.splice(j, 1); j = -1; } }
       const gap = Math.max(H[best], H[best + 1]) - H[s]; // vide restant : on étire la carte du dessus plutôt que de le laisser
