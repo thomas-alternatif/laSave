@@ -31,7 +31,7 @@ const ALLOWED_ORIGINS = ['https://la-save.fr', 'https://www.la-save.fr', 'https:
 // Champs visibles par le public (tout le reste, dont les contacts et messages privés, reste caché)
 // « Message aux organisateurs » (Airtable) : mot privé de la mairie, ajouté au mail de publication, jamais affiché sur le site
 const EVENT_PUBLIC = ['Titre','Catégorie','Organisation','Description','Commune','Date','Date de fin','Heure','Lieu','Tarif','Contact','Récurrence','À la une','Période','Jour','Vues','Photo','Likes','Billetterie'];
-const ORGA_PUBLIC = ['Nom','Description courte','Description','Photo','Contact','Ordre'];
+const ORGA_PUBLIC = ['Nom','Description courte','Description','Photo','Contact','Ordre','Commune'];
 // Champs acceptés depuis le formulaire « Ajouter un événement »
 const EVENT_SUBMIT = ['Titre','Catégorie','Commune','Date','Date de fin','Heure','Lieu','Description','Tarif','Récurrence','Période','Organisation','Contact','Contact privé','Message privé','Billetterie'];
 const ADMIN_STATUTS = ['Publié','Archivé','En attente','Refusé'];

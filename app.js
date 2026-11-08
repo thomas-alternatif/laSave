@@ -1290,14 +1290,18 @@
     const lbl = new Map(); // un village écrit de plusieurs façons (tirets, majuscules) ne forme qu'un groupe
     ORGAS.filter(o => o.Nom).forEach(o => { const c = communeOf(o) || 'Autres communes', k = norm(c); if (!lbl.has(k) || (c.includes('-') && !lbl.get(k).includes('-'))) lbl.set(k, c); (by.get(k) || by.set(k, []).get(k)).push(o); });
     [...by.keys()].forEach(k => { by.set(lbl.get(k), by.get(k)); by.delete(k); });
-    const keys = [...by.keys()].sort((p, q) => (p === 'Autres communes') - (q === 'Autres communes') || p.localeCompare(q, 'fr'));
+    const keys = [...by.keys()].sort((p, q) => (p === 'Autres communes') - (q === 'Autres communes') || by.get(q).length - by.get(p).length || p.localeCompare(q, 'fr')); // les villages les plus fournis d'abord
     root.replaceChildren();
     keys.forEach(c => {
       const s = el('section', 'st-vil'), list = by.get(c).sort((p, q) => p.Nom.localeCompare(q.Nom, 'fr'));
       s.appendChild(el('h2', 'st-vil-t', c)); s.appendChild(el('span', 'st-vil-n', `${list.length} structure${list.length > 1 ? 's' : ''}`));
       const ul = el('ul', 'st-grid');
       const PAL = ['#6b9bf5', '#e9573a', '#c48ac9', '#f4b32a', '#9aa63f', '#d98c80', '#efe3cd'];
-      list.sort((p, q) => eventsOf(q).length - eventsOf(p).length || p.Nom.localeCompare(q.Nom, 'fr')); // celles qui ont des événements d'abord
+      { // alterne grandes cartes (avec événements) et petites pour varier la mosaïque
+        const big = list.filter(o => eventsOf(o).length).sort((p, q) => eventsOf(q).length - eventsOf(p).length), small = list.filter(o => !eventsOf(o).length), mix = [];
+        while (big.length || small.length) { if (big.length) mix.push(big.shift()); for (let i = 0; i < 2 && small.length; i++) mix.push(small.shift()); }
+        list.splice(0, list.length, ...mix);
+      }
       list.forEach(o => {
         const reg = e => isRec(e) || isLong(e) || !evStart(e), evs = eventsOf(o).sort((p, q) => reg(p) - reg(q) || (evStart(p) || '9').localeCompare(evStart(q) || '9')), n = evs.length;
         const li = el('li', n ? 'st-wide' : ''), card = el('div', 'st-card');
