@@ -1885,3 +1885,7 @@ html.still .menu-back, html.still .menu-nav a { transition: none; }
 .nl-info b { color: #ece9e1; font-weight: 600; word-break: break-all; }
 .nl-box input[type="email"] { width: 100%; max-width: 360px; }
 .link-btn { background: none; border: 0; padding: 0; font: inherit; color: var(--or); text-decoration: underline; cursor: pointer; }
+
+/* code organisateur : dans la partie « contact », facultatif */
+.field + .code-box, .code-box { margin-bottom: 8px; }
+fieldset .code-box { margin: 4px 0 22px; padding: 18px 20px; border-style: dashed; }

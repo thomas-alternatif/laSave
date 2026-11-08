@@ -722,7 +722,7 @@
           else if (/facebook\.com/i.test(p)) $('#f-fb').value = p;
           else if (/\./.test(p) && !/@/.test(p)) $('#f-site').value = p;
         });
-        say($('#code-msg'), `Bonjour ${o.Nom} ! Vos informations sont remplies plus bas.`, 'ok');
+        say($('#code-msg'), `Bonjour ${o.Nom} ! Vos informations sont remplies.`, 'ok');
         $('#code-box').classList.add('done');
         memberCode = code;
       } catch (err) {
@@ -730,6 +730,7 @@
       }
     }
     $('#code-ok').addEventListener('click', checkCode);
+    $('#code-req').addEventListener('keydown', ev => { if (ev.key === 'Enter' && ev.target.tagName !== 'TEXTAREA') ev.preventDefault(); }); // Entrée ne doit pas faire avancer le formulaire
     $('#f-code').addEventListener('keydown', ev => { if (ev.key === 'Enter') { ev.preventDefault(); checkCode(); } });
     let crMode = null;
     $$('[data-cr]').forEach(b => b.addEventListener('click', () => {
