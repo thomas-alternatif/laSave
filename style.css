@@ -2015,3 +2015,20 @@ fieldset .code-box { margin: 4px 0 22px; padding: 18px 20px; border-style: dashe
 .st-fig img { object-fit: contain; }
 .st-pills { display: flex; flex-wrap: wrap; gap: 6px; min-width: 0; }
 .st-theme { background: #111; color: var(--c); border-color: #111; }
+
+/* v7 : mobile, cartes compactes sur deux colonnes ; les grandes occupent toute la largeur */
+.st-grid.cp .st-card { padding: 7px 7px 9px; gap: 8px; border-radius: 14px; }
+.st-grid.cp .st-fig { border-radius: 9px; }
+.st-grid.cp .st-wide .st-fig { aspect-ratio: 2.2 / 1 !important; }
+.st-grid.cp .st-ini { font-size: 28px; }
+.st-grid.cp .st-txt { gap: 4px; padding: 0 2px; }
+.st-grid.cp .st-nom { font-size: 15px; }
+.st-grid.cp .st-desc { font-size: 11.5px; line-height: 1.3; -webkit-line-clamp: 3; }
+.st-grid.cp .st-foot { padding-top: 6px; gap: 6px; }
+.st-grid.cp .st-pill { font-size: 9px; padding: 3px 7px; letter-spacing: .04em; }
+.st-grid.cp .st-pills { gap: 4px; }
+.st-grid.cp .st-plus { width: 24px; height: 24px; font-size: 16px; flex: none; }
+.st-grid.cp .st-ev-b { padding: 6px 9px; border-radius: 9px; }
+.st-grid.cp .st-ev-d { font-size: 9px; }
+.st-grid.cp .st-ev-t { font-size: 12.5px; }
+.st-grid.cp .st-nom { overflow-wrap: anywhere; hyphens: auto; }

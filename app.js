@@ -1286,11 +1286,11 @@
   }
   /* Mosaïque sans trous : 3 colonnes, les grandes cartes couvrent 2 colonnes et les petites comblent les vides à côté */
   function packSt(ul) {
-    const lis = [...ul.children], W = ul.clientWidth, g = 14, cols = W >= 760 ? 3 : W >= 480 ? 2 : 1;
+    const lis = [...ul.children], W = ul.clientWidth, cp = W < 600, g = cp ? 10 : 14, cols = W >= 760 ? 3 : 2; // deux colonnes au minimum, cartes compactes sur mobile
     if (!W) return;
-    ul.classList.toggle('w3', cols === 3);
+    ul.classList.toggle('w3', cols === 3); ul.classList.toggle('cp', cp);
     ul.classList.add('packed');
-    const cw = (W - g * (cols - 1)) / cols, span = l => (cols === 3 && l.classList.contains('st-wide')) ? 2 : 1;
+    const cw = (W - g * (cols - 1)) / cols, span = l => l.classList.contains('st-wide') ? 2 : 1;
     lis.forEach(l => { l.style.width = (span(l) === 2 ? cw * 2 + g : cw) + 'px'; l.firstElementChild.style.minHeight = ''; });
     const h = lis.map(l => l.offsetHeight), H = Array(cols).fill(0), last = Array(cols).fill(-1), todo = lis.map((_, i) => i);
     const put = (i, c) => { const n = span(lis[i]), top = Math.max(...H.slice(c, c + n)); lis[i].style.left = c * (cw + g) + 'px'; lis[i].style.top = top + 'px'; for (let k = 0; k < n; k++) { H[c + k] = top + h[i] + g; last[c + k] = n === 1 ? i : -1; } };
