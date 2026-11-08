@@ -1286,6 +1286,7 @@
   }
   function renderStructures() {
     const root = $('#st-list'); if (!root) return;
+    let smallN = 0;
     const by = new Map();
     const lbl = new Map(); // un village écrit de plusieurs façons (tirets, majuscules) ne forme qu'un groupe
     ORGAS.filter(o => o.Nom).forEach(o => { const c = communeOf(o) || 'Autres communes', k = norm(c); if (!lbl.has(k) || (c.includes('-') && !lbl.get(k).includes('-'))) lbl.set(k, c); (by.get(k) || by.set(k, []).get(k)).push(o); });
@@ -1323,6 +1324,8 @@
         const foot = el('span', 'st-foot'), pill = el('span', 'st-pill', n ? (n > 3 ? `+ ${n - 3} autre${n - 3 > 1 ? 's' : ''} · ${n} à venir` : `${n} à venir`) : 'Profil'), pl = el('button', 'st-plus', '+');
         pl.type = 'button'; pl.setAttribute('aria-label', `Profil de ${o.Nom}`); pl.addEventListener('click', () => openProfile(o, pl));
         foot.appendChild(pill); foot.appendChild(pl); t.appendChild(foot); card.appendChild(t); li.appendChild(card); ul.appendChild(li);
+        if (!n) card.classList.add('r' + (smallN++ % 3)); // formats variés : portrait, carré, paysage
+        if ('ResizeObserver' in window) new ResizeObserver(() => { li.style.gridRowEnd = 'span ' + Math.ceil((card.offsetHeight + 14) / 8); }).observe(card); // mosaïque : chaque carte garde sa hauteur
       });
       s.appendChild(ul); root.appendChild(s);
     });

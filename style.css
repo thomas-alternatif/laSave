@@ -1977,3 +1977,12 @@ fieldset .code-box { margin: 4px 0 22px; padding: 18px 20px; border-style: dashe
 .st-ev-d { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; opacity: .72; }
 .st-ev-t { font-size: 14.5px; line-height: 1.2; }
 @media (min-width: 640px) { .st-wide .st-fig { flex: 0 0 40%; min-height: 220px; } .st-wide .st-card { align-items: stretch; } }
+
+/* organisateurs v3 : mosaïque à hauteurs libres, sans alignement en grille */
+.st-grid { grid-auto-rows: 8px; gap: 0 14px; align-items: start; }
+.st-grid li { display: block; }
+.st-grid .st-card { height: auto; margin-bottom: 0; }
+.st-card.r0 .st-fig { aspect-ratio: 3 / 4; }
+.st-card.r1 .st-fig { aspect-ratio: 1 / 1; }
+.st-card.r2 .st-fig { aspect-ratio: 16 / 10; }
+.st-card.r0 .st-nom { font-size: clamp(22px, 2.6vw, 30px); }
