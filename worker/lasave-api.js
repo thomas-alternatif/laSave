@@ -149,7 +149,7 @@ Pour proposer un événement :
 Chaque proposition est relue par la mairie avant publication (sous 48 h).
 Gardez ce code pour vous : il est propre à votre structure.
 
-Comment fonctionne laSave ? Tout le guide : ${GUIDE}
+Tout savoir sur laSave (kit de partage, « Je viens », sondages, lettre du mois) : ${GUIDE}
 
 Mairie de Saint-Paul-sur-Save — Commission culture
 ${SITE}`;
@@ -178,11 +178,16 @@ ${SITE}`;
     <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:8px 0 8px;"><tr><td style="border-radius:99px;background:#FFA823;"><a href="${SITE}/#partager" style="display:inline-block;padding:14px 26px;font-family:${S};font-size:15px;font-weight:600;color:#141210;text-decoration:none;border-radius:99px;">Proposer un événement</a></td></tr></table>
   </td></tr></table></td></tr>
 
-  <tr><td style="padding:0 0 16px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#5C96AB;border-radius:26px;"><tr><td style="padding:24px 26px 26px;">
-    <div style="font-family:${D};font-stretch:75%;font-size:26px;line-height:1;font-weight:800;text-transform:uppercase;color:#0b2a35;">Tout savoir sur laSave</div>
-    <p style="margin:12px 0 16px;font-family:${S};font-size:15px;line-height:1.6;color:#0b2a35;">Comment fonctionne l’agenda, ce que vous pouvez y faire, comment faire connaître votre événement : tout est dans le guide.</p>
-    <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td style="border-radius:99px;background:#141210;"><a href="${GUIDE}" style="display:inline-block;padding:13px 24px;font-family:${S};font-size:15px;font-weight:600;color:#ffffff;text-decoration:none;border-radius:99px;">Lire le guide</a></td></tr></table>
-  </td></tr></table></td></tr>
+  <tr><td style="padding:0 0 16px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#141210" style="background:#141210;border-radius:26px;"><tr><td style="padding:0;"><a href="${GUIDE}"><img src="${SITE}/images/mail/mail-guide-header.jpg" width="600" alt="Tout savoir sur laSave : le guide en deux minutes" style="display:block;width:100%;max-width:600px;height:auto;border:0;border-radius:26px 26px 0 0;"></a></td></tr>
+    <tr><td style="padding:22px 26px 28px;">
+      <p style="margin:0 0 16px;font-family:${S};font-size:15.5px;line-height:1.6;color:#e9e6df;">Toutes les sorties de la vallée au même endroit, et des outils pour remplir votre salle :</p>
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="font-family:${S};font-size:15px;line-height:1.5;color:#e9e6df;">
+        <tr><td valign="top" style="padding:0 10px 7px 0;color:#FFA823;font-weight:700;">&#8226;</td><td style="padding-bottom:7px;"><b style="color:#ffffff;">Votre kit de partage</b> : story, post et invitation déjà prêts</td></tr>
+        <tr><td valign="top" style="padding:0 10px 7px 0;color:#FFA823;font-weight:700;">&#8226;</td><td style="padding-bottom:7px;"><b style="color:#ffffff;">« Je viens »</b> : sachez combien de personnes seront là</td></tr>
+        <tr><td valign="top" style="padding:0 10px 7px 0;color:#FFA823;font-weight:700;">&#8226;</td><td style="padding-bottom:7px;"><b style="color:#ffffff;">Sondages, lettre du mois, profil d’association</b></td></tr>
+      </table>
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-top:12px;"><tr><td style="border-radius:99px;background:#FFA823;"><a href="${GUIDE}" style="display:inline-block;padding:15px 30px;font-family:${S};font-size:16px;font-weight:600;color:#141210;text-decoration:none;border-radius:99px;">Découvrir le guide</a></td></tr></table>
+    </td></tr></table></td></tr>
 
   <tr><td align="center" style="padding:6px 22px 0;font-family:${S};font-size:12px;line-height:1.7;color:${G};">Ce code est propre à votre structure : partagez-le seulement avec les personnes qui publient en son nom. Vous ne l’avez pas demandé&nbsp;? Ignorez simplement ce message.</td></tr>
   <tr><td style="padding:14px 0 0;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#3a2b45" style="background:#3a2b45;border-radius:26px;"><tr><td align="center" style="padding:22px 20px;font-family:${S};font-size:12px;line-height:1.8;color:#cfc7d6;">
