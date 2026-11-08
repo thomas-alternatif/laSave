@@ -1889,3 +1889,14 @@ html.still .menu-back, html.still .menu-nav a { transition: none; }
 /* code organisateur : dans la partie « contact », facultatif */
 .field + .code-box, .code-box { margin-bottom: 8px; }
 fieldset .code-box { margin: 4px 0 22px; padding: 18px 20px; border-style: dashed; }
+
+/* profil de structure proposé après l'envoi */
+.profil-box { border: 1px solid var(--ligne); border-radius: 22px; padding: 26px; display: grid; gap: 14px; background: rgba(255,255,255,.03); }
+.profil-box[hidden], .pb-form[hidden], .pb-ok[hidden] { display: none; }
+.pb-title { margin: 0; font: 800 clamp(24px, 3.4vw, 32px)/1 var(--display, 'Archivo', sans-serif); font-stretch: 75%; text-transform: uppercase; }
+.pb-lede { margin: 0; color: #d4d2cc; font-size: 15.5px; }
+.pb-form { display: grid; gap: 14px; margin-top: 4px; }
+.pb-drop { display: grid; place-items: center; min-height: 120px; border: 1.5px dashed var(--ligne); border-radius: 16px; cursor: pointer; color: var(--texte-2); font-size: 14px; padding: 14px; text-align: center; }
+.pb-drop:hover { border-color: var(--or); }
+.pb-drop img { max-width: 140px; max-height: 140px; object-fit: contain; border-radius: 12px; }
+.pb-ok { margin: 0; color: #9fd3a6; font-weight: 600; }

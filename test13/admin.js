@@ -75,7 +75,7 @@
     $('#d-sync').textContent = ov.copie ? `Agenda mis à jour ${ilYa(Date.parse(ov.copie))} · ${pl(ov.enLigne, 'événement en ligne', 'événements en ligne')}` : 'Agenda pas encore copié';
     const nA = compte('attente') + compte('passes');
     const b = $('#b-ev'); b.textContent = nA; b.hidden = !nA;
-    const bo = $('#b-org'); bo.textContent = ov.codes; bo.hidden = !ov.codes;
+    const nO = (ov.codes || 0) + (ov.profils || 0), bo = $('#b-org'); bo.textContent = nO; bo.hidden = !nO;
     afficher();
   }
 
@@ -167,6 +167,18 @@
   /* ── organisateurs ── */
   const ORGAS = 'https://airtable.com/appHgiuv0ClNd8qsV/tblgaldbDy7el5Qw1';
   function rOrgas() {
+    const up = $('#o-prof'); up.innerHTML = '';
+    const profs = ov.orgas.filter(o => o.profil);
+    if (!profs.length) up.append(el('li', 'd-vide', 'Aucune demande de profil en attente.'));
+    profs.forEach(o => {
+      const li = el('li'), t = el('div', 't'); t.append(el('b', '', o.nom || '(sans nom)'), el('small', '', [o.email || 'pas d’adresse', o.contact].filter(Boolean).join(' · ')));
+      if (o.logo) { const im = el('img'); im.src = o.logo; im.alt = 'Logo'; im.style.cssText = 'width:44px;height:44px;object-fit:contain;border-radius:8px;background:#fff;margin-right:12px'; li.style.display = 'flex'; li.style.alignItems = 'center'; li.append(im); }
+      const acts = el('div', 'acts'), a = el('button', 'd-btn sm ok', 'Publier le profil'), c = el('button', 'd-btn sm warn', 'Refuser'), air = el('a', 'd-btn sm ghost', 'Airtable'); a.type = c.type = 'button';
+      air.href = `${ORGAS}/${o.id}`; air.target = '_blank'; air.rel = 'noopener';
+      const go = (act, ok, b) => async () => { b.disabled = true; try { await call(`/admin/orgas/${o.id}/${act}`, { method: 'POST' }); o.profil = false; if (act === 'publish-profile') o.publie = true; ov.profils = ov.orgas.filter(x => x.profil).length; msg(ok); rOrgas(); } catch (e) { b.disabled = false; msg(e.message, true); } };
+      a.addEventListener('click', go('publish-profile', `Profil de ${o.nom} publié.`, a)); c.addEventListener('click', go('refuse-profile', `Demande de ${o.nom} refusée.`, c));
+      acts.append(a, c, air); li.append(t, acts); if (o.courte || o.desc) li.append(el('p', 'msg', [o.courte, o.desc].filter(Boolean).join('\n\n'))); up.append(li);
+    });
     const ul = $('#o-list'); ul.innerHTML = '';
     const dem = ov.orgas.filter(o => o.statutCode === 'Demandé');
     if (!dem.length) ul.append(el('li', 'd-vide', 'Aucune demande de code en attente.'));

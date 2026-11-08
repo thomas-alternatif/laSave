@@ -13,7 +13,7 @@
   <link rel="icon" href="../favicon.ico" sizes="48x48" />
   <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
-  <link rel="stylesheet" href="style.css?v=104" />
+  <link rel="stylesheet" href="style.css?v=105" />
 </head>
 <body class="intro-on">
   <div class="backdrop" aria-hidden="true"><i></i><i></i></div>
@@ -320,6 +320,33 @@
         <div class="done" id="form-done" hidden tabindex="-1">
           <h2 class="page-title sm">Merci !</h2>
           <p>Votre événement a bien été envoyé. La mairie le relit et le publie sous 48 h.</p>
+          <section class="profil-box" id="profil-box" hidden aria-labelledby="pb-title">
+            <p class="kicker"><span class="kicker-line" aria-hidden="true"></span>Votre structure</p>
+            <h3 class="pb-title" id="pb-title">Elle n’a pas encore de profil sur laSave</h3>
+            <p class="pb-lede">Un profil présente votre association aux habitants : logo, description, lien vers vos réseaux. Il s’affiche sur la page d’accueil, dans « Celles et ceux qui font vivre la Save ».</p>
+            <button class="pill" id="pb-open" type="button" aria-expanded="false" aria-controls="pb-form">Demander la création de mon profil</button>
+            <form id="pb-form" class="pb-form" novalidate hidden>
+              <div class="field"><label for="pb-nom">Nom de la structure *</label><input id="pb-nom" type="text" maxlength="120" autocomplete="organization" /></div>
+              <div class="field"><label for="pb-email">E-mail pour vous répondre *</label><input id="pb-email" type="email" maxlength="200" autocomplete="email" /></div>
+              <div class="field"><label for="pb-courte">Présentation en une phrase</label><input id="pb-courte" type="text" maxlength="160" placeholder="Troupe de théâtre amateur de la vallée" /><small class="muted" id="pb-courte-n">0 / 160</small></div>
+              <div class="field"><label for="pb-desc">Description</label><textarea id="pb-desc" rows="4" maxlength="1500" placeholder="Qui êtes-vous, que proposez-vous, depuis quand, où vous retrouver…"></textarea></div>
+              <div class="grid-3">
+                <div class="field"><label for="pb-ig">Instagram</label><input id="pb-ig" type="text" placeholder="@compte" /></div>
+                <div class="field"><label for="pb-fb">Facebook</label><input id="pb-fb" type="text" placeholder="page ou lien" /></div>
+                <div class="field"><label for="pb-site">Site web</label><input id="pb-site" type="text" placeholder="www.exemple.fr" /></div>
+              </div>
+              <div class="field"><label for="pb-logo">Logo de la structure</label>
+                <label class="pb-drop" id="pb-drop" for="pb-logo"><img id="pb-img" alt="" hidden /><span id="pb-drop-t">Choisir une image (JPG, PNG ou WebP, 5 Mo max)</span></label>
+                <input id="pb-logo" type="file" accept="image/jpeg,image/png,image/webp" class="sr" />
+                <p class="form-msg" id="pb-logo-msg" role="status" aria-live="polite"></p>
+              </div>
+              <input type="text" id="pb-website" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
+              <label class="consent"><input id="pb-consent" type="checkbox" /> <span>J’accepte que ces informations soient publiées sur laSave après relecture par la mairie. <a href="#confidentialite">En savoir plus</a></span></label>
+              <p class="form-msg err" id="pb-err" role="alert"></p>
+              <button class="pill" id="pb-send" type="button">Envoyer ma demande</button>
+            </form>
+            <p class="pb-ok" id="pb-ok" role="status" hidden>C’est noté ! La mairie relit votre demande et publie votre profil rapidement. Vous recevrez un mail à l’adresse indiquée.</p>
+          </section>
           <p><a class="glow glass" href="#"><span class="glow-t">Retour à l'agenda</span><svg class="glow-i" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a> <button class="link" id="form-again" type="button">Proposer un autre événement</button></p>
         </div>
       </section>
@@ -517,7 +544,7 @@
 
   <!-- ════════ AVIS ════════ -->
 
-  <script src="app.js?v=61" defer></script>
+  <script src="app.js?v=62" defer></script>
 <!-- Cloudflare Web Analytics (sans cookies) --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "75911b4b41574e2cafe93d48df5d8ae0"}'></script>
 <script src="visite.js?v=1" defer></script>
 </body>

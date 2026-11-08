@@ -919,6 +919,7 @@
         await api('/events', { method: 'POST', body: JSON.stringify(fields) });
         if (nlOn) api('/newsletter', { method: 'POST', body: JSON.stringify({ email: nlMail, website: '', src: 'formulaire' }) }).catch(() => {}); // l'abonnement ne doit jamais bloquer l'envoi de l'événement
         form.hidden = true; $('#code-box').hidden = true;
+        profilMontre({ nom: $('#f-org').value.trim(), email: MAIL_OK($('#f-cprive').value.trim()) ? $('#f-cprive').value.trim() : '', ig, fb, site });
         const done = $('#form-done'); done.hidden = false; done.focus();
         done.scrollIntoView({ block: 'center', behavior: reduce ? 'auto' : 'smooth' });
       } catch (e2) {
@@ -926,10 +927,45 @@
       }
       btn.disabled = false; bt.textContent = 'Envoyer l’événement';
     });
+    /* profil de structure : proposé après l'envoi si la structure n'est pas déjà connue du site */
+    let logoUrl = '', logoUp = false;
+    const profilReset = () => { const b = $('#profil-box'); if (!b) return; b.hidden = true; $('#pb-form').hidden = true; $('#pb-ok').hidden = true; $('#pb-open').hidden = false; $('#pb-open').setAttribute('aria-expanded', 'false'); $('#pb-form').reset(); logoUrl = ''; $('#pb-img').hidden = true; $('#pb-drop-t').hidden = false; say($('#pb-logo-msg'), ''); $('#pb-err').textContent = ''; };
+    function profilMontre(v) {
+      const box = $('#profil-box'); if (!box) return;
+      if (memberCode || (v.nom && findOrga(v.nom))) return; // structure déjà connue : rien à proposer
+      $('#pb-nom').value = v.nom || ''; $('#pb-email').value = v.email || ''; $('#pb-ig').value = v.ig || ''; $('#pb-fb').value = v.fb || ''; $('#pb-site').value = v.site || '';
+      box.hidden = false;
+    }
+    $('#pb-open').addEventListener('click', () => { $('#pb-form').hidden = false; $('#pb-open').hidden = true; $('#pb-nom').focus(); });
+    $('#pb-courte').addEventListener('input', () => { $('#pb-courte-n').textContent = $('#pb-courte').value.length + ' / 160'; });
+    $('#pb-logo').addEventListener('change', async () => {
+      const f = $('#pb-logo').files[0]; if (!f) return; const out = $('#pb-logo-msg');
+      if (!/^image\/(jpeg|png|webp)$/.test(f.type)) return say(out, 'Format non pris en charge : choisissez un JPG, un PNG ou un WebP.', 'err');
+      if (f.size > 5 * 1024 * 1024) return say(out, 'Image trop lourde : 5 Mo maximum.', 'err');
+      const im = $('#pb-img'); im.src = URL.createObjectURL(f); im.alt = 'Aperçu du logo'; im.hidden = false; $('#pb-drop-t').hidden = true;
+      logoUp = true; logoUrl = ''; say(out, 'Envoi du logo…');
+      try { const fd = new FormData(); fd.append('image', f); const d = await api('/upload', { method: 'POST', body: fd }); if (!d.url) throw new Error(); logoUrl = d.url; say(out, 'Logo ajouté. Cliquez dessus pour le changer.', 'ok'); }
+      catch (_) { say(out, 'Le logo n’a pas pu être envoyé. Réessayez, ou envoyez la demande sans logo.', 'err'); }
+      logoUp = false;
+    });
+    $('#pb-send').addEventListener('click', async () => {
+      const pe = $('#pb-err'), nom = $('#pb-nom').value.trim(), email = $('#pb-email').value.trim();
+      pe.textContent = '';
+      if (!nom) { pe.textContent = 'Indiquez le nom de votre structure.'; return $('#pb-nom').focus(); }
+      if (!MAIL_OK(email)) { pe.textContent = 'Indiquez une adresse e-mail valide pour qu’on puisse vous répondre.'; return $('#pb-email').focus(); }
+      if (!$('#pb-consent').checked) { pe.textContent = 'Cochez la case d’accord pour que la mairie puisse publier votre profil.'; return; }
+      if (logoUp) { pe.textContent = 'Le logo est encore en cours d’envoi, patientez une seconde.'; return; }
+      const btn = $('#pb-send'); btn.disabled = true;
+      try {
+        await api('/profil/request', { method: 'POST', body: JSON.stringify({ nom, email, courte: $('#pb-courte').value.trim(), desc: $('#pb-desc').value.trim(), ig: $('#pb-ig').value.trim().replace(/^https?:\/\/(www\.)?instagram\.com\//, '').replace(/\/?$/, ''), fb: $('#pb-fb').value.trim(), site: $('#pb-site').value.trim(), logoUrl, website: $('#pb-website').value }) });
+        $('#pb-form').hidden = true; $('#pb-ok').hidden = false;
+      } catch (e) { pe.textContent = e.status === 429 ? 'Trop d’envois en peu de temps. Réessayez dans quelques minutes.' : `L’envoi n’a pas abouti (${e.message}). Réessayez dans un instant.`; }
+      btn.disabled = false;
+    });
     $('#form-again').addEventListener('click', () => {
       form.reset(); photoUrl = ''; $('#drop-img').hidden = true; $('#drop-empty').hidden = false; $('#drop').classList.remove('filled'); say($('#photo-msg'), '');
       $('#f-periode-f').hidden = true; $$('[data-tarif]').forEach(x => x.setAttribute('aria-pressed', 'false'));
-      nlAutre = false; nlSync(); form.hidden = false; $('#code-box').hidden = false; $('#form-done').hidden = true; wizGo(0, false); memberCode = ''; $('#f-code').value = ''; say($('#code-msg'), ''); $('#code-box').classList.remove('done'); { const cr = $('#code-req'); if (cr) cr.hidden = true; } $('#f-titre').focus();
+      nlAutre = false; nlSync(); profilReset(); form.hidden = false; $('#code-box').hidden = false; $('#form-done').hidden = true; wizGo(0, false); memberCode = ''; $('#f-code').value = ''; say($('#code-msg'), ''); $('#code-box').classList.remove('done'); { const cr = $('#code-req'); if (cr) cr.hidden = true; } $('#f-titre').focus();
     });
   }
 

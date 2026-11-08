@@ -802,14 +802,14 @@ ${err ? `<p style="margin:0 0 14px;padding:12px 14px;border-radius:12px;backgrou
 const ROUTES = [
   'GET /events — agenda public (copie KV, cache 60 s)', 'GET /orgas — organisateurs publiés', 'GET /:lien — page d’un événement (partage), ex. /fete-du-village-x7k2p (ancien format /e/… toujours valable)', 'GET /kit/:lien/:clé — raccourci vers le kit de partage', 'GET /img/:att — affiche copiée dans KV',
   'GET /ics/:lien — ajout au calendrier', 'GET|POST /venir/:lien — « Je viens » (prénom + nombre)', 'GET /rsvp/:lien?k= — liste « Qui vient » (clé organisateur)',
-  'POST /code — vérifier un code organisateur', 'POST /code/request — demander un code', 'POST /events — proposer un événement', 'POST /events/:id/(view|like) — vues et « J’y vais »',
+  'POST /code — vérifier un code organisateur', 'POST /code/request — demander un code', 'POST /profil/request — demander la création d’un profil', 'POST /events — proposer un événement', 'POST /events/:id/(view|like) — vues et « J’y vais »',
   'POST /stat — « J’y vais » et vues', 'POST /avis — avis', 'POST /upload — affiche (ImgBB)', 'POST /newsletter · /newsletter/stop',
   'GET /lien/maj · /lien/confirmer?id= — pages de lien depuis Airtable', 'POST /hook/refresh · /hook/confirm — relecture et confirmations',
   'POST /admin/login', 'GET /admin/overview · /admin/diag · /admin/stats · /admin/stats/brut · /admin/events · /admin/event/:id · /admin/kv · /admin/affiches · /admin/affiche · /admin/code-requests',
   'POST /admin/event/:id/fields · /admin/refresh · /admin/cache-clear · /admin/test-mail · /admin/sql · /admin/orgas/:id/(send-code|refuse)', 'PATCH /admin/events/:id — statut', 'GET /health',
 ];
 const OV_EV = ['Titre', 'Statut', 'Date', 'Date de fin', 'Récurrence', 'Commune', 'Organisation', 'Catégorie', 'Likes', 'Vues', 'Photo', 'Contact privé', 'Envoyer la confirmation', 'Confirmation par mail', 'À la une', 'Lieu', 'Heure'];
-const OV_OR = ['Nom', 'Email', 'Statut code', 'Code', 'Publié', 'Message demande', 'Contact', 'Ordre'];
+const OV_OR = ['Nom', 'Email', 'Statut code', 'Code', 'Publié', 'Message demande', 'Contact', 'Ordre', 'Demande de profil', 'Description courte', 'Description', 'Photo'];
 async function loadOv(env, frais) {
   let ov = (!frais && KV) ? await KV.get('admov', 'json') : null;
   if (ov) return ov;
@@ -821,9 +821,10 @@ async function loadOv(env, frais) {
       const f = r.fields;
       return { id: r.id, titre: f.Titre || '', statut: f.Statut || '', date: f.Date || '', fin: f['Date de fin'] || '', rec: f['Récurrence'] || '', commune: f.Commune || '', orga: f.Organisation || '', cat: f['Catégorie'] || '', likes: f.Likes || 0, vues: f.Vues || 0, photo: !!(f.Photo && f.Photo.length), contact: !!firstEmail(f['Contact privé']), coche: !!f['Envoyer la confirmation'], conf: String(f['Confirmation par mail'] || ''), une: !!f['À la une'], lieu: f.Lieu || '', heure: f.Heure || '' };
     }),
-    orgas: orgs.map(r => { const f = r.fields; return { id: r.id, nom: f.Nom || '', email: f.Email || '', statutCode: f['Statut code'] || '', code: f.Code || '', publie: !!f['Publié'], msg: f['Message demande'] || '', contact: f.Contact || '', ordre: f.Ordre ?? null }; }),
+    orgas: orgs.map(r => { const f = r.fields; return { id: r.id, nom: f.Nom || '', email: f.Email || '', statutCode: f['Statut code'] || '', code: f.Code || '', publie: !!f['Publié'], msg: f['Message demande'] || '', contact: f.Contact || '', ordre: f.Ordre ?? null, profil: !!f['Demande de profil'], courte: f['Description courte'] || '', desc: f.Description || '', logo: (Array.isArray(f.Photo) && f.Photo[0] && (f.Photo[0].thumbnails?.large?.url || f.Photo[0].url)) || '' }; }),
   };
   ov.codes = ov.orgas.filter(o => o.statutCode === 'Demandé').length;
+  ov.profils = ov.orgas.filter(o => o.profil).length;
   if (KV) await KV.put('admov', JSON.stringify(ov), { expirationTtl: 120 });
   return ov;
 }
@@ -1057,6 +1058,36 @@ async function route(req, env, ctx) {
         html: `<div style="font-family:Helvetica,Arial,sans-serif;font-size:15px;color:#16191a;line-height:1.6"><p><strong>${escH(nom)}</strong> (${escH(email)}) demande un code organisateur sur laSave.</p>${message ? `<blockquote style="margin:0 0 16px;padding:10px 14px;background:#f6f8f8;border-left:4px solid #FFA823">${escH(message)}</blockquote>` : ''}<p><a href="${SITE}/#admin" style="display:inline-block;background:#c8a96e;color:#ffffff;text-decoration:none;font-weight:700;padding:10px 18px;border-radius:8px">Valider ou refuser dans l'admin</a></p></div>`,
       }).catch(e => console.error('alerte mairie', e)));
     }
+    return ok;
+  }
+
+  // Demande de création du profil d'une structure (formulaire affiché après l'envoi d'un événement)
+  if (m === 'POST' && p === '/profil/request') {
+    if (await tooMany(req, 'profil', 4, 3600)) return slowDown(req);
+    const b = await body();
+    const ok = json(req, { ok: true });
+    if (b.website) return ok; // pot de miel anti-robot
+    const nom = clip(String(b.nom || '').trim(), 120), email = String(b.email || '').trim().toLowerCase().slice(0, 200);
+    if (!nom) return json(req, { error: 'Indiquez le nom de votre structure.' }, 400);
+    if (!isEmail(email)) return json(req, { error: 'Adresse e-mail invalide.' }, 400);
+    const courte = clip(String(b.courte || '').trim(), 160), desc = clip(String(b.desc || '').trim(), 1500);
+    const ig = clip(String(b.ig || '').trim().replace(/^@/, ''), 80), fb = clip(String(b.fb || '').trim(), 160);
+    let site = clip(String(b.site || '').trim(), 200); if (site && !/^https?:\/\//i.test(site)) site = 'https://' + site;
+    const contact = [ig && 'IG:' + ig, fb && 'FB:' + fb, site && 'Site:' + site].filter(Boolean).join(' | ');
+    const f = encodeURIComponent(`AND(LOWER({Email})='${email.replace(/'/g, "\\'")}',{Demande de profil}=1)`);
+    if ((await listAll(env, T_ORGAS, '&filterByFormula=' + f)).length) return ok; // déjà demandé : on ne double pas
+    const fields = { Nom: nom, Email: email, 'Demande de profil': true, 'Publié': false };
+    if (courte) fields['Description courte'] = courte;
+    if (desc) fields.Description = desc;
+    if (contact) fields.Contact = contact;
+    if (typeof b.logoUrl === 'string' && /^https:\/\/(i\.)?ibb\.co\//.test(b.logoUrl)) fields.Photo = [{ url: b.logoUrl }];
+    await at(env, T_ORGAS, { method: 'POST', body: JSON.stringify({ fields }) });
+    if (KV) await KV.delete('admov');
+    ctx.waitUntil(sendMail(env, {
+      to: MAIL_ADMIN, subject: `Demande de profil : ${nom}`, replyTo: email,
+      text: `${nom} (${email}) demande la création de son profil sur laSave.\n\n${courte}\n\n${desc}\n\n${contact}\n\nÀ valider : ${SITE}/test13/admin.html#organisateurs`,
+      html: `<div style="font-family:Helvetica,Arial,sans-serif;font-size:15px;color:#16191a;line-height:1.6"><p><strong>${escH(nom)}</strong> (${escH(email)}) demande la création de son profil sur laSave.</p>${courte ? `<p><em>${escH(courte)}</em></p>` : ''}${desc ? `<p>${escH(desc)}</p>` : ''}${contact ? `<p>${escH(contact)}</p>` : ''}<p><a href="${SITE}/test13/admin.html#organisateurs">Voir la demande dans l’admin</a></p></div>`,
+    }).catch(e => console.error('alerte profil', e)));
     return ok;
   }
 
@@ -1316,9 +1347,16 @@ async function route(req, env, ctx) {
       const recs = await listAll(env, T_ORGAS, '&filterByFormula=' + encodeURIComponent("{Statut code}='Demandé'"));
       return json(req, recs.map(r => ({ id: r.id, Nom: r.fields.Nom, Email: r.fields.Email, Message: r.fields['Message demande'] || '' })));
     }
-    if (m === 'POST' && (mm = p.match(/^\/admin\/orgas\/(rec\w+)\/(send-code|refuse)$/))) {
+    if (m === 'POST' && (mm = p.match(/^\/admin\/orgas\/(rec\w+)\/(send-code|refuse|publish-profile|refuse-profile)$/))) {
       if (!isId(mm[1])) return json(req, { error: 'Requête invalide' }, 400);
       let rec; try { rec = await at(env, `${T_ORGAS}/${mm[1]}`); } catch { return json(req, { error: 'Organisateur introuvable' }, 404); }
+      if (mm[2] === 'publish-profile' || mm[2] === 'refuse-profile') {
+        const pub = mm[2] === 'publish-profile';
+        await at(env, `${T_ORGAS}/${rec.id}`, { method: 'PATCH', body: JSON.stringify({ fields: pub ? { 'Publié': true, 'Demande de profil': false } : { 'Demande de profil': false } }) });
+        await jr('admin', (pub ? 'Profil publié : ' : 'Demande de profil refusée : ') + (rec.fields.Nom || rec.id));
+        if (KV) { await KV.delete('admov'); if (pub) await markDirty(); }
+        return json(req, { ok: true });
+      }
       if (mm[2] === 'refuse') {
         await at(env, `${T_ORGAS}/${rec.id}`, { method: 'PATCH', body: JSON.stringify({ fields: { 'Statut code': 'Refusé' } }) });
         await jr('admin', 'Demande de code refusée : ' + (rec.fields.Nom || rec.id));
