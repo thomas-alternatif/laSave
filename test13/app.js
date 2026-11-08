@@ -764,6 +764,19 @@
     });
 
     // Affiche
+    /* glisser-déposer une image sur une zone d'envoi (en plus du clic) */
+    const glisser = (zone, input) => {
+      if (!zone || !input) return;
+      const stop = ev => { ev.preventDefault(); ev.stopPropagation(); };
+      ['dragenter', 'dragover'].forEach(t => zone.addEventListener(t, ev => { stop(ev); zone.classList.add('over'); }));
+      ['dragleave', 'dragend'].forEach(t => zone.addEventListener(t, ev => { stop(ev); zone.classList.remove('over'); }));
+      zone.addEventListener('drop', ev => {
+        stop(ev); zone.classList.remove('over');
+        const f = ev.dataTransfer && [...ev.dataTransfer.files].find(x => x.type.startsWith('image/')); if (!f) return;
+        try { const dt = new DataTransfer(); dt.items.add(f); input.files = dt.files; } catch (_) { return; }
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+    };
     let photoUrl = '', uploading = false;
     $('#f-photo').addEventListener('change', async () => {
       const f = $('#f-photo').files[0]; if (!f) return;
@@ -780,6 +793,8 @@
       } catch (_) { say(out, "L'affiche n'a pas pu être envoyée. Réessayez, ou envoyez l'événement sans affiche.", 'err'); }
       uploading = false;
     });
+
+    glisser($('#drop'), $('#f-photo')); glisser($('#pb-drop'), $('#pb-logo'));
 
     // Tarifs rapides et récurrence
     $$('[data-tarif]').forEach(b => b.addEventListener('click', () => { $('#f-tarif').value = b.dataset.tarif; $$('[data-tarif]').forEach(x => x.setAttribute('aria-pressed', String(x === b))); }));

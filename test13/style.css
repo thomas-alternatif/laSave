@@ -1906,3 +1906,6 @@ fieldset .code-box { margin: 4px 0 22px; padding: 18px 20px; border-style: dashe
 .pb-title { font-size: clamp(20px, 2.6vw, 24px); }
 .pb-lede { font-size: 15px; }
 .pb-form { justify-self: stretch; width: 100%; }
+
+/* zone d'envoi : survol pendant un glisser-déposer */
+.drop.over, .pb-drop.over { border-color: var(--or); border-style: solid; background: rgba(200,169,110,.1); }
