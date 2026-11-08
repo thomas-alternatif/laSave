@@ -1299,7 +1299,7 @@
       const PAL = ['#6b9bf5', '#e9573a', '#c48ac9', '#f4b32a', '#9aa63f', '#d98c80', '#efe3cd'];
       list.sort((p, q) => eventsOf(q).length - eventsOf(p).length || p.Nom.localeCompare(q.Nom, 'fr')); // celles qui ont des événements d'abord
       list.forEach(o => {
-        const evs = eventsOf(o).sort((p, q) => (evStart(p) || '9').localeCompare(evStart(q) || '9')), n = evs.length;
+        const reg = e => isRec(e) || isLong(e) || !evStart(e), evs = eventsOf(o).sort((p, q) => reg(p) - reg(q) || (evStart(p) || '9').localeCompare(evStart(q) || '9')), n = evs.length;
         const li = el('li', n ? 'st-wide' : ''), card = el('div', 'st-card');
         card.style.setProperty('--c', PAL[[...o.Nom].reduce((x, ch) => x + ch.charCodeAt(0), 0) % PAL.length]);
         const ph = attUrl(o.Photo && o.Photo[0]), fig = el('button', 'st-fig'); fig.type = 'button'; fig.setAttribute('aria-label', `${o.Nom}, voir le profil`);
@@ -1310,7 +1310,7 @@
         if (n) {
           const ue = el('ul', 'st-evs');
           evs.slice(0, 3).forEach(e => {
-            const w = evStart(e) ? cap(fmt(evStart(e) + 'T12:00:00', { weekday: 'short', day: 'numeric', month: 'short' })) : (rhFreq(e) || 'Régulier');
+            const w = !reg(e) ? cap(fmt(evStart(e) + 'T12:00:00', { weekday: 'short', day: 'numeric', month: 'short' })) : (rhFreq(e) || 'Régulier');
             const x = el('li'), bt = el('button', 'st-ev-b'); bt.type = 'button'; bt.appendChild(el('span', 'st-ev-d', w)); bt.appendChild(tel('b', 'st-ev-t', e.Titre || 'Événement'));
             bt.addEventListener('click', () => openEvent(e)); x.appendChild(bt); ue.appendChild(x);
           });
