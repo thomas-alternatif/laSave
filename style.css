@@ -1959,3 +1959,21 @@ fieldset .code-box { margin: 4px 0 22px; padding: 18px 20px; border-style: dashe
 @media (prefers-reduced-motion: reduce) { .st-grid .st-card { transition: none; } .st-grid .st-card:hover { transform: none; } }
 .st-fig { background: rgba(255,255,255,.88); }
 .st-fig img { object-fit: contain; }
+
+/* organisateurs v2 : carte plus grande quand il y a des événements, logos qui remplissent la zone */
+.st-grid .st-card { cursor: default; }
+.st-grid .st-card:hover { transform: none; filter: none; }
+.st-fig { position: relative; isolation: isolate; border: 0; padding: 0; cursor: pointer; background: rgba(0,0,0,.12); }
+.st-fig::before { content: ""; position: absolute; inset: -20px; z-index: -1; background: var(--img) center / cover; filter: blur(16px) saturate(1.1); opacity: .9; }
+.st-fig img { object-fit: contain; }
+.st-nom { background: none; border: 0; color: inherit; padding: 0; text-align: left; cursor: pointer; }
+.st-nom:hover { text-decoration: underline; text-underline-offset: 3px; }
+.st-plus { background: none; color: inherit; cursor: pointer; font-family: inherit; }
+.st-plus:hover { background: #111; color: var(--c); }
+.st-fig:focus-visible, .st-nom:focus-visible, .st-plus:focus-visible, .st-ev-b:focus-visible { outline: 2px solid #111; outline-offset: 2px; }
+.st-evs { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.st-ev-b { display: flex; flex-direction: column; align-items: flex-start; gap: 1px; width: 100%; text-align: left; background: rgba(0,0,0,.1); border: 0; border-radius: 12px; padding: 8px 12px; color: #111; font: inherit; cursor: pointer; }
+.st-ev-b:hover { background: rgba(0,0,0,.18); }
+.st-ev-d { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; opacity: .72; }
+.st-ev-t { font-size: 14.5px; line-height: 1.2; }
+@media (min-width: 640px) { .st-wide .st-fig { flex: 0 0 40%; min-height: 220px; } .st-wide .st-card { align-items: stretch; } }

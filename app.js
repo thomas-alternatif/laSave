@@ -1297,17 +1297,28 @@
       s.appendChild(el('h2', 'st-vil-t', c)); s.appendChild(el('span', 'st-vil-n', `${list.length} structure${list.length > 1 ? 's' : ''}`));
       const ul = el('ul', 'st-grid');
       const PAL = ['#6b9bf5', '#e9573a', '#c48ac9', '#f4b32a', '#9aa63f', '#d98c80', '#efe3cd'];
-      list.forEach((o, ix) => {
-        const li = el('li', ix % 5 === 1 ? 'st-wide' : ''), b = el('button', 'st-card'); b.type = 'button';
-        b.style.setProperty('--c', PAL[[...o.Nom].reduce((x, ch) => x + ch.charCodeAt(0), 0) % PAL.length]);
-        const ph = attUrl(o.Photo && o.Photo[0]), fig = el('span', 'st-fig'); fig.setAttribute('aria-hidden', 'true');
-        if (ph) { const im = img(ph); im.draggable = false; fig.appendChild(im); } else fig.appendChild(el('span', 'st-ini', initials(o.Nom)));
-        b.appendChild(fig);
-        const t = el('span', 'st-txt'); t.appendChild(tel('b', 'st-nom', o.Nom));
+      list.sort((p, q) => eventsOf(q).length - eventsOf(p).length || p.Nom.localeCompare(q.Nom, 'fr')); // celles qui ont des événements d'abord
+      list.forEach(o => {
+        const evs = eventsOf(o).sort((p, q) => (evStart(p) || '9').localeCompare(evStart(q) || '9')), n = evs.length;
+        const li = el('li', n ? 'st-wide' : ''), card = el('div', 'st-card');
+        card.style.setProperty('--c', PAL[[...o.Nom].reduce((x, ch) => x + ch.charCodeAt(0), 0) % PAL.length]);
+        const ph = attUrl(o.Photo && o.Photo[0]), fig = el('button', 'st-fig'); fig.type = 'button'; fig.setAttribute('aria-label', `${o.Nom}, voir le profil`);
+        if (ph) { fig.style.setProperty('--img', `url("${ph}")`); const im = img(ph); im.draggable = false; fig.appendChild(im); } else fig.appendChild(el('span', 'st-ini', initials(o.Nom)));
+        fig.addEventListener('click', () => openProfile(o, fig)); card.appendChild(fig);
+        const t = el('div', 'st-txt'), nm = el('button', 'st-nom'); nm.type = 'button'; nm.textContent = o.Nom; nm.addEventListener('click', () => openProfile(o, nm)); t.appendChild(nm);
         const d = o['Description courte']; if (d) t.appendChild(el('span', 'st-desc', d));
-        const n = eventsOf(o).length, foot = el('span', 'st-foot');
-        foot.appendChild(el('span', 'st-pill', n ? `${n} événement${n > 1 ? 's' : ''}` : 'Profil')); foot.appendChild(el('span', 'st-plus', '+'));
-        t.appendChild(foot); b.appendChild(t); b.addEventListener('click', () => openProfile(o, b)); li.appendChild(b); ul.appendChild(li);
+        if (n) {
+          const ue = el('ul', 'st-evs');
+          evs.slice(0, 3).forEach(e => {
+            const w = evStart(e) ? cap(fmt(evStart(e) + 'T12:00:00', { weekday: 'short', day: 'numeric', month: 'short' })) : (rhFreq(e) || 'Régulier');
+            const x = el('li'), bt = el('button', 'st-ev-b'); bt.type = 'button'; bt.appendChild(el('span', 'st-ev-d', w)); bt.appendChild(tel('b', 'st-ev-t', e.Titre || 'Événement'));
+            bt.addEventListener('click', () => openEvent(e)); x.appendChild(bt); ue.appendChild(x);
+          });
+          t.appendChild(ue);
+        }
+        const foot = el('span', 'st-foot'), pill = el('span', 'st-pill', n ? (n > 3 ? `+ ${n - 3} autre${n - 3 > 1 ? 's' : ''} · ${n} à venir` : `${n} à venir`) : 'Profil'), pl = el('button', 'st-plus', '+');
+        pl.type = 'button'; pl.setAttribute('aria-label', `Profil de ${o.Nom}`); pl.addEventListener('click', () => openProfile(o, pl));
+        foot.appendChild(pill); foot.appendChild(pl); t.appendChild(foot); card.appendChild(t); li.appendChild(card); ul.appendChild(li);
       });
       s.appendChild(ul); root.appendChild(s);
     });
