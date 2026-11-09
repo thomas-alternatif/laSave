@@ -32,6 +32,9 @@
   let dirty = false, undoS = [], redoS = [], lastSnap = 0, resetArm = false, loaded = ES.loaded, pendingDraft = null, clipboard = null;
   let cropOn = false, versions = null, nav = false, pass = false, under = [];
   const HOME = !!D.getElementById('view-home');
+  // animations figées pendant l'édition (rendues en mode navigation)
+  const motionApi = window.__lasaveMotion, motion0 = motionApi ? motionApi.still : false;
+  const freeze = on => { b.classList.toggle('ez-frozen', on); try { if (motionApi) motionApi.set(on ? true : motion0); } catch (_) {} };
   const ratios = {}; // proportions des images de fond (pour zoomer sans déformer)
   const bgUrl = el => { const m = getComputedStyle(el).backgroundImage.match(/url\(["']?(.*?)["']?\)/); return m ? m[1] : ''; };
   const loadRatio = el => { const u = bgUrl(el); if (!u || ratios[u]) return; ratios[u] = -1; const i = new Image(); i.onload = () => { ratios[u] = i.naturalWidth / i.naturalHeight; }; i.src = u; };
@@ -156,7 +159,7 @@
   function setNav(v) {
     nav = v;
     if (nav) { if (cropOn) stopCrop(); inlineOff(); if (sel) sel.classList.remove('ez-sel'); sel = null; if (hov) hov.classList.remove('ez-hov'); hl.hidden = true; }
-    b.classList.toggle('ez-navmode', nav); render();
+    b.classList.toggle('ez-navmode', nav); freeze(!nav); render();
     say(nav ? 'Mode navigation : le site fonctionne normalement (menus, fiches, liens). Repasse sur « Modifier » pour sélectionner.' : '');
   }
   setInterval(() => { const o = openWins().length > 0; if (bClose.hidden === o) bClose.hidden = !o; }, 700);
@@ -541,7 +544,13 @@
     const t = e.target.nodeType === 1 ? e.target : e.target.parentElement;
     if (!t || t === b || t === D.documentElement) return;
     under = imagesAt(e.clientX, e.clientY).filter(n => n !== t);
-    pick(t);
+    // clic sur un bloc qui n'est en fait qu'une photo (bulle de logo, vignette…) : on prend directement la photo
+    let target = t;
+    if (!isImg(t) && under.length) {
+      const tr = t.getBoundingClientRect(), ir = under[0].getBoundingClientRect(), ta = tr.width * tr.height, ia = ir.width * ir.height;
+      if (ta > 0 && ia > 0 && ia / ta > 0.7 && ta / ia > 0.7) { target = under[0]; under = under.slice(1); }
+    }
+    pick(target);
   }, true);
   // les autres interactions du site (carrousels, formulaires…) sont neutralisées pendant l'édition
   ['pointerdown', 'mousedown', 'touchstart', 'submit', 'auxclick', 'dblclick', 'change'].forEach(ev => D.addEventListener(ev, e => {
@@ -575,5 +584,6 @@
     fail() { loaded = 'error'; checkDraft(); render(); },
   };
   if (loaded === true) checkDraft();
-  ES.update(P, true); render(); say('');
+  freeze(true);
+  ES.update(P, true); render(); say('Animations figées pendant l’édition (elles reprennent en mode « Naviguer »).');
 })();

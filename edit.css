@@ -4,6 +4,8 @@
 .ez-sel[contenteditable] { cursor: text !important; outline-style: solid !important; background-color: rgba(255,168,35,.08); }
 .ez-sel[contenteditable]:focus { outline-color: #fff !important; }
 body.ez-on .intro { display: none !important; }
+/* animations figées pendant l'édition */
+body.ez-frozen *, body.ez-frozen *::before, body.ez-frozen *::after { animation: none !important; transition: none !important; }
 body.ez-cropping { user-select: none; }
 
 .ez-tag { position: fixed; z-index: 2147483001; pointer-events: none; background: #FFA823; color: #141210; font: 600 11px/1 'Instrument Sans', system-ui, sans-serif; padding: 5px 7px; border-radius: 6px; white-space: nowrap; box-shadow: 0 4px 14px rgba(0,0,0,.35); }

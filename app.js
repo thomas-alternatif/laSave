@@ -8,6 +8,8 @@
   // Un seul interrupteur pour toutes les animations (pied de page), mémorisé comme sur le site actuel
   const motion = { still: reduce || (() => { try { return localStorage.getItem('lasave_motion') === 'off'; } catch (_) { return false; } })(), subs: [] };
   const onMotion = fn => { motion.subs.push(fn); fn(motion.still); };
+  // l'espace édition fige les animations (carrousels, bulles) sans toucher au réglage du visiteur
+  window.__lasaveMotion = { get still() { return motion.still; }, set(s) { motion.still = !!s; motion.subs.forEach(f => f(motion.still)); } };
   // Pause uniquement quand on navigue au clavier dans un bloc (pas au survol de la souris)
   const keyFocus = n => { try { return n && n.matches(':focus-visible'); } catch (_) { return false; } };
 

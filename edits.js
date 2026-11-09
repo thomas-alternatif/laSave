@@ -102,8 +102,8 @@
   const start = () => {
     tag(); dom(E);
     if (EDIT) {
-      const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = '/edit.css?v=5'; document.head.appendChild(l);
-      const s = document.createElement('script'); s.src = '/edit.js?v=5'; document.body.appendChild(s);
+      const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = '/edit.css?v=6'; document.head.appendChild(l);
+      const s = document.createElement('script'); s.src = '/edit.js?v=6'; document.body.appendChild(s);
     }
   };
   document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', start) : start();
