@@ -703,6 +703,28 @@ async function hmac(env, msg) {
   return btoa(String.fromCharCode(...new Uint8Array(sig))).replace(/[+/=]/g, c => ({ '+': '-', '/': '_', '=': '' }[c]));
 }
 async function makeToken(env) { const exp = Date.now() + 12 * 3600e3; return `${exp}.${await hmac(env, 'admin.' + exp)}`; }
+/* ── Espace édition du site : nettoyage de ce que l'admin enregistre ── */
+const SE_NUM = { font: [4, 400], pt: [0, 600], pb: [0, 600], pl: [0, 600], pr: [0, 600], mt: [-300, 600], mb: [-300, 600], radius: [0, 400], w: [0, 3000], h: [0, 3000], lh: [0.5, 4], ls: [-20, 60], op: [0, 100], z: [1, 5], x: [0, 100], y: [0, 100], cr: [0, 400], bw: [0, 20], weight: [100, 900] };
+const SE_ENUM = { align: ['left', 'center', 'right', 'justify'], fam: ['archivo', 'sans', 'serif'], tt: ['none', 'uppercase'], fit: ['cover', 'contain'], ratio: ['1/1', '4/3', '3/2', '16/9', '21/9', '4/5', '3/4', '2/3', '9/16'], shadow: ['none', 'soft', 'strong'] };
+const seSel = k => typeof k === 'string' && k.length <= 160 && /^[A-Za-z0-9_\-.#\s>:()"=\[\]]+$/.test(k) && !/[{};@\\]/.test(k);
+function seStyle(o, deep) {
+  const v = {};
+  if (!o || typeof o !== 'object') return v;
+  for (const [f, [lo, hi]] of Object.entries(SE_NUM)) if (o[f] !== undefined && o[f] !== null && o[f] !== '' && Number.isFinite(Number(o[f]))) v[f] = Math.max(lo, Math.min(hi, Math.round(Number(o[f]) * 100) / 100));
+  for (const f of ['color', 'bg', 'bc']) if (typeof o[f] === 'string' && (/^#[0-9a-fA-F]{6}$/.test(o[f]) || o[f] === 'transparent')) v[f] = o[f];
+  for (const [f, list] of Object.entries(SE_ENUM)) if (list.includes(o[f])) v[f] = o[f];
+  if (o.hidden === true) v.hidden = true;
+  if (deep && o.m) { const m = seStyle(o.m, false); if (Object.keys(m).length) v.m = m; }
+  return v;
+}
+function cleanSiteEdits(b) {
+  const out = { styles: {}, texts: {}, order: {} };
+  for (const [k, o] of Object.entries((b && b.styles) || {}).slice(0, 800)) { if (!seSel(k)) continue; const v = seStyle(o, true); if (Object.keys(v).length) out.styles[k] = v; }
+  for (const [k, t] of Object.entries((b && b.texts) || {}).slice(0, 500)) if (seSel(k) && typeof t === 'string') out.texts[k] = t.slice(0, 1500);
+  for (const [k, l] of Object.entries((b && b.order) || {}).slice(0, 80)) if (seSel(k) && Array.isArray(l)) out.order[k] = l.filter(seSel).slice(0, 100);
+  return out;
+}
+
 async function checkToken(env, req) {
   const t = (req.headers.get('Authorization') || '').replace(/^Bearer\s+/, '');
   const [exp, sig] = t.split('.');
@@ -805,7 +827,7 @@ const ROUTES = [
   'POST /code — vérifier un code organisateur', 'POST /code/request — demander un code', 'POST /profil/request — demander la création d’un profil', 'POST /events — proposer un événement', 'POST /events/:id/(view|like) — vues et « J’y vais »',
   'POST /stat — « J’y vais » et vues', 'POST /avis — avis', 'POST /upload — affiche (ImgBB)', 'POST /newsletter · /newsletter/stop',
   'GET /lien/maj · /lien/confirmer?id= — pages de lien depuis Airtable', 'POST /hook/refresh · /hook/confirm — relecture et confirmations',
-  'POST /admin/login', 'GET /site-edits (public) · POST /admin/site-edits · GET /admin/overview · /admin/diag · /admin/stats · /admin/stats/brut · /admin/events · /admin/event/:id · /admin/kv · /admin/affiches · /admin/affiche · /admin/code-requests',
+  'POST /admin/login', 'GET /site-edits (public) · POST /admin/site-edits · GET /admin/site-edits/versions · GET /admin/overview · /admin/diag · /admin/stats · /admin/stats/brut · /admin/events · /admin/event/:id · /admin/kv · /admin/affiches · /admin/affiche · /admin/code-requests',
   'POST /admin/event/:id/fields · /admin/refresh · /admin/cache-clear · /admin/test-mail · /admin/sql · /admin/orgas/:id/(send-code|refuse)', 'PATCH /admin/events/:id — statut', 'GET /health',
 ];
 const OV_EV = ['Titre', 'Statut', 'Date', 'Date de fin', 'Récurrence', 'Commune', 'Organisation', 'Catégorie', 'Likes', 'Vues', 'Photo', 'Contact privé', 'Envoyer la confirmation', 'Confirmation par mail', 'À la une', 'Lieu', 'Heure'];
@@ -1298,26 +1320,25 @@ async function route(req, env, ctx) {
   }
   if (p.startsWith('/admin/')) {
     if (!(await checkToken(env, req))) return json(req, { error: 'Session expirée, reconnectez-vous.' }, 401);
-    // Enregistrement de l'espace édition du site (filtré : sélecteurs et valeurs simples uniquement)
+    // Espace édition du site : enregistrement (filtré : sélecteurs et valeurs simples uniquement) + versions précédentes
     if (m === 'POST' && p === '/admin/site-edits') {
       if (!KV) return json(req, { error: 'Stockage KV non relié' }, 400);
-      const b = await body();
-      const okSel = k => typeof k === 'string' && k.length <= 160 && /^[A-Za-z0-9_\-.#\s>:()"=\[\]]+$/.test(k) && !/[{};@\\]/.test(k);
-      const out = { styles: {}, texts: {}, order: {} };
-      const NUM = ['font', 'pt', 'pb', 'pl', 'pr', 'mt', 'mb', 'radius', 'w', 'h'];
-      for (const [k, o] of Object.entries(b.styles || {}).slice(0, 600)) {
-        if (!okSel(k) || !o || typeof o !== 'object') continue;
-        const v = {};
-        for (const f of NUM) if (o[f] !== undefined && Number.isFinite(Number(o[f]))) v[f] = Math.max(0, Math.min(2000, Math.round(Number(o[f]) * 10) / 10));
-        for (const f of ['color', 'bg']) if (typeof o[f] === 'string' && /^#[0-9a-fA-F]{6}$/.test(o[f])) v[f] = o[f];
-        if (o.hidden === true) v.hidden = true;
-        if (Object.keys(v).length) out.styles[k] = v;
+      const out = cleanSiteEdits(await body());
+      const txt = JSON.stringify(out), prev = await KV.get('site_edits');
+      if (prev && prev !== txt) {
+        const hist = (await KV.get('site_edits_hist', 'json')) || [];
+        hist.unshift({ at: new Date().toISOString(), d: prev });
+        await KV.put('site_edits_hist', JSON.stringify(hist.slice(0, 15)));
       }
-      for (const [k, t] of Object.entries(b.texts || {}).slice(0, 400)) if (okSel(k) && typeof t === 'string') out.texts[k] = t.slice(0, 1200);
-      for (const [k, l] of Object.entries(b.order || {}).slice(0, 60)) if (okSel(k) && Array.isArray(l)) out.order[k] = l.filter(okSel).slice(0, 80);
-      await KV.put('site_edits', JSON.stringify(out));
+      await KV.put('site_edits', txt);
       await jr('admin', 'Édition du site enregistrée', { styles: Object.keys(out.styles).length, textes: Object.keys(out.texts).length });
       return json(req, { ok: true });
+    }
+    if (m === 'GET' && p === '/admin/site-edits/versions') {
+      const hist = KV ? ((await KV.get('site_edits_hist', 'json')) || []) : [];
+      const i = url.searchParams.get('i');
+      if (i !== null) { const v = hist[Number(i)]; return v ? json(req, JSON.parse(v.d)) : json(req, { error: 'Version introuvable' }, 404); }
+      return json(req, hist.map((v, k) => { let n = 0; try { const d = JSON.parse(v.d); n = Object.keys(d.styles || {}).length + Object.keys(d.texts || {}).length + Object.keys(d.order || {}).length; } catch {} return { i: k, at: v.at, n }; }));
     }
     if (m === 'GET' && p === '/admin/events') {
       const statut = url.searchParams.get('statut');

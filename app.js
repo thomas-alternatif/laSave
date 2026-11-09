@@ -37,7 +37,11 @@
   const isActive = e => isRec(e) || (e['Date de fin'] ? new Date(e['Date de fin']) >= today() : (e.Date ? new Date(e.Date) >= today() : true));
   const norm = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
   const orgName = v => Array.isArray(v) ? v.join(', ') : String(v || '');
-  const attUrl = a => a ? ((a.thumbnails && a.thumbnails.large) ? a.thumbnails.large.url : a.url) : null;
+  // repère de chaque photo (id Airtable de la pièce jointe, ou nom du fichier) : sert au recadrage photo par photo dans l'éditeur
+  const ATT = {};
+  const attUrl = a => { if (!a) return null; const u = (a.thumbnails && a.thumbnails.large) ? a.thumbnails.large.url : a.url; if (a.id) { ATT[u] = a.id; if (a.url) ATT[a.url] = a.id; } return u; };
+  const imgKey = s => { s = String(s || ''); if (ATT[s]) return ATT[s]; const f = s.split('?')[0].split('/').pop(); return f ? 'f-' + f.replace(/[^A-Za-z0-9_-]/g, '_').slice(0, 60) : ''; };
+  const markImg = (node, src) => { const k = src ? imgKey(src) : ''; if (k) node.setAttribute('data-img', k); else node.removeAttribute('data-img'); };
   const photoOf = e => attUrl(e.Photo && e.Photo[0]) || catOf(e)[1];
   const fullPhoto = e => (e.Photo && e.Photo[0] && e.Photo[0].url) || photoOf(e);
   const hour = e => e.Heure ? String(e.Heure).replace(':', 'h') : '';
@@ -74,8 +78,8 @@
   };
   const sortKey = e => e.Date && !stale(e) ? Math.max(new Date(e.Date).getTime(), Date.now()) : 9e15;
   const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; };
-  const img = (src, alt = '') => { const i = new Image(); i.src = src; i.alt = alt; i.loading = 'lazy'; i.decoding = 'async'; return i; };
-  const bg = (node, src) => { node.style.backgroundImage = src ? `url("${String(src).replace(/["\\\n]/g, '')}")` : ''; };
+  const img = (src, alt = '') => { const i = new Image(); i.src = src; i.alt = alt; i.loading = 'lazy'; i.decoding = 'async'; markImg(i, src); return i; };
+  const bg = (node, src) => { node.style.backgroundImage = src ? `url("${String(src).replace(/["\\\n]/g, '')}")` : ''; markImg(node, src); };
   // Titre sans coupure : les mots composés (Saint-Jean) restent entiers
   const title = (node, text) => {
     node.replaceChildren();
@@ -243,7 +247,7 @@
   function openEvent(e) {
     const p = fullPhoto(e);
     bg($('#ev-blur'), p);
-    const im = $('#ev-img'); im.hidden = !p; if (p) { im.src = p; im.alt = `Affiche : ${e.Titre || 'événement'}`; }
+    const im = $('#ev-img'); im.hidden = !p; if (p) { im.src = p; markImg(im, p); im.alt = `Affiche : ${e.Titre || 'événement'}`; }
     $('#ev-media').classList.toggle('none', !p);
     const cat = $('#ev-cat'); cat.textContent = e['Catégorie'] || 'Événement'; cat.style.setProperty('--c', catOf(e)[0]);
     title($('#ev-title'), e.Titre || 'Événement');
