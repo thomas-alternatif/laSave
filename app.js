@@ -24,6 +24,7 @@
     { title: "Envie d'une belle soirée ?", kicker: 'Concerts, spectacles & festivals', stamp: ['Concerts, spectacles', '& festivals'], cats: ['Concert', 'Spectacle', 'Festival'], color: '#FFA823' },
     { title: 'Et si vous vous lanciez ?', kicker: 'Ateliers & conférences', stamp: ['Ateliers', '& conférences'], cats: ['Conférence / Atelier'], color: '#C955E0' },
     { title: 'Transformez vos envies en énergie', kicker: 'Sport & loisirs', stamp: ['Sport', '& loisirs'], cats: ['Sport / Loisir'], color: '#5C96AB' },
+    { title: "Grandir et s'épanouir : l'espace jeunesse", kicker: 'Espace jeunesse', stamp: ['Espace', 'jeunesse'], cats: [], pub: ['Jeunesse', 'Multigénérationnel'], color: '#4CC38A' },
     { title: 'À découvrir dans la vallée', kicker: 'Marchés, fêtes, guinguettes & expositions', stamp: ['Marchés, fêtes,', 'guinguettes & expositions'], cats: ['Guinguette', 'Marché', 'Fête & Célébration', 'Exposition', 'Autre'], color: '#C8A96E' },
   ];
 
@@ -553,7 +554,7 @@
   function buildRows(events) {
     const box = $('#rows');
     const known = RUBRIQUES.flatMap(r => r.cats);
-    RUBRIQUES.map(r => ({ ...r, evs: events.filter(e => r.cats.includes(e['Catégorie']) || (r.cats.includes('Autre') && !known.includes(e['Catégorie']))) })).forEach((r, k) => {
+    RUBRIQUES.map(r => ({ ...r, evs: events.filter(e => r.pub ? (Array.isArray(e.Public) && e.Public.some(p => r.pub.includes(p))) : r.cats.includes(e['Catégorie']) || (r.cats.includes('Autre') && !known.includes(e['Catégorie']))) })).forEach((r, k) => {
       if (!r.evs.length) return;
       const sec = el('section', 'row-sec'); sec.setAttribute('aria-labelledby', 'rub-' + k);
       if (r.evs.length <= 3) sec.classList.add('few');
@@ -921,6 +922,7 @@
       const put = (k, id) => { const v = $(id).value.trim(); if (v) fields[k] = v; };
       if (!poll) { put('Date', '#f-date'); put('Heure', '#f-heure'); put('Lieu', '#f-lieu'); } put('Date de fin', '#f-date-fin');
       put('Description', '#f-desc'); if (!poll) put('Tarif', '#f-tarif'); put('Organisation', '#f-org');
+      { const pub = $$('#f-public input:checked').map(i => i.value); if (pub.length) fields['Public'] = pub; }
       const bil = $('#f-billet').value.trim();
       if (poll && !bil) return err('Ajoutez le lien du questionnaire Google Forms.', ['#f-billet']);
       if (bil) { if (!/^https:\/\/[^\s]+\.[^\s]+/.test(bil)) return err('Le lien de billetterie doit commencer par https://', ['#f-billet']); fields['Billetterie'] = bil; }

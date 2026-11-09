@@ -30,7 +30,7 @@ const ALLOWED_ORIGINS = ['https://la-save.fr', 'https://www.la-save.fr', 'https:
 
 // Champs visibles par le public (tout le reste, dont les contacts et messages privés, reste caché)
 // « Message aux organisateurs » (Airtable) : mot privé de la mairie, ajouté au mail de publication, jamais affiché sur le site
-const EVENT_PUBLIC = ['Titre','Catégorie','Organisation','Description','Commune','Date','Date de fin','Heure','Lieu','Tarif','Contact','Récurrence','À la une','Période','Jour','Vues','Photo','Likes','Billetterie'];
+const EVENT_PUBLIC = ['Titre','Catégorie','Organisation','Description','Commune','Date','Date de fin','Heure','Lieu','Tarif','Contact','Récurrence','À la une','Période','Jour','Vues','Photo','Likes','Billetterie','Public'];
 const ORGA_PUBLIC = ['Nom','Description courte','Description','Photo','Contact','Ordre','Commune','Thème'];
 // Champs acceptés depuis le formulaire « Ajouter un événement »
 const EVENT_SUBMIT = ['Titre','Catégorie','Commune','Date','Date de fin','Heure','Lieu','Description','Tarif','Récurrence','Période','Organisation','Contact','Contact privé','Message privé','Billetterie'];
@@ -1104,6 +1104,7 @@ async function route(req, env, ctx) {
     if (fields['Récurrence'] && !['Aucune', 'Hebdomadaire', 'Mensuelle', 'Annuelle'].includes(fields['Récurrence'])) delete fields['Récurrence'];
     if (!fields.Titre || !fields['Catégorie'] || !fields.Commune) return json(req, { error: 'Titre, catégorie et commune sont obligatoires.' }, 400);
     if (typeof b.photoUrl === 'string' && /^https:\/\/(i\.)?ibb\.co\//.test(b.photoUrl)) fields.Photo = [{ url: b.photoUrl }];
+    if (Array.isArray(b.Public)) { const pub = [...new Set(b.Public.filter(v => ['Jeunesse', 'Adultes', 'Seniors', 'Multigénérationnel'].includes(v)))]; if (pub.length) fields.Public = pub; } // public visé : liste fermée
     if (fields.Billetterie && !/^https:\/\/[^\s<>"']+$/.test(fields.Billetterie)) delete fields.Billetterie; // lien de billetterie : https uniquement
     fields.Statut = 'En attente';
     // Proposé avec un code organisateur et sans e-mail : on reprend l'e-mail de la structure (pour le mail de publication)
@@ -1116,9 +1117,10 @@ async function route(req, env, ctx) {
     }
     let d;
     try { d = await at(env, T_EVENTS, { method: 'POST', body: JSON.stringify({ fields }) }); }
-    catch (e) { // colonne « Billetterie » pas encore créée dans Airtable : on enregistre quand même le reste
-      if (!fields.Billetterie || !/Billetterie|UNKNOWN_FIELD/i.test(e.message)) throw e;
-      delete fields.Billetterie;
+    catch (e) { // colonne « Billetterie » ou « Public » pas encore créée dans Airtable : on enregistre quand même le reste
+      let retry = false;
+      for (const k of ['Billetterie', 'Public']) if (fields[k] && new RegExp(k + '|UNKNOWN_FIELD', 'i').test(e.message)) { delete fields[k]; retry = true; }
+      if (!retry) throw e;
       d = await at(env, T_EVENTS, { method: 'POST', body: JSON.stringify({ fields }) });
     }
     return json(req, { ok: true, id: d.id }, 201);

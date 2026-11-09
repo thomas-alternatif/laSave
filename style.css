@@ -2040,3 +2040,11 @@ fieldset .code-box { margin: 4px 0 22px; padding: 18px 20px; border-style: dashe
 .st-grid.cp .st-wide .st-evs li:nth-child(n+3) { display: none; }
 .st-grid.cp .st-wide .st-nom { font-size: 16px; }
 .st-grid.cp .st-wide .st-pills { flex-wrap: wrap; }
+
+/* Formulaire : « Pour qui ? » */
+.pub-opts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.pub-opts label { cursor: pointer; }
+.pub-opts input { position: absolute; opacity: 0; pointer-events: none; }
+.pub-opts span { display: inline-block; padding: 9px 16px; border-radius: 99px; border: 1px solid rgba(255,255,255,.28); font-size: 14px; }
+.pub-opts input:checked + span { background: #4CC38A; border-color: #4CC38A; color: #111; font-weight: 600; }
+.pub-opts input:focus-visible + span { outline: 2px solid var(--or); outline-offset: 2px; }
