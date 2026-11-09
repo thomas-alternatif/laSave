@@ -26,7 +26,7 @@
     { title: "Envie d'une belle soirée ?", kicker: 'Concerts, spectacles & festivals', stamp: ['Concerts, spectacles', '& festivals'], cats: ['Concert', 'Spectacle', 'Festival'], color: '#FFA823' },
     { title: 'Et si vous vous lanciez ?', kicker: 'Ateliers & conférences', stamp: ['Ateliers', '& conférences'], cats: ['Conférence / Atelier'], color: '#C955E0' },
     { title: 'Transformez vos envies en énergie', kicker: 'Sport & loisirs', stamp: ['Sport', '& loisirs'], cats: ['Sport / Loisir'], color: '#5C96AB' },
-    { title: "Grandir et s'épanouir : l'espace jeunesse", kicker: 'Espace jeunesse', stamp: ['Espace', 'jeunesse'], cats: [], pub: ['Jeunesse', 'Multigénérationnel'], color: '#4CC38A' },
+    { title: "Grandir et s'épanouir : l'espace jeunesse", kicker: 'Espace jeunesse', stamp: ['Espace', 'jeunesse'], cats: [], pub: ['Jeunesse'], color: '#4CC38A' },
     { title: 'À découvrir dans la vallée', kicker: 'Marchés, fêtes, guinguettes & expositions', stamp: ['Marchés, fêtes,', 'guinguettes & expositions'], cats: ['Guinguette', 'Marché', 'Fête & Célébration', 'Exposition', 'Autre'], color: '#C8A96E' },
   ];
 
