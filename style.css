@@ -1923,8 +1923,6 @@ fieldset .code-box { margin: 4px 0 22px; padding: 18px 20px; border-style: dashe
 .mini-logo img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .ag-org { display: flex; align-items: center; gap: 7px; margin-top: 2px; min-width: 0; }
 .ag-org-n { font-size: 13px; color: var(--texte-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.orgs-more a { display: inline-block; text-decoration: none; color: inherit; }
-.orgs-more { display: flex; justify-content: center; margin-top: 22px; }
 .st-vil { margin-top: 36px; }
 .st-vil-t { display: inline; font-size: clamp(22px, 3vw, 30px); }
 .st-vil-n { margin-left: 12px; font-size: 13px; color: var(--texte-2); }
@@ -2049,7 +2047,7 @@ fieldset .code-box { margin: 4px 0 22px; padding: 18px 20px; border-style: dashe
 
 /* Bouton « Tous les organisateurs, village par village » : mis en avant sous la ronde des organisateurs */
 .orgs-more { display: flex; justify-content: center; margin-top: 30px; padding-inline: var(--pad, 16px); }
-.orgs-all { min-height: 64px; padding: 8px 10px 8px 28px; gap: 18px; max-width: 100%; white-space: normal; text-align: left; font-size: 16px; line-height: 1.2; box-shadow: inset 0 1px 0 rgba(255,255,255,.8), inset 0 -10px 22px rgba(255,255,255,.45), 0 14px 44px rgba(200,169,110,.45); }
+.orgs-more .orgs-all { display: inline-flex; color: #141210; min-height: 64px; padding: 8px 10px 8px 28px; gap: 18px; max-width: 100%; white-space: normal; text-align: left; font-size: 16px; line-height: 1.2; box-shadow: inset 0 1px 0 rgba(255,255,255,.8), inset 0 -10px 22px rgba(255,255,255,.45), 0 14px 44px rgba(200,169,110,.45); }
 .orgs-all-t { display: grid; gap: 3px; }
 .orgs-all-t small { font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase; font-weight: 700; opacity: .62; }
 .orgs-all-go { flex: none; width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; background: #141210; color: #F6E7C8; transition: transform .3s cubic-bezier(.2,.8,.2,1); }
