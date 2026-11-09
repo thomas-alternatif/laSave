@@ -109,8 +109,8 @@
   const nChanges = () => Object.keys(P.styles).length + Object.keys(P.texts).length + Object.keys(P.order).length;
   function status() {
     bUndo.disabled = !undoS.length; bRedo.disabled = !redoS.length;
-    bSave.disabled = loaded !== true; bSave.textContent = dirty ? 'Enregistrer' : 'Enregistré';
-    bSave.classList.toggle('done', !dirty);
+    bSave.disabled = loaded !== true; bSave.textContent = dirty || loaded !== true ? 'Enregistrer' : 'Enregistré';
+    bSave.classList.toggle('done', !dirty && loaded === true);
     const n = nChanges(); count.textContent = n ? n + ' réglage' + (n > 1 ? 's' : '') + (dirty ? ' · non enregistré' : ' · en ligne') : (dirty ? 'non enregistré' : '');
     bpAll.classList.toggle('on', bp !== 'm'); bpMob.classList.toggle('on', bp === 'm');
     bar.classList.toggle('mob', bp === 'm');

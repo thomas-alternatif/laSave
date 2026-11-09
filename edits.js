@@ -97,8 +97,8 @@
   const start = () => {
     tag(); dom(E);
     if (EDIT) {
-      const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = '/edit.css?v=3'; document.head.appendChild(l);
-      const s = document.createElement('script'); s.src = '/edit.js?v=3'; document.body.appendChild(s);
+      const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = '/edit.css?v=4'; document.head.appendChild(l);
+      const s = document.createElement('script'); s.src = '/edit.js?v=4'; document.body.appendChild(s);
     }
   };
   document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', start) : start();
