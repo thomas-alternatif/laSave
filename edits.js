@@ -46,7 +46,10 @@
     if (has(o.fit)) x.push(`object-fit:${o.fit}`, `background-size:${o.fit}`);
     const px = has(o.x) ? o.x : 50, py = has(o.y) ? o.y : 50;
     if (has(o.x) || has(o.y)) x.push(`object-position:${px}% ${py}%`, `background-position:${px}% ${py}%`);
-    if (has(o.z) && o.z > 1) {
+    if (has(o.z) && o.z > 1 && o.zb) {
+      // image de fond d'un bloc qui contient du texte : on agrandit seulement l'image, pas le contenu
+      x.push(`background-size:${o.zb === 'h' ? 'auto ' + (o.z * 100).toFixed(0) + '%' : (o.z * 100).toFixed(0) + '% auto'}`);
+    } else if (has(o.z) && o.z > 1) {
       const k = 1 - 1 / o.z, f = v => (v * k).toFixed(2) + '%';
       x.push(`scale:${o.z}`, `transform-origin:${px}% ${py}%`, `clip-path:inset(${f(py)} ${f(100 - px)} ${f(100 - py)} ${f(px)}${o.cr ? ` round ${(o.cr / o.z).toFixed(1)}px` : ''})`);
     }
@@ -88,7 +91,9 @@
     return parts.join('>');
   }
   const hash = s => { let h = 5381; for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) >>> 0; return h.toString(36); };
-  function tag() { document.querySelectorAll('body *').forEach(n => { if (!/^(SCRIPT|STYLE|LINK|META|NOSCRIPT|BR)$/.test(n.tagName) && !n.hasAttribute('data-e')) n.setAttribute('data-e', hash(path(n))); }); }
+  // page d'accueil : repères sans préfixe ; autres pages (guide, archive…) : repères propres à la page
+  const PAGE = /^\/(index\.html)?$/.test(location.pathname) ? '' : location.pathname.replace(/\.html$/, '') + '|';
+  function tag() { document.querySelectorAll('body *').forEach(n => { if (!/^(SCRIPT|STYLE|LINK|META|NOSCRIPT|BR)$/.test(n.tagName) && !n.hasAttribute('data-e')) n.setAttribute('data-e', hash(PAGE + path(n))); }); }
 
   function update(d, editing) { E = d; setCss(css(d, editing)); }
   const ES = window.__ES = { get E() { return E; }, norm, update, dom, reorder, API, EDIT, MOBILE, loaded: false };
@@ -97,8 +102,8 @@
   const start = () => {
     tag(); dom(E);
     if (EDIT) {
-      const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = '/edit.css?v=4'; document.head.appendChild(l);
-      const s = document.createElement('script'); s.src = '/edit.js?v=4'; document.body.appendChild(s);
+      const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = '/edit.css?v=5'; document.head.appendChild(l);
+      const s = document.createElement('script'); s.src = '/edit.js?v=5'; document.body.appendChild(s);
     }
   };
   document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', start) : start();

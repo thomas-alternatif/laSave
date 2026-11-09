@@ -30,7 +30,11 @@
   const savePref = () => store.set(PREF, pref);
   let P = clone(ES.E), sel = null, scope = 'one', bp = innerWidth <= MOB ? 'm' : 'all';
   let dirty = false, undoS = [], redoS = [], lastSnap = 0, resetArm = false, loaded = ES.loaded, pendingDraft = null, clipboard = null;
-  let cropOn = false, versions = null;
+  let cropOn = false, versions = null, nav = false, pass = false, under = [];
+  const HOME = !!D.getElementById('view-home');
+  const ratios = {}; // proportions des images de fond (pour zoomer sans déformer)
+  const bgUrl = el => { const m = getComputedStyle(el).backgroundImage.match(/url\(["']?(.*?)["']?\)/); return m ? m[1] : ''; };
+  const loadRatio = el => { const u = bgUrl(el); if (!u || ratios[u]) return; ratios[u] = -1; const i = new Image(); i.onload = () => { ratios[u] = i.naturalWidth / i.naturalHeight; }; i.src = u; };
 
   /* ── sélecteurs ── */
   const at = (el, a) => el && el.getAttribute && el.getAttribute(a);
@@ -89,7 +93,8 @@
   /* ── panneau ── */
   const panel = h('aside', 'ez-panel' + (pref.side === 'left' ? ' left' : '')); panel.setAttribute('aria-label', 'Édition du site');
   const head = h('div', 'ez-head'), bar = h('div', 'ez-bar'), body = h('div', 'ez-body'), msg = h('p', 'ez-msg');
-  panel.append(head, bar, body, msg); b.append(panel);
+  const nbar = h('div', 'ez-nav');
+  panel.append(head, bar, nbar, body, msg); b.append(panel);
   const tt = h('div', 'ez-title', 'Édition du site'), count = h('small', 'ez-count'); tt.append(count);
   const bSave = btn('Enregistrer', 'main sm', save, 'Mettre en ligne (Ctrl + S)');
   const bUndo = btn('↶', 'sm icon', undo, 'Annuler (Ctrl + Z)'), bRedo = btn('↷', 'sm icon', redo, 'Rétablir (Ctrl + Maj + Z)');
@@ -99,12 +104,62 @@
   }, 'Ouvrir un aperçu téléphone synchronisé');
   const bSide = btn('⇄', 'sm icon ez-side', () => { pref.side = pref.side === 'right' ? 'left' : 'right'; panel.classList.toggle('left', pref.side === 'left'); savePref(); }, 'Mettre le panneau de l’autre côté');
   const bMin = btn('▾', 'sm icon ez-collapse', () => { panel.classList.toggle('min'); bMin.textContent = panel.classList.contains('min') ? '▴' : '▾'; }, 'Réduire le panneau');
-  const bQuit = btn('Quitter', 'sm ghost', () => { if (dirty && !confirm('Des changements ne sont pas enregistrés (ils restent en brouillon sur cet appareil). Quitter ?')) return; dirty = false; location.href = '/admin.html'; });
+  const bQuit = btn('Quitter', 'sm ghost', () => { if (dirty && !confirm('Des changements ne sont pas enregistrés (ils restent en brouillon sur cet appareil). Quitter ?')) return; leaving = true; location.href = '/admin.html'; });
   head.append(tt, bSave, bUndo, bRedo, bPrev, bSide, bMin, bQuit);
   // écran visé
   const bpAll = btn('Tous les écrans', 'sm', () => setBp('all')), bpMob = btn('Mobile seulement', 'sm', () => setBp('m'));
   bar.append(h('span', 'ez-bar-l', 'Réglages pour'), bpAll, bpMob);
   function setBp(v) { bp = v; render(); }
+
+  /* ── aller partout : pages, fenêtres, autres pages, mode navigation ── */
+  const goSel = h('select', 'ez-select go'); goSel.setAttribute('aria-label', 'Aller à une page ou ouvrir une fenêtre');
+  const GO = [
+    ['Pages du site', HOME ? [['#', 'Accueil'], ['#agenda', 'Tout l’agenda'], ['#structures', 'Organisateurs'], ['#sondages', 'Sondages'], ['#partager', 'Proposer un événement'], ['#mentions', 'Mentions légales'], ['#confidentialite', 'Confidentialité'], ['#cookies', 'Cookies'], ['#accessibilite', 'Accessibilité']] : [['/', 'Accueil du site']]],
+    ['Fenêtres', HOME ? [['w:event', 'Fiche d’un événement'], ['w:pro', 'Profil d’un organisateur'], ['w:poll', 'Fenêtre de sondage'], ['w:menu', 'Menu du site']] : []],
+    ['Autres pages', [['/guide.html', 'Guide « Tout savoir sur laSave »'], ['/archive.html', 'Archive des affiches']]],
+  ];
+  { const o0 = h('option', '', 'Aller à…'); o0.value = ''; goSel.append(o0);
+    GO.forEach(([g, list]) => { if (!list.length) return; const og = D.createElement('optgroup'); og.label = g; list.forEach(([v, t]) => { const o = h('option', '', t); o.value = v; og.append(o); }); goSel.append(og); }); }
+  goSel.addEventListener('change', () => { const v = goSel.value; goSel.value = ''; goTo(v); });
+  const bEdit = btn('Modifier', 'sm', () => setNav(false), 'Cliquer sur le site sélectionne les éléments');
+  const bNav = btn('Naviguer', 'sm', () => setNav(true), 'Le site fonctionne normalement : menus, fiches, liens');
+  const bClose = btn('Fermer la fenêtre', 'sm', () => closeWin()); bClose.hidden = true;
+  const mode = h('div', 'ez-mode'); mode.append(bEdit, bNav);
+  nbar.append(goSel, mode, bClose);
+  let leaving = false;
+  function leave(url) {
+    if (dirty) { store.set(DRAFT, { at: Date.now(), P }); try { sessionStorage.setItem('lasave_edit_carry', '1'); } catch (_) {} }
+    leaving = true; location.href = url;
+  }
+  function goTo(v) {
+    if (!v) return;
+    if (v.startsWith('w:')) { openWin(v.slice(2)); return; }
+    if (v.startsWith('#')) { if (HOME) location.hash = v.slice(1); else leave('/?edit=1' + (v.length > 1 ? v : '')); return; }
+    leave(v === '/' ? '/?edit=1' : v + '?edit=1');
+  }
+  const viaSite = el => { if (!el) return false; pass = true; try { el.click(); } finally { pass = false; } return true; };
+  const openWins = () => [...qa('.sheet:not([hidden]), #menu:not([hidden])')];
+  function openWin(k) {
+    const go = () => {
+      let ok = false;
+      if (k === 'event') ok = viaSite(q('#hero-open')) || viaSite(q('.fcard')) || viaSite(q('.ag-item, #view-agenda li button'));
+      if (k === 'pro') ok = viaSite(q('.st-nom'));
+      if (k === 'poll') ok = viaSite(q('.hpoll')) || viaSite([...qa('#view-sondages button')].find(x => !at(x, 'data-e')));
+      if (k === 'menu') ok = viaSite(q('#burger'));
+      unpick(true);
+      say(ok ? 'Fenêtre ouverte : clique sur ses éléments pour les modifier, puis « Fermer la fenêtre ».' : 'Rien à ouvrir pour l’instant : aucun contenu de ce type n’est en ligne.', ok ? 'ok' : 'err');
+      setTimeout(status, 300);
+    };
+    if ((k === 'event') && HOME && q('#view-home').hidden) { location.hash = ''; setTimeout(go, 450); } else go();
+  }
+  function closeWin() { openWins().forEach(w => viaSite(w.querySelector('[data-close], [data-menu-close]'))); unpick(true); setTimeout(status, 300); }
+  function setNav(v) {
+    nav = v;
+    if (nav) { if (cropOn) stopCrop(); inlineOff(); if (sel) sel.classList.remove('ez-sel'); sel = null; if (hov) hov.classList.remove('ez-hov'); hl.hidden = true; }
+    b.classList.toggle('ez-navmode', nav); render();
+    say(nav ? 'Mode navigation : le site fonctionne normalement (menus, fiches, liens). Repasse sur « Modifier » pour sélectionner.' : '');
+  }
+  setInterval(() => { const o = openWins().length > 0; if (bClose.hidden === o) bClose.hidden = !o; }, 700);
   function say(t, k) { msg.textContent = t || ''; msg.className = 'ez-msg' + (k ? ' ' + k : ''); msg.hidden = !t; }
   const nChanges = () => Object.keys(P.styles).length + Object.keys(P.texts).length + Object.keys(P.order).length;
   function status() {
@@ -112,6 +167,7 @@
     bSave.disabled = loaded !== true; bSave.textContent = dirty || loaded !== true ? 'Enregistrer' : 'Enregistré';
     bSave.classList.toggle('done', !dirty && loaded === true);
     const n = nChanges(); count.textContent = n ? n + ' réglage' + (n > 1 ? 's' : '') + (dirty ? ' · non enregistré' : ' · en ligne') : (dirty ? 'non enregistré' : '');
+    bEdit.classList.toggle('on', !nav); bNav.classList.toggle('on', nav);
     bpAll.classList.toggle('on', bp !== 'm'); bpMob.classList.toggle('on', bp === 'm');
     bar.classList.toggle('mob', bp === 'm');
   }
@@ -187,7 +243,16 @@
   ov.append(h('i', 'ez-g ez-g1'), h('i', 'ez-g ez-g2'), h('i', 'ez-g ez-g3'), h('i', 'ez-g ez-g4'), dot, tip);
   let raf = 0, drag = null;
   const radius = () => parseFloat(getComputedStyle(sel).borderTopLeftRadius) || undefined;
-  const setZoom = (z, noSnap) => { z = clamp(Math.round(z * 100) / 100, 1, 4); setMany({ z: z > 1 ? z : undefined, cr: z > 1 ? radius() : undefined }, noSnap); };
+  // bloc avec une image de fond ET du contenu : on zoome l'image de fond seule ; sinon on agrandit puis recoupe l'élément
+  const bgBlock = el => el.tagName !== 'IMG' && el.childElementCount > 0;
+  const setZoom = (z, noSnap) => {
+    z = clamp(Math.round(z * 100) / 100, 1, 4);
+    if (z <= 1) { setMany({ z: undefined, cr: undefined, zb: undefined }, noSnap); return; }
+    if (bgBlock(sel)) {
+      const r = ratios[bgUrl(sel)], box = sel.getBoundingClientRect();
+      setMany({ z, zb: r > 0 && box.width / box.height < r ? 'h' : 'w', cr: undefined }, noSnap);
+    } else setMany({ z, cr: radius(), zb: undefined }, noSnap);
+  };
   function placeCrop() {
     if (!cropOn || !sel) return;
     const r = sel.getBoundingClientRect();
@@ -201,6 +266,7 @@
     const cs = getComputedStyle(sel), o = {};
     if (sel.tagName === 'IMG' && !sv('fit') && !/cover|contain|none/.test(cs.objectFit)) o.fit = 'cover';
     if (sv('x') === undefined) { o.x = 50; o.y = 50; }
+    if (sel.tagName !== 'IMG' && !sv('fit') && /auto/.test(cs.backgroundSize) && !sv('z')) o.fit = 'cover';
     if (Object.keys(o).length) setMany(o, true);
     cropOn = true; b.append(ov); b.classList.add('ez-cropping'); loop(); render();
     say('Recadrage : glisse dans l’image, molette pour zoomer, Échap pour terminer.');
@@ -290,14 +356,11 @@
       w.append(a); body.append(w);
     }
     if (bp === 'm') body.append(h('p', 'ez-note mob', 'Mode mobile : ces réglages ne s’appliquent qu’aux écrans de moins de ' + MOB + ' px, en tailles exactes. Le reste des écrans n’est pas touché.'));
-    const views = h('div', 'ez-chips views'), cur = location.hash.replace('#', '');
-    views.append(h('span', 'ez-lab', 'Page'));
-    [['Accueil', ''], ['Agenda', 'agenda'], ['Organisateurs', 'structures'], ['Sondages', 'sondages'], ['Proposer', 'partager']].forEach(([t, hs]) => views.append(btn(t, 'sm' + (cur === hs ? ' on' : ''), () => { location.hash = hs; })));
-    body.append(views);
+    if (nav) { body.append(h('p', 'ez-note nav', 'Mode navigation : tu utilises le site comme un visiteur (ouvrir le menu, une fiche, changer de page…). Clique « Modifier » pour reprendre l’édition de ce qui est affiché.')); }
 
     if (!sel || !D.contains(sel)) {
       sel = null;
-      body.append(h('p', 'ez-hint', 'Clique sur un texte, une image, un bouton ou un bloc du site pour le modifier. Les textes s’écrivent directement sur la page.'));
+      if (!nav) body.append(h('p', 'ez-hint', 'Clique sur un texte, une image, un bouton ou un bloc du site pour le modifier. Les textes s’écrivent directement sur la page. Pour une page ou une fenêtre (fiche événement, menu…), utilise « Aller à… » en haut.'));
       const keys = h('p', 'ez-keys'); keys.textContent = 'Échap : désélectionner · Ctrl+Z : annuler · Ctrl+S : enregistrer';
       body.append(keys);
       body.append(details('chg', 'Modifications (' + nChanges() + ')', d => d.append(changesBox())));
@@ -321,6 +384,20 @@
     crumbs.append(h('span', 'crumb cur', kind(sel)));
     if (sel.firstElementChild) crumbs.append(btn('↓ intérieur', 'crumb', () => pick(sel.firstElementChild), 'Sélectionner le premier élément à l’intérieur'));
     body.append(crumbs);
+    // toutes les images à l'endroit cliqué (même cachées sous un texte ou un dégradé) et dans le bloc
+    const inner = isImg(sel) ? [] : [...sel.querySelectorAll('*')].filter(n => n.getBoundingClientRect().width > 8 && isImg(n)).slice(0, 8);
+    const imgs = [...new Set([...under, ...inner])].filter(n => n !== sel && D.contains(n)).slice(0, 10);
+    if (imgs.length) {
+      const box = h('div', 'ez-imgs'); box.append(h('span', 'ez-lab', isImg(sel) ? 'Autres images ici' : 'Images ici — clique pour recadrer'));
+      const row2 = h('div', 'ez-thumbs');
+      imgs.forEach(n => {
+        const t = btn('', 'ez-thumb', () => { pick(n); pref.open.img = 1; render(); }, 'Sélectionner cette image');
+        const u = n.tagName === 'IMG' ? (n.currentSrc || n.src) : bgUrl(n);
+        if (u) t.style.backgroundImage = `url("${u.replace(/["\\]/g, '')}")`;
+        t.append(h('span', '', kind(n))); row2.append(t);
+      });
+      box.append(row2); body.append(box);
+    }
     // portée
     const opts = [];
     if (imgSel(sel)) opts.push(['img', 'Cette photo, partout']);
@@ -349,9 +426,9 @@
         const o = { ratio: v }; if (v && sel.tagName === 'IMG' && !sv('fit')) o.fit = 'cover'; setMany(o);
       }));
       d.append(chipsCtl('Remplissage', 'fit', [['cover', 'Remplir (recadré)'], ['contain', 'Image entière']]));
-      d.append(numCtl('Zoom (%)', 'z', 100, 400, 100, 5, { get: () => sv('z') !== undefined ? Math.round(sv('z') * 100) : undefined, set: v => setZoom(v / 100), keys: ['z', 'cr'] }));
+      d.append(numCtl('Zoom (%)', 'z', 100, 400, 100, 5, { get: () => sv('z') !== undefined ? Math.round(sv('z') * 100) : undefined, set: v => setZoom(v / 100), keys: ['z', 'cr', 'zb'] }));
       d.append(numCtl('Cadrage gauche ↔ droite (%)', 'x', 0, 100, 50), numCtl('Cadrage haut ↕ bas (%)', 'y', 0, 100, 50));
-      d.append(btn('Réinitialiser le cadrage', 'sm ghost', () => { setMany({ x: undefined, y: undefined, z: undefined, cr: undefined, fit: undefined, ratio: undefined }); render(); }));
+      d.append(btn('Réinitialiser le cadrage', 'sm ghost', () => { setMany({ x: undefined, y: undefined, z: undefined, cr: undefined, zb: undefined, fit: undefined, ratio: undefined }); render(); }));
       if (scope !== 'img' && imgSel(sel)) d.append(h('p', 'ez-hint sm', 'Pour recadrer cette photo précise partout où elle apparaît (accueil, agenda…), choisis « Cette photo, partout » en haut.'));
       if (sel.tagName === 'IMG' && /contain/.test(cs.objectFit) && !sv('fit')) d.append(h('p', 'ez-hint sm', 'Cette image est affichée en entier : choisis « Remplir » pour pouvoir la recadrer.'));
     }));
@@ -418,7 +495,9 @@
     changed();
   }, true);
   function pick(el, sc) {
+    if (nav) setNav(false);
     if (cropOn) stopCrop();
+    if (el.tagName !== 'IMG' && isImg(el)) loadRatio(el);
     if (sel) sel.classList.remove('ez-sel');
     inlineOff();
     sel = el; sel.classList.remove('ez-hov'); sel.classList.add('ez-sel'); hl.hidden = true;
@@ -426,9 +505,10 @@
     if (panel.classList.contains('min')) { panel.classList.remove('min'); bMin.textContent = '▾'; }
     inlineOn(el); render();
   }
-  function unpick() { if (cropOn) { stopCrop(); return; } inlineOff(); if (sel) sel.classList.remove('ez-sel'); sel = null; render(); }
+  function unpick(quiet) { if (cropOn) { stopCrop(); if (!quiet) return; } inlineOff(); if (sel) sel.classList.remove('ez-sel'); sel = null; under = []; render(); }
   D.addEventListener('mouseover', e => {
     if (hov) hov.classList.remove('ez-hov');
+    if (nav) { hov = null; hl.hidden = true; return; }
     if (cropOn || inUI(e.target)) { hov = null; hl.hidden = true; return; }
     hov = e.target === b || e.target === D.documentElement || e.target.nodeType !== 1 ? null : e.target;
     if (!hov) { hl.hidden = true; return; }
@@ -438,36 +518,56 @@
     hl.hidden = false; hl.style.left = Math.max(4, r.left) + 'px'; hl.style.top = (r.top > 30 ? r.top - 26 : r.bottom + 4) + 'px';
   }, true);
   D.addEventListener('mouseout', e => { if (hov && !e.relatedTarget) { hov.classList.remove('ez-hov'); hov = null; hl.hidden = true; } }, true);
+  function imagesAt(x, y) {
+    const out = [];
+    D.querySelectorAll('body *').forEach(n => {
+      if (panel.contains(n) || n === hl || n === ov || ov.contains(n)) return;
+      const r = n.getBoundingClientRect();
+      if (r.width < 8 || r.height < 8 || x < r.left || x > r.right || y < r.top || y > r.bottom) return;
+      if (isImg(n)) out.push(n);
+    });
+    return out.reverse();
+  }
   D.addEventListener('click', e => {
-    if (inUI(e.target)) return;
+    if (pass || inUI(e.target)) return;
+    if (nav) {
+      // en navigation, les liens vers les autres pages du site restent en mode édition
+      const a = e.target.closest && e.target.closest('a[href]');
+      if (a && a.origin === location.origin && /\.html$/.test(a.pathname) && !/admin|stats/.test(a.pathname)) { e.preventDefault(); leave(a.pathname + '?edit=1'); }
+      return;
+    }
     e.preventDefault(); e.stopPropagation();
     if (editingEl && editingEl.contains(e.target)) return; // on écrit dans le texte : on laisse le curseur
     const t = e.target.nodeType === 1 ? e.target : e.target.parentElement;
     if (!t || t === b || t === D.documentElement) return;
+    under = imagesAt(e.clientX, e.clientY).filter(n => n !== t);
     pick(t);
   }, true);
   // les autres interactions du site (carrousels, formulaires…) sont neutralisées pendant l'édition
   ['pointerdown', 'mousedown', 'touchstart', 'submit', 'auxclick', 'dblclick', 'change'].forEach(ev => D.addEventListener(ev, e => {
-    if (inUI(e.target)) return;
+    if (nav || pass || inUI(e.target)) return;
     if (ev === 'submit' || ev === 'auxclick' || ev === 'dblclick') e.preventDefault();
     e.stopPropagation();
   }, true));
   D.addEventListener('keydown', e => {
     const k = (e.key || '').toLowerCase(), mod = e.ctrlKey || e.metaKey, typing = /^(INPUT|TEXTAREA|SELECT)$/.test((e.target || {}).tagName);
     if (mod && k === 's') { e.preventDefault(); save(); return; }
+    if (nav || pass) return;
     if (mod && k === 'z' && !typing && e.target !== editingEl) { e.preventDefault(); e.shiftKey ? redo() : undo(); return; }
     if (mod && k === 'y' && !typing && e.target !== editingEl) { e.preventDefault(); redo(); return; }
     if (k === 'escape') { e.preventDefault(); if (editingEl && D.activeElement === editingEl) editingEl.blur(); unpick(); return; }
     if (e.target === editingEl) { if (k === 'enter' && !e.shiftKey) { e.preventDefault(); editingEl.blur(); } e.stopPropagation(); return; }
     if (!inUI(e.target) && !typing) e.stopPropagation();
   }, true);
-  window.addEventListener('beforeunload', e => { if (dirty) { e.preventDefault(); e.returnValue = ''; } });
-  window.addEventListener('hashchange', () => { if (cropOn) stopCrop(); inlineOff(); if (sel) sel.classList.remove('ez-sel'); sel = null; setTimeout(render, 250); });
+  window.addEventListener('beforeunload', e => { if (dirty && !leaving) { e.preventDefault(); e.returnValue = ''; } });
+  window.addEventListener('hashchange', () => { if (cropOn) stopCrop(); inlineOff(); if (sel) sel.classList.remove('ez-sel'); sel = null; under = []; setTimeout(render, 250); });
   window.addEventListener('resize', () => { if (cropOn) placeCrop(); });
 
   /* ── démarrage ── */
   function checkDraft() {
     const dr = store.get(DRAFT, null);
+    let carry = false; try { carry = sessionStorage.getItem('lasave_edit_carry') === '1'; sessionStorage.removeItem('lasave_edit_carry'); } catch (_) {}
+    if (carry && dr && dr.P) { snap(true); P = ES.norm(dr.P); dirty = true; ES.update(P, true); applyAll(); share(); return; }
     if (dr && dr.P && JSON.stringify(ES.norm(dr.P)) !== JSON.stringify(ES.norm(P))) pendingDraft = dr;
   }
   window.__EDITOR = {

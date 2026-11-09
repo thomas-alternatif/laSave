@@ -705,7 +705,7 @@ async function hmac(env, msg) {
 async function makeToken(env) { const exp = Date.now() + 12 * 3600e3; return `${exp}.${await hmac(env, 'admin.' + exp)}`; }
 /* ── Espace édition du site : nettoyage de ce que l'admin enregistre ── */
 const SE_NUM = { font: [4, 400], pt: [0, 600], pb: [0, 600], pl: [0, 600], pr: [0, 600], mt: [-300, 600], mb: [-300, 600], radius: [0, 400], w: [0, 3000], h: [0, 3000], lh: [0.5, 4], ls: [-20, 60], op: [0, 100], z: [1, 5], x: [0, 100], y: [0, 100], cr: [0, 400], bw: [0, 20], weight: [100, 900] };
-const SE_ENUM = { align: ['left', 'center', 'right', 'justify'], fam: ['archivo', 'sans', 'serif'], tt: ['none', 'uppercase'], fit: ['cover', 'contain'], ratio: ['1/1', '4/3', '3/2', '16/9', '21/9', '4/5', '3/4', '2/3', '9/16'], shadow: ['none', 'soft', 'strong'] };
+const SE_ENUM = { align: ['left', 'center', 'right', 'justify'], fam: ['archivo', 'sans', 'serif'], tt: ['none', 'uppercase'], fit: ['cover', 'contain'], zb: ['w', 'h'], ratio: ['1/1', '4/3', '3/2', '16/9', '21/9', '4/5', '3/4', '2/3', '9/16'], shadow: ['none', 'soft', 'strong'] };
 const seSel = k => typeof k === 'string' && k.length <= 160 && /^[A-Za-z0-9_\-.#\s>:()"=\[\]]+$/.test(k) && !/[{};@\\]/.test(k);
 function seStyle(o, deep) {
   const v = {};
@@ -856,6 +856,13 @@ async function route(req, env, ctx) {
   const p = url.pathname.replace(/\/+$/, '') || '/';
   const m = req.method;
   const body = async () => { try { return await req.json(); } catch { return {}; } };
+
+  /* ── Réglages d'édition du site (textes, tailles, couleurs, ordre) : lecture publique (avant les liens courts /xxx-yyy) ── */
+  if (m === 'GET' && p === '/site-edits') {
+    const d = KV ? ((await KV.get('site_edits', 'json')) || {}) : {};
+    return json(req, { styles: d.styles || {}, texts: d.texts || {}, order: d.order || {} }, 200, { 'Cache-Control': 'public, max-age=60' });
+  }
+
 
   // Événements publiés (mis en cache 60 s au bord du réseau Cloudflare)
   if (m === 'GET' && p === '/events' && KV) {
@@ -1298,12 +1305,6 @@ async function route(req, env, ctx) {
     }
     const r = await tryConfirm(env, rec, live);
     return json(req, { ok: r.envoye || !!r.attente, message: r.texte }, r.envoye || r.attente ? 200 : 422);
-  }
-
-  /* ── Réglages d'édition du site (textes, tailles, couleurs, ordre) : lecture publique ── */
-  if (m === 'GET' && p === '/site-edits') {
-    const d = KV ? ((await KV.get('site_edits', 'json')) || {}) : {};
-    return json(req, { styles: d.styles || {}, texts: d.texts || {}, order: d.order || {} }, 200, { 'Cache-Control': 'public, max-age=60' });
   }
 
   /* ── Admin ── */
