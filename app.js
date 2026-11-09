@@ -445,7 +445,7 @@
       if (!W) return;
       const gap = Math.min(cw * 1.02, W / 4.2);
       cards.forEach((c, i) => {
-        const o = i - cur, a = Math.abs(o);
+        let o = i - cur; const n = cards.length; if (n > 5) { o = ((o % n) + n) % n; if (o > n / 2) o -= n; } /* boucle sans fin dès 6 événements */ const a = Math.abs(o);
         c.style.transform = `translateX(${(o * gap).toFixed(1)}px) translateZ(${(-a * 110).toFixed(0)}px) rotateY(${(Math.max(-1, Math.min(1, o)) * -38).toFixed(1)}deg) scale(${a ? 0.9 : 1})`;
         c.style.zIndex = String(100 - a);
         c.style.opacity = a > 2 ? '0' : (a === 2 ? '.5' : '1');
