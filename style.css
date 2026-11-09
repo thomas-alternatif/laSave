@@ -2058,3 +2058,16 @@ fieldset .code-box { margin: 4px 0 22px; padding: 18px 20px; border-style: dashe
   .orgs-all { width: 100%; max-width: 420px; padding-left: 22px; font-size: 15px; justify-content: space-between; }
 }
 @media (prefers-reduced-motion: reduce) { .orgs-all-go { transition: none; } }
+
+/* Bouton organisateurs : teinte bleue (reprend le bleu choisi dans l'éditeur) au lieu du doré */
+.orgs-more .orgs-all { color: #0B1A21; border-color: rgba(255,255,255,.7);
+  background:
+    radial-gradient(70% 140% at 12% 20%, #8FC3D6 0%, rgba(143,195,214,0) 62%),
+    radial-gradient(60% 120% at 88% 15%, #D6EEF7 0%, rgba(214,238,247,0) 60%),
+    radial-gradient(55% 130% at 72% 70%, #5C96AB 0%, rgba(92,150,171,0) 70%),
+    radial-gradient(45% 90% at 30% 105%, #ffffff 0%, rgba(255,255,255,0) 70%),
+    #A9D3E2;
+  background-size: 140% 140%; background-position: 0% 50%;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.85), inset 0 -10px 22px rgba(255,255,255,.4), 0 14px 44px rgba(92,150,171,.5); }
+.orgs-more .orgs-all:hover { background-position: 100% 50%; box-shadow: inset 0 1px 0 rgba(255,255,255,.85), inset 0 -10px 22px rgba(255,255,255,.5), 0 16px 48px rgba(92,150,171,.65); }
+.orgs-more .orgs-all .orgs-all-go { background: #0B1A21; color: #D6EEF7; }
