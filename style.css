@@ -2032,3 +2032,11 @@ fieldset .code-box { margin: 4px 0 22px; padding: 18px 20px; border-style: dashe
 .st-grid.cp .st-ev-d { font-size: 9px; }
 .st-grid.cp .st-ev-t { font-size: 12.5px; }
 .st-grid.cp .st-nom { overflow-wrap: anywhere; hyphens: auto; }
+/* v8 : grandes cartes mobiles, logo entier à gauche, hauteur réduite */
+.st-grid.cp:not(.w3) .st-wide .st-card { flex-direction: row; align-items: flex-start; gap: 9px; }
+.st-grid.cp:not(.w3) .st-wide .st-fig { flex: 0 0 38%; aspect-ratio: 1 / 1 !important; min-height: 0; align-self: flex-start; }
+.st-grid.cp .st-wide .st-txt { flex: 1; min-width: 0; }
+.st-grid.cp .st-wide .st-desc { display: none; }
+.st-grid.cp .st-wide .st-evs li:nth-child(n+3) { display: none; }
+.st-grid.cp .st-wide .st-nom { font-size: 16px; }
+.st-grid.cp .st-wide .st-pills { flex-wrap: wrap; }
