@@ -805,7 +805,7 @@ const ROUTES = [
   'POST /code — vérifier un code organisateur', 'POST /code/request — demander un code', 'POST /profil/request — demander la création d’un profil', 'POST /events — proposer un événement', 'POST /events/:id/(view|like) — vues et « J’y vais »',
   'POST /stat — « J’y vais » et vues', 'POST /avis — avis', 'POST /upload — affiche (ImgBB)', 'POST /newsletter · /newsletter/stop',
   'GET /lien/maj · /lien/confirmer?id= — pages de lien depuis Airtable', 'POST /hook/refresh · /hook/confirm — relecture et confirmations',
-  'POST /admin/login', 'GET /admin/overview · /admin/diag · /admin/stats · /admin/stats/brut · /admin/events · /admin/event/:id · /admin/kv · /admin/affiches · /admin/affiche · /admin/code-requests',
+  'POST /admin/login', 'GET /site-edits (public) · POST /admin/site-edits · GET /admin/overview · /admin/diag · /admin/stats · /admin/stats/brut · /admin/events · /admin/event/:id · /admin/kv · /admin/affiches · /admin/affiche · /admin/code-requests',
   'POST /admin/event/:id/fields · /admin/refresh · /admin/cache-clear · /admin/test-mail · /admin/sql · /admin/orgas/:id/(send-code|refuse)', 'PATCH /admin/events/:id — statut', 'GET /health',
 ];
 const OV_EV = ['Titre', 'Statut', 'Date', 'Date de fin', 'Récurrence', 'Commune', 'Organisation', 'Catégorie', 'Likes', 'Vues', 'Photo', 'Contact privé', 'Envoyer la confirmation', 'Confirmation par mail', 'À la une', 'Lieu', 'Heure'];
@@ -1278,6 +1278,12 @@ async function route(req, env, ctx) {
     return json(req, { ok: r.envoye || !!r.attente, message: r.texte }, r.envoye || r.attente ? 200 : 422);
   }
 
+  /* ── Réglages d'édition du site (textes, tailles, couleurs, ordre) : lecture publique ── */
+  if (m === 'GET' && p === '/site-edits') {
+    const d = KV ? ((await KV.get('site_edits', 'json')) || {}) : {};
+    return json(req, { styles: d.styles || {}, texts: d.texts || {}, order: d.order || {} }, 200, { 'Cache-Control': 'public, max-age=60' });
+  }
+
   /* ── Admin ── */
   if (m === 'POST' && p === '/admin/login') {
     if (await tooMany(req, 'login', 8, 900)) return slowDown(req);
@@ -1292,6 +1298,27 @@ async function route(req, env, ctx) {
   }
   if (p.startsWith('/admin/')) {
     if (!(await checkToken(env, req))) return json(req, { error: 'Session expirée, reconnectez-vous.' }, 401);
+    // Enregistrement de l'espace édition du site (filtré : sélecteurs et valeurs simples uniquement)
+    if (m === 'POST' && p === '/admin/site-edits') {
+      if (!KV) return json(req, { error: 'Stockage KV non relié' }, 400);
+      const b = await body();
+      const okSel = k => typeof k === 'string' && k.length <= 160 && /^[A-Za-z0-9_\-.#\s>:()"=\[\]]+$/.test(k) && !/[{};@\\]/.test(k);
+      const out = { styles: {}, texts: {}, order: {} };
+      const NUM = ['font', 'pt', 'pb', 'pl', 'pr', 'mt', 'mb', 'radius', 'w', 'h'];
+      for (const [k, o] of Object.entries(b.styles || {}).slice(0, 600)) {
+        if (!okSel(k) || !o || typeof o !== 'object') continue;
+        const v = {};
+        for (const f of NUM) if (o[f] !== undefined && Number.isFinite(Number(o[f]))) v[f] = Math.max(0, Math.min(2000, Math.round(Number(o[f]) * 10) / 10));
+        for (const f of ['color', 'bg']) if (typeof o[f] === 'string' && /^#[0-9a-fA-F]{6}$/.test(o[f])) v[f] = o[f];
+        if (o.hidden === true) v.hidden = true;
+        if (Object.keys(v).length) out.styles[k] = v;
+      }
+      for (const [k, t] of Object.entries(b.texts || {}).slice(0, 400)) if (okSel(k) && typeof t === 'string') out.texts[k] = t.slice(0, 1200);
+      for (const [k, l] of Object.entries(b.order || {}).slice(0, 60)) if (okSel(k) && Array.isArray(l)) out.order[k] = l.filter(okSel).slice(0, 80);
+      await KV.put('site_edits', JSON.stringify(out));
+      await jr('admin', 'Édition du site enregistrée', { styles: Object.keys(out.styles).length, textes: Object.keys(out.texts).length });
+      return json(req, { ok: true });
+    }
     if (m === 'GET' && p === '/admin/events') {
       const statut = url.searchParams.get('statut');
       if (!ADMIN_STATUTS.includes(statut)) return json(req, { error: 'statut' }, 400);
