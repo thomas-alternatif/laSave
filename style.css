@@ -1622,8 +1622,6 @@ main { padding-top: clamp(10px, 4vw, 64px); }
   .flow { padding-bottom: 96px; }
   .row-sec { margin-bottom: 88px; }
   .orgs { padding: 112px 0 104px; }
-  .row-sec.few:not(.open) .track { justify-content: center; }
-  .row-sec.few:not(.open) .track .poster { flex-basis: clamp(220px, 22vw, 300px); }
   .row-sec.few:not(.open) .row-nav, .row-sec.few:not(.open) .see-all { display: none; }
 }
 @media (max-width: 720px) { .orgs { padding-block: 72px 76px; } }
