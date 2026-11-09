@@ -421,7 +421,7 @@
   function buildFlow(events) {
     const stage = $('#flow-stage');
     const limit = new Date(today()); limit.setDate(limit.getDate() + 30);
-    const list = events.filter(e => e.Date && new Date(e.Date + 'T12:00:00') <= limit && !stale(e) && !['Conférence / Atelier', 'Sport / Loisir'].includes(e['Catégorie'])).slice(0, 16);
+    const list = events.filter(e => e.Date && new Date(e.Date + 'T12:00:00') <= limit && !isRec(e) && new Date(e.Date + 'T12:00:00') >= today()).slice(0, 16);
     if (!list.length) { stage.appendChild(el('p', 'empty', 'Aucun événement daté dans les 30 prochains jours.')); $('.flow-ctrl').hidden = true; return; }
     let cur = Math.min(2, list.length - 1), chipSync = null;
     const cards = list.map((e, i) => {
