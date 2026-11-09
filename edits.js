@@ -69,8 +69,8 @@
   const start = () => {
     tag(); dom(E);
     if (EDIT) {
-      const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = '/edit.css?v=1'; document.head.appendChild(l);
-      const s = document.createElement('script'); s.src = '/edit.js?v=1'; document.body.appendChild(s);
+      const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = '/edit.css?v=2'; document.head.appendChild(l);
+      const s = document.createElement('script'); s.src = '/edit.js?v=2'; document.body.appendChild(s);
     }
   };
   document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', start) : start();

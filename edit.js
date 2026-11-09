@@ -4,7 +4,7 @@
   const KEY = 'lasave_admin';
   let token = ''; try { token = sessionStorage.getItem(KEY) || ''; } catch (_) {}
   const b = document.body;
-  b.classList.add('ed-on'); b.classList.remove('intro-on');
+  b.classList.add('ez-on'); b.classList.remove('intro-on');
   const intro = document.getElementById('intro'); if (intro) intro.remove();
   setTimeout(() => b.classList.remove('intro-on'), 1500);
 
@@ -12,7 +12,7 @@
   const clone = o => JSON.parse(JSON.stringify(o));
 
   if (!token) {
-    const g = h('div', 'ed-gate');
+    const g = h('div', 'ez-gate');
     const c = h('div'); c.append(h('p', '', 'Connecte-toi d’abord à l’administration pour modifier le site.'));
     const a = h('a', '', 'Aller à l’admin'); a.href = '/admin.html'; c.append(a); g.append(c); b.append(g); return;
   }
@@ -22,7 +22,7 @@
 
   /* ── sélecteurs ── */
   const oneSel = el => el && el.getAttribute('data-e') ? `[data-e="${el.getAttribute('data-e')}"]` : null;
-  const klass = el => [...el.classList].find(c => !/^ed-/.test(c));
+  const klass = el => [...el.classList].find(c => !/^ez-/.test(c));
   const allSel = el => { const k = el && klass(el); return k ? `${el.tagName.toLowerCase()}.${CSS.escape(k)}` : null; };
   const curSel = () => !sel ? null : (scope === 'all' ? (allSel(sel) || oneSel(sel)) : (oneSel(sel) || allSel(sel)));
   const parentSel = p => p.id ? '#' + p.id : oneSel(p);
@@ -44,18 +44,18 @@
   const sv = key => { const s = curSel(); return s && P.styles[s] ? P.styles[s][key] : undefined; };
 
   /* ── panneau ── */
-  const panel = h('aside', 'ed-panel'); panel.setAttribute('aria-label', 'Édition du site');
-  const head = h('div', 'ed-head'), body = h('div', 'ed-body'), msg = h('p', 'ed-msg');
+  const panel = h('aside', 'ez-panel'); panel.setAttribute('aria-label', 'Édition du site');
+  const head = h('div', 'ez-head'), body = h('div', 'ez-body'), msg = h('p', 'ez-msg');
   panel.append(head, body, msg); b.append(panel);
-  const btn = (txt, cls, fn) => { const x = h('button', 'ed-btn ' + (cls || ''), txt); x.type = 'button'; x.addEventListener('click', fn); return x; };
-  const tt = h('div', 'ed-title', 'Édition du site'); tt.append(h('small', '', 'Clique sur un élément pour le modifier'));
+  const btn = (txt, cls, fn) => { const x = h('button', 'ez-btn ' + (cls || ''), txt); x.type = 'button'; x.addEventListener('click', fn); return x; };
+  const tt = h('div', 'ez-title', 'Édition du site'); tt.append(h('small', '', 'Clique sur un élément pour le modifier'));
   const bSave = btn('Enregistrer', 'main sm', save), bUndo = btn('↶ Annuler', 'sm', undo);
-  const bSide = btn('⇄', 'sm ed-side', () => { state.side = state.side === 'right' ? 'left' : 'right'; panel.classList.toggle('left', state.side === 'left'); });
+  const bSide = btn('⇄', 'sm ez-side', () => { state.side = state.side === 'right' ? 'left' : 'right'; panel.classList.toggle('left', state.side === 'left'); });
   bSide.title = 'Mettre le panneau de l’autre côté';
-  const bMin = btn('▾', 'sm ed-collapse', () => { state.min = !state.min; panel.classList.toggle('min', state.min); bMin.textContent = state.min ? '▴' : '▾'; });
+  const bMin = btn('▾', 'sm ez-collapse', () => { state.min = !state.min; panel.classList.toggle('min', state.min); bMin.textContent = state.min ? '▴' : '▾'; });
   const bQuit = btn('Quitter', 'sm ghost', () => { if (dirty && !confirm('Des changements ne sont pas enregistrés. Quitter quand même ?')) return; dirty = false; location.href = '/admin.html'; });
   head.append(tt, bSave, bUndo, bSide, bMin, bQuit);
-  function say(t, kind) { msg.textContent = t || ''; msg.className = 'ed-msg' + (kind ? ' ' + kind : ''); msg.hidden = !t; }
+  function say(t, kind) { msg.textContent = t || ''; msg.className = 'ez-msg' + (kind ? ' ' + kind : ''); msg.hidden = !t; }
   function status() { bUndo.disabled = !hist.length; bSave.textContent = dirty ? 'Enregistrer •' : 'Enregistrer'; }
 
   async function save() {
@@ -77,12 +77,12 @@
   function applyOrder() { ES.dom(P); }
 
   /* ── contrôles ── */
-  function row(lab, ...ctl) { const r = h('div', 'ed-row'); r.append(h('label', '', lab)); const v = h('div', 'val'); v.append(...ctl.filter(c => !c.classList.contains('range'))); r.append(v); ctl.filter(c => c.classList.contains('range')).forEach(c => r.append(c)); return r; }
+  function row(lab, ...ctl) { const r = h('div', 'ez-row'); r.append(h('label', '', lab)); const v = h('div', 'val'); v.append(...ctl.filter(c => !c.classList.contains('range'))); r.append(v); ctl.filter(c => c.classList.contains('range')).forEach(c => r.append(c)); return r; }
   function numCtl(lab, key, min, max, def) {
     const cur = sv(key), start = cur !== undefined ? cur : Math.round(def);
     const n = h('input'); n.type = 'number'; n.min = min; n.max = max; n.value = start;
     const rg = h('input', 'range'); rg.type = 'range'; rg.min = min; rg.max = max; rg.value = start;
-    const x = h('button', 'ed-x', '×'); x.type = 'button'; x.title = 'Remettre la valeur d’origine';
+    const x = h('button', 'ez-x', '×'); x.type = 'button'; x.title = 'Remettre la valeur d’origine';
     const go = v => { v = Math.max(min, Math.min(max, Number(v) || 0)); n.value = v; rg.value = v; setStyle(key, v); };
     n.addEventListener('input', () => { if (n.value !== '') go(n.value); }); rg.addEventListener('input', () => go(rg.value));
     x.addEventListener('click', () => { setStyle(key, undefined); render(); });
@@ -92,30 +92,30 @@
   function colCtl(lab, key, cssProp) {
     const cur = sv(key), cs = getComputedStyle(sel);
     const i = h('input'); i.type = 'color'; i.value = cur || toHex(cs[cssProp]);
-    const x = h('button', 'ed-x', '×'); x.type = 'button'; x.title = 'Remettre la couleur d’origine';
+    const x = h('button', 'ez-x', '×'); x.type = 'button'; x.title = 'Remettre la couleur d’origine';
     i.addEventListener('input', () => setStyle(key, i.value)); x.addEventListener('click', () => { setStyle(key, undefined); render(); });
     return row(lab, i, x);
   }
-  function section(title) { const s = h('div', 'ed-sec'); s.append(h('h3', '', title)); return s; }
+  function section(title) { const s = h('div', 'ez-sec'); s.append(h('h3', '', title)); return s; }
 
   function render() {
     body.textContent = ''; status();
-    const views = h('div', 'ed-views');
+    const views = h('div', 'ez-views');
     [['Accueil', ''], ['Agenda', 'agenda'], ['Organisateurs', 'structures'], ['Sondages', 'sondages'], ['Proposer', 'partager']].forEach(([t, hs]) => {
       const cur = location.hash.replace('#', '');
       const v = btn(t, 'sm' + (cur === hs ? ' on' : ''), () => { location.hash = hs; setTimeout(render, 250); }); views.append(v);
     });
-    body.append(h('p', 'ed-sel-sub', 'Page affichée :'), views);
-    if (!sel || !document.contains(sel)) { sel = null; body.append(h('p', 'ed-hint', 'Clique sur un texte, un bouton, une image ou un bloc du site pour le modifier ici. Les liens et boutons ne se déclenchent pas pendant l’édition.')); return; }
+    body.append(h('p', 'ez-sel-sub', 'Page affichée :'), views);
+    if (!sel || !document.contains(sel)) { sel = null; body.append(h('p', 'ez-hint', 'Clique sur un texte, un bouton, une image ou un bloc du site pour le modifier ici. Les liens et boutons ne se déclenchent pas pendant l’édition.')); return; }
     const cs = getComputedStyle(sel);
-    const nm = h('p', 'ed-sel-name', label(sel)); body.append(nm);
+    const nm = h('p', 'ez-sel-name', label(sel)); body.append(nm);
     const similar = allSel(sel) ? document.querySelectorAll(allSel(sel)).length : 0;
-    body.append(h('p', 'ed-sel-sub', scope === 'all' ? `Modifie les ${similar} éléments semblables` : 'Modifie uniquement cet élément'));
+    body.append(h('p', 'ez-sel-sub', scope === 'all' ? `Modifie les ${similar} éléments semblables` : 'Modifie uniquement cet élément'));
 
-    const acts = h('div', 'ed-acts');
+    const acts = h('div', 'ez-acts');
     acts.append(btn('↑ Parent', 'sm', () => { const p = sel.parentElement; if (p && p !== b && p.id !== 'contenu') pick(p); }));
     if (allSel(sel) && oneSel(sel)) {
-      const seg = h('div', 'ed-seg');
+      const seg = h('div', 'ez-seg');
       seg.append(btn('Cet élément', 'sm' + (scope === 'one' ? ' on' : ''), () => { scope = 'one'; render(); }), btn(`Tous les semblables (${similar})`, 'sm' + (scope === 'all' ? ' on' : ''), () => { scope = 'all'; render(); }));
       body.append(seg);
     } else if (!oneSel(sel)) scope = 'all';
@@ -124,7 +124,7 @@
     // texte
     const so = oneSel(sel);
     if (so && sel.childElementCount === 0 && (sel.textContent.trim() || '__o' in sel)) {
-      const sc = section('Texte'), ta = h('textarea', 'ed-text'); ta.value = P.texts[so] !== undefined ? P.texts[so] : sel.textContent;
+      const sc = section('Texte'), ta = h('textarea', 'ez-text'); ta.value = P.texts[so] !== undefined ? P.texts[so] : sel.textContent;
       ta.addEventListener('input', () => { snap(); P.texts[so] = ta.value; if (!('__o' in sel)) sel.__o = sel.textContent; sel.textContent = ta.value; dirty = true; status(); });
       sc.append(ta, btn('Remettre le texte d’origine', 'sm ghost', () => { snap(); delete P.texts[so]; if ('__o' in sel) sel.textContent = sel.__o; dirty = true; render(); }));
       body.append(sc);
@@ -138,12 +138,12 @@
     e.append(numCtl('Espace intérieur haut', 'pt', 0, 160, parseFloat(cs.paddingTop)), numCtl('Espace intérieur bas', 'pb', 0, 160, parseFloat(cs.paddingBottom)),
       numCtl('Marge au-dessus', 'mt', 0, 200, parseFloat(cs.marginTop)), numCtl('Marge en dessous', 'mb', 0, 200, parseFloat(cs.marginBottom)),
       numCtl('Arrondi des coins (px)', 'radius', 0, 80, parseFloat(cs.borderTopLeftRadius) || 0));
-    const adv = h('details', 'ed-adv'); adv.append(h('summary', '', 'Plus de réglages'));
+    const adv = h('details', 'ez-adv'); adv.append(h('summary', '', 'Plus de réglages'));
     adv.append(numCtl('Espace intérieur gauche', 'pl', 0, 160, parseFloat(cs.paddingLeft)), numCtl('Espace intérieur droite', 'pr', 0, 160, parseFloat(cs.paddingRight)),
       numCtl('Largeur (px)', 'w', 20, 1600, sel.getBoundingClientRect().width), numCtl('Hauteur (px)', 'h', 10, 1200, sel.getBoundingClientRect().height));
     e.append(adv); body.append(e);
     // organisation
-    const o = section('Organisation'), oa = h('div', 'ed-acts');
+    const o = section('Organisation'), oa = h('div', 'ez-acts');
     const hid = !!sv('hidden');
     oa.append(btn(hid ? 'Réafficher' : 'Masquer', 'sm', () => { setStyle('hidden', hid ? undefined : true); render(); }));
     const par = sel.parentElement;
@@ -171,16 +171,16 @@
 
   /* ── sélection sur le site ── */
   let hov = null;
-  const inPanel = t => panel.contains(t) || (t.closest && t.closest('.ed-gate'));
+  const inPanel = t => panel.contains(t) || (t.closest && t.closest('.ez-gate'));
   function pick(el) {
-    if (sel) sel.classList.remove('ed-sel');
-    sel = el; sel.classList.remove('ed-hov'); sel.classList.add('ed-sel');
+    if (sel) sel.classList.remove('ez-sel');
+    sel = el; sel.classList.remove('ez-hov'); sel.classList.add('ez-sel');
     scope = oneSel(el) ? 'one' : 'all';
     if (state.min) { state.min = false; panel.classList.remove('min'); bMin.textContent = '▾'; }
     render();
   }
-  document.addEventListener('mouseover', e => { if (inPanel(e.target)) return; if (hov) hov.classList.remove('ed-hov'); hov = e.target === b || e.target === document.documentElement ? null : e.target; if (hov && hov !== sel) hov.classList.add('ed-hov'); }, true);
-  document.addEventListener('mouseout', e => { if (hov) { hov.classList.remove('ed-hov'); hov = null; } }, true);
+  document.addEventListener('mouseover', e => { if (inPanel(e.target)) return; if (hov) hov.classList.remove('ez-hov'); hov = e.target === b || e.target === document.documentElement ? null : e.target; if (hov && hov !== sel) hov.classList.add('ez-hov'); }, true);
+  document.addEventListener('mouseout', e => { if (hov) { hov.classList.remove('ez-hov'); hov = null; } }, true);
   document.addEventListener('click', e => {
     if (inPanel(e.target)) return;
     e.preventDefault(); e.stopPropagation();
