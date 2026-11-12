@@ -2113,3 +2113,4 @@ fieldset .code-box { margin: 4px 0 22px; padding: 18px 20px; border-style: dashe
 .pin-btn:hover .pin-go, .pin-btn:focus-visible .pin-go { text-decoration: underline; }
 .pin-btn:focus-visible { outline: 2px solid var(--or); outline-offset: 4px; border-radius: 6px; }
 .pin-menu .menu-list { top: calc(100% + 8px); bottom: auto; }
+.pin-q { margin: 0; padding: 8px 12px 6px; font-size: 12px; line-height: 1.35; color: var(--texte-2); border-bottom: 1px solid var(--ligne); margin-bottom: 4px; }

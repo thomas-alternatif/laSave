@@ -246,8 +246,21 @@
   $('#cal-google').addEventListener('click', closeCalMenu);
 
   /* ── Lieu : proposition d'ouvrir l'itinéraire dans l'appli de plans de l'appareil ── */
+  // Adresse la plus précise qu'on possède. « Salle du foyer rural, place de la mairie, Montaigut » : la salle n'existe pas sur les cartes,
+  // alors on garde « place de la mairie, Montaigut » ; sans adresse dans le texte (« Espace René Fontanilles »), on garde le nom du lieu.
+  const ADDR = /(?:\b\d{1,4}\s*(?:bis|ter)?[\s,]+)?\b(?:rue|place|avenue|av\.|chemin|route|rte|impasse|all[ée]e|boulevard|bd|cours|esplanade|parvis|quai|square|lotissement|lieu-dit|passage|promenade|ruelle|r[ée]sidence|zac|hameau)\b/i;
+  const plain = s => String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+  function placeQuery(e) {
+    const commune = String(e.Commune || '').trim(), cn = plain(commune);
+    const parts = String(e.Lieu || '').split(/[,;\n]|\s[-–—/]\s/).map(s => s.trim()).filter(Boolean).filter(p => plain(p) !== cn);
+    const adr = parts.filter(p => ADDR.test(p)).map(p => p.slice(ADDR.exec(p).index).trim());
+    const keep = adr.length ? adr : parts;
+    const seen = new Set(), out = [];
+    [...keep, commune].filter(Boolean).forEach(p => { const k = plain(p); if (k && !seen.has(k)) { seen.add(k); out.push(p); } });
+    return out.join(', ');
+  }
   const mapLinks = e => {
-    const q = encodeURIComponent([e.Lieu, e.Commune, 'Haute-Garonne'].filter(Boolean).join(', '));
+    const q = encodeURIComponent([placeQuery(e), 'Haute-Garonne'].filter(Boolean).join(', '));
     const g = ['Google Maps', 'https://www.google.com/maps/search/?api=1&query=' + q];
     const a = ['Plans (Apple)', 'https://maps.apple.com/?q=' + q];
     const w = ['Waze', 'https://waze.com/ul?q=' + q + '&navigate=yes'];
@@ -264,6 +277,7 @@
     btn.append(el('b', null, main)); if (e.Lieu && e.Commune) btn.append(el('small', null, e.Commune));
     btn.append(el('span', 'pin-go', 'Itinéraire'));
     const menu = el('div', 'menu-list'); menu.hidden = true;
+    const usedQ = placeQuery(e); if (usedQ) menu.appendChild(el('p', 'pin-q', 'Recherche : ' + usedQ));
     mapLinks(e).forEach(([nom, href]) => { const a = el('a', null, nom); a.href = href; a.target = '_blank'; a.rel = 'noopener'; a.addEventListener('click', () => closePinMenus()); menu.appendChild(a); });
     btn.addEventListener('click', ev => { ev.stopPropagation(); const ouvert = menu.hidden; closePinMenus(); menu.hidden = !ouvert; btn.setAttribute('aria-expanded', String(ouvert)); });
     box.append(btn, menu); li.appendChild(box); list.appendChild(li);
