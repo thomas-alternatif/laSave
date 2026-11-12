@@ -245,6 +245,30 @@
   document.addEventListener('click', ev => { if (!ev.target.closest('.menu')) closeCalMenu(); });
   $('#cal-google').addEventListener('click', closeCalMenu);
 
+  /* ── Lieu : proposition d'ouvrir l'itinéraire dans l'appli de plans de l'appareil ── */
+  const mapLinks = e => {
+    const q = encodeURIComponent([e.Lieu, e.Commune, 'Haute-Garonne'].filter(Boolean).join(', '));
+    const g = ['Google Maps', 'https://www.google.com/maps/search/?api=1&query=' + q];
+    const a = ['Plans (Apple)', 'https://maps.apple.com/?q=' + q];
+    const w = ['Waze', 'https://waze.com/ul?q=' + q + '&navigate=yes'];
+    if (isApple) return [a, g, w];                                       // iPhone, iPad : Plans en premier
+    return /Mac/.test(navigator.platform || '') && !touch ? [g, a, w] : [g, w]; // Mac : Plans possible ; Android et PC : Google Maps et Waze
+  };
+  const closePinMenus = () => document.querySelectorAll('.pin-menu .menu-list').forEach(m => { m.hidden = true; const b = m.parentNode.querySelector('.pin-btn'); if (b) b.setAttribute('aria-expanded', 'false'); });
+  document.addEventListener('click', ev => { if (!ev.target.closest('.pin-menu')) closePinMenus(); });
+  function placeFact(list, e) {
+    const main = e.Lieu || e.Commune; if (!main) return;
+    const li = el('li'); li.innerHTML = icon('pin', 18);
+    const box = el('div', 'menu pin-menu');
+    const btn = el('button', 'pin-btn'); btn.type = 'button'; btn.setAttribute('aria-haspopup', 'true'); btn.setAttribute('aria-expanded', 'false');
+    btn.append(el('b', null, main)); if (e.Lieu && e.Commune) btn.append(el('small', null, e.Commune));
+    btn.append(el('span', 'pin-go', 'Itinéraire'));
+    const menu = el('div', 'menu-list'); menu.hidden = true;
+    mapLinks(e).forEach(([nom, href]) => { const a = el('a', null, nom); a.href = href; a.target = '_blank'; a.rel = 'noopener'; a.addEventListener('click', () => closePinMenus()); menu.appendChild(a); });
+    btn.addEventListener('click', ev => { ev.stopPropagation(); const ouvert = menu.hidden; closePinMenus(); menu.hidden = !ouvert; btn.setAttribute('aria-expanded', String(ouvert)); });
+    box.append(btn, menu); li.appendChild(box); list.appendChild(li);
+  }
+
   /* ── Fiche événement ── */
   function openEvent(e) {
     const p = fullPhoto(e);
@@ -261,7 +285,7 @@
       fact('cal', fin ? `Du ${a} au ${fin}` : a.charAt(0).toUpperCase() + a.slice(1), e.Heure ? 'À ' + hour(e) : '');
     }
     if (isRec(e) || isLong(e)) fact('rep', rhythm(e), (e.Date && !isLong(e)) ? '' : (e.Heure ? 'À ' + hoursOf(e) : ''));
-    fact('pin', e.Lieu || e.Commune, e.Lieu ? e.Commune : '');
+    placeFact(facts, e);
     fact('tag', e.Tarif);
     const ob = $('#ev-org'), o = findOrga(e.Organisation), on = orgName(e.Organisation);
     ob.hidden = !on; ob.replaceChildren(); ob.disabled = !o; ob.onclick = null;

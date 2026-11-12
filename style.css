@@ -2104,3 +2104,12 @@ fieldset .code-box { margin: 4px 0 22px; padding: 18px 20px; border-style: dashe
 .hero-down:hover { background: none; }
 .hero-foot { z-index: auto; bottom: 36px; pointer-events: auto; }
 @media (max-width: 720px) { .hero-foot { bottom: 30px; } .hero-down { height: 48px; } }
+
+/* ════ Lieu de la fiche : bouton « Itinéraire » qui ouvre Plans, Google Maps ou Waze ════ */
+.pin-menu { position: relative; }
+.pin-btn { display: block; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.pin-btn b { text-decoration: underline dotted rgba(255, 255, 255, .45); text-underline-offset: 4px; }
+.pin-go { display: block; margin-top: 4px; font-size: 12.5px; font-weight: 600; letter-spacing: .02em; color: var(--or); }
+.pin-btn:hover .pin-go, .pin-btn:focus-visible .pin-go { text-decoration: underline; }
+.pin-btn:focus-visible { outline: 2px solid var(--or); outline-offset: 4px; border-radius: 6px; }
+.pin-menu .menu-list { top: calc(100% + 8px); bottom: auto; }
