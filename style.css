@@ -2087,3 +2087,14 @@ fieldset .code-box { margin: 4px 0 22px; padding: 18px 20px; border-style: dashe
 .hero-down:hover .hd-a, .hero-down:hover .hd-b { animation-duration: 1.2s; }
 .hero-down:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
 @media (prefers-reduced-motion: reduce) { .hero-down .hd-a, .hero-down .hd-b { animation: none; opacity: .9; } }
+
+/* ════ Barre « découvrir » : une bande au pied de la une, dans le prolongement du panneau, avec la flèche posée dessus ════ */
+.hero-down { left: 0; right: 0; bottom: 0; width: auto; height: 72px; margin: 0; z-index: 4; border-radius: 0; border-top: 1px solid rgba(255, 255, 255, .16); background: linear-gradient(to top, rgba(10, 10, 10, .9), rgba(10, 10, 10, .5)); -webkit-backdrop-filter: blur(14px) saturate(1.2); backdrop-filter: blur(14px) saturate(1.2); filter: none; transition: background .3s ease; }
+.hero-down svg { filter: drop-shadow(0 1px 4px rgba(0, 0, 0, .5)); }
+.hero-down:hover { background: linear-gradient(to top, rgba(10, 10, 10, .95), rgba(10, 10, 10, .62)); }
+.hero-foot { z-index: 6; bottom: 25px; pointer-events: none; }
+.hero-foot > * { pointer-events: auto; }
+@media (max-width: 720px) {
+  .hero-down { height: 60px; }
+  .hero-foot { bottom: 19px; }
+}
