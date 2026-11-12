@@ -250,12 +250,13 @@
   // alors on garde « place de la mairie, Montaigut » ; sans adresse dans le texte (« Espace René Fontanilles »), on garde le nom du lieu.
   const ADDR = /(?:\b\d{1,4}\s*(?:bis|ter)?[\s,]+)?\b(?:rue|place|avenue|av\.|chemin|route|rte|impasse|all[ée]e|boulevard|bd|cours|esplanade|parvis|quai|square|lotissement|lieu-dit|passage|promenade|ruelle|r[ée]sidence|zac|hameau)\b/i;
   const plain = s => String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
-  // Code postal de chaque commune : « place de la mairie » existe partout, le code postal évite de tomber dans le village voisin
-  const CP = { 'Aussonne': '31840', 'Beaupuy': '31850', 'Bellegarde-Sainte-Marie': '31530', 'Brignemont': '31480', 'Cabanac-Séguenville': '31480', 'Caubiac': '31480', 'Cox': '31480', 'Daux': '31700', 'Drudas': '31480', 'Garac': '31480', 'Le Grès': '31480', 'Lévignac': '31530', 'Lagraulet-Saint-Nicolas': '31480', 'Larra': '31330', 'Launac': '31330', 'Laréole': '31480', 'Le Burgaud': '31330', 'Mérenvielle': '31530', 'Menville': '31530', 'Merville': '31330', 'Mondonville': '31700', 'Montaigut-sur-Save': '31530', 'Pelleport': '31480', 'Pradère-les-Bourguets': '31530', 'Puysségur': '31480', 'Saint-Cézert': '31330', 'Saint-Paul-sur-Save': '31530', 'Seilh': '31840', 'Thil': '31530', 'Vignaux': '31480' };
-  const CPK = Object.fromEntries(Object.keys(CP).map(n => [plain(n), n]));
-  const communeNom = c => { const k = plain(c).replace(/^st /, 'saint ').replace(/^ste /, 'sainte '); return CPK[k] || ''; };
+  // Centre de chaque commune (latitude, longitude). La recherche est centrée dessus : « place de la mairie » existe dans tous les villages,
+  // sans cela Google tombe sur celui d'à côté (Daux au lieu de Montaigut). Un même code postal couvre plusieurs villages, on ne s'en sert donc pas.
+  const GEO = { 'Aussonne': [43.6841, 1.3278], 'Beaupuy': [43.6517, 1.556], 'Bellegarde-Sainte-Marie': [43.6779, 1.0911], 'Brignemont': [43.7664, 0.9993], 'Cabanac-Séguenville': [43.7898, 1.0209], 'Caubiac': [43.7155, 1.0756], 'Cox': [43.7606, 1.0419], 'Daux': [43.6849, 1.2685], 'Drudas': [43.7638, 1.1006], 'Garac': [43.6869, 1.097], 'Le Grès': [43.719, 1.0981], 'Lévignac': [43.6646, 1.2036], 'Lagraulet-Saint-Nicolas': [43.7901, 1.0756], 'Larra': [43.7355, 1.2223], 'Launac': [43.7526, 1.1657], 'Laréole': [43.741, 1.0206], 'Le Burgaud': [43.7919, 1.1484], 'Lasserre-Pradère': [43.637, 1.176], 'Pradère-les-Bourguets': [43.637, 1.176], 'Mérenvielle': [43.6211, 1.171], 'Menville': [43.6789, 1.1888], 'Merville': [43.7227, 1.2916], 'Mondonville': [43.6691, 1.2735], 'Montaigut-sur-Save': [43.6855, 1.2329], 'Pelleport': [43.742, 1.1141], 'Puysségur': [43.7531, 1.067], 'Saint-Cézert': [43.7806, 1.1921], 'Saint-Paul-sur-Save': [43.699, 1.2197], 'Seilh': [43.692, 1.3574], 'Thil': [43.7059, 1.1503], 'Vignaux': [43.6897, 1.0654] };
+  const GEOK = Object.fromEntries(Object.keys(GEO).map(n => [plain(n), n]));
+  const communeNom = c => { const k = plain(c).replace(/^st /, 'saint ').replace(/^ste /, 'sainte '); return GEOK[k] || ''; };
   function placeQuery(e) {
-    const brut = String(e.Commune || '').trim(), nom = communeNom(brut), commune = nom ? CP[nom] + ' ' + nom : brut, cn = plain(brut);
+    const brut = String(e.Commune || '').trim(), nom = communeNom(brut), commune = nom || brut, cn = plain(brut);
     const parts = String(e.Lieu || '').split(/[,;\n]|\s[-–—/]\s/).map(s => s.trim()).filter(Boolean).filter(p => plain(p) !== cn);
     const adr = parts.filter(p => ADDR.test(p)).map(p => p.slice(ADDR.exec(p).index).trim());
     const keep = adr.length ? adr : parts;
@@ -264,10 +265,11 @@
     return out.join(', ');
   }
   const mapLinks = e => {
-    const q = encodeURIComponent([placeQuery(e), communeNom(e.Commune) ? '' : 'Haute-Garonne'].filter(Boolean).join(', '));
-    const g = ['Google Maps', 'https://www.google.com/maps/search/?api=1&query=' + q];
-    const a = ['Plans (Apple)', 'https://maps.apple.com/?q=' + q];
-    const w = ['Waze', 'https://waze.com/ul?q=' + q + '&navigate=yes'];
+    const nom = communeNom(e.Commune), c = nom ? GEO[nom] : null, base = placeQuery(e) + (nom ? '' : ', Haute-Garonne');
+    const q = encodeURIComponent(base), at = c ? `@${c[0]},${c[1]},17z` : '';
+    const g = ['Google Maps', c ? `https://www.google.com/maps/search/${q}/${at}` : 'https://www.google.com/maps/search/?api=1&query=' + q];
+    const a = ['Plans (Apple)', 'https://maps.apple.com/?q=' + q + (c ? `&sll=${c[0]},${c[1]}&sspn=0.02,0.02` : '')];
+    const w = ['Waze', 'https://waze.com/ul?q=' + q + (c ? `&ll=${c[0]},${c[1]}` : '') + '&navigate=yes'];
     if (isApple) return [a, g, w];                                       // iPhone, iPad : Plans en premier
     return /Mac/.test(navigator.platform || '') && !touch ? [g, a, w] : [g, w]; // Mac : Plans possible ; Android et PC : Google Maps et Waze
   };
