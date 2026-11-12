@@ -2098,3 +2098,9 @@ fieldset .code-box { margin: 4px 0 22px; padding: 18px 20px; border-style: dashe
   .hero-down { height: 60px; }
   .hero-foot { bottom: 19px; }
 }
+
+/* ════ La flèche « découvrir » passe juste sous le cadre de la une, sur le fond ════ */
+.hero-down { position: relative; left: auto; right: auto; bottom: auto; display: grid; width: 56px; height: 56px; margin: calc(var(--vgap) * -.2) auto 0; z-index: 2; border: 0; border-radius: 50%; background: none; -webkit-backdrop-filter: none; backdrop-filter: none; filter: drop-shadow(0 2px 8px rgba(0, 0, 0, .6)); }
+.hero-down:hover { background: none; }
+.hero-foot { z-index: auto; bottom: 36px; pointer-events: auto; }
+@media (max-width: 720px) { .hero-foot { bottom: 30px; } .hero-down { height: 48px; } }
