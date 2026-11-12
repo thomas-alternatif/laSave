@@ -258,6 +258,9 @@
   // Lieux connus sous un autre nom que sur les cartes : { nom écrit dans le lieu, commune, ce qu'il faut chercher sur la carte }
   const LIEUX = [
     { cle: 'espace la gare', commune: 'Montaigut-sur-Save', carte: 'Salle des fêtes' },
+    { cle: 'foyer rural', commune: 'Montaigut-sur-Save', coord: '43.69176,1.23066' },           // sans adresse sur les cartes : position exacte
+    { cle: 'maison des associations', commune: 'Montaigut-sur-Save', coord: '43.69176,1.23066' },
+    { cle: 'petit montaigut', commune: 'Montaigut-sur-Save', coord: '43.69176,1.23066' },
     { cle: 'halle', commune: 'Lévignac', carte: 'Place de la Halle' },
   ];
   // Lieux « génériques » qui existent dans presque tous les villages : on cherche l'équipement officiel de la commune, jamais celui du voisin
@@ -270,6 +273,7 @@
     const parts = String(e.Lieu || '').replace(/\([^)]*\)/g, ' ').split(/[,;\n]|\s[-–—/]\s/).map(s => s.trim()).filter(Boolean).filter(p => plain(p) !== cn);
     const adr = parts.filter(p => ADDR.test(p)).map(p => p.slice(ADDR.exec(p).index).trim());
     const connu = LIEUX.find(l => l.commune === nom && plain(e.Lieu).includes(plain(l.cle)));
+    if (connu && connu.coord) return connu.coord;
     let keep = connu ? [connu.carte] : adr.length ? adr : parts;
     if (!connu) keep = keep.map(p => { const g = GENERIQUES.find(([re]) => re.test(plain(p))); return g ? g[1](commune) : p; });
     const seen = new Set(), out = [];
