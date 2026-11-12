@@ -668,6 +668,41 @@ C'est le seul mail que vous recevrez à ce sujet.`;
 }
 
 let NERR = '';
+/* ── Doublons : deux événements le même jour qui se ressemblent → mail à la mairie ── */
+const DUP_STOP = new Set(['les', 'des', 'the', 'pour', 'sur', 'aux', 'une', 'dans', 'avec', 'chez', 'save', 'saint', 'paul', 'soiree', 'fete']);
+const dupWords = s => new Set(String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9 ]/g, ' ').split(/\s+/).filter(w => w.length > 2 && !DUP_STOP.has(w)));
+function dupSimilar(a, b) {
+  const A = dupWords(a.Titre), B = dupWords(b.Titre), min = Math.min(A.size, B.size);
+  const commun = [...A].filter(w => B.has(w)).length;
+  if (min && commun / min >= 0.6) return true; // titres qui se recouvrent
+  const lieu = x => [...dupWords(x.Lieu)].sort().join(' ');
+  return !!lieu(a) && lieu(a) === lieu(b) && !!a.Heure && String(a.Heure).trim().toLowerCase() === String(b.Heure || '').trim().toLowerCase(); // même lieu, même heure
+}
+async function dupScan(env, onlyId) {
+  if (!KV) return;
+  const f = encodeURIComponent("AND(OR({Statut}='Publié',{Statut}='En attente'),IS_AFTER({Date},DATEADD(TODAY(),-1,'days')))");
+  const evs = (await listAll(env, T_EVENTS, '&filterByFormula=' + f)).filter(r => r.fields.Date && (!r.fields['Récurrence'] || r.fields['Récurrence'] === 'Aucune') && (!r.fields['Date de fin'] || r.fields['Date de fin'] === r.fields.Date));
+  const seen = new Set((await KV.get('dupalert', 'json')) || []);
+  const fresh = [];
+  for (let i = 0; i < evs.length; i++) for (let j = i + 1; j < evs.length; j++) {
+    const a = evs[i], b = evs[j];
+    if (a.fields.Date !== b.fields.Date) continue;
+    if (onlyId && a.id !== onlyId && b.id !== onlyId) continue;
+    if (!dupSimilar(a.fields, b.fields)) continue;
+    const k = [a.id, b.id].sort().join('|');
+    if (seen.has(k)) continue;
+    seen.add(k); fresh.push([a, b]);
+  }
+  if (!fresh.length) return;
+  await KV.put('dupalert', JSON.stringify([...seen].slice(-300)));
+  const jour = d => new Date(d + 'T12:00:00').toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+  const ligne = r => `${r.fields.Titre || '(sans titre)'} — ${[r.fields.Commune, r.fields.Lieu, r.fields.Heure].filter(Boolean).join(', ')} [${r.fields.Statut}]`;
+  const lien = r => `https://airtable.com/${BASE}/${T_EVENTS}/${r.id}`;
+  const text = 'Deux événements semblent en double (même jour, titres ou lieu proches) :\n\n' + fresh.map(([a, b]) => `${jour(a.fields.Date)}\n- ${ligne(a)}\n  ${lien(a)}\n- ${ligne(b)}\n  ${lien(b)}`).join('\n\n') + '\n\nSi c’est bien un doublon, passez l’un des deux en « Refusé » ou « Archivé ».';
+  const html = '<div style="font-family:Helvetica,Arial,sans-serif;font-size:15px;color:#16191a;line-height:1.6"><p>Deux événements semblent en double (même jour, titres ou lieu proches) :</p>' + fresh.map(([a, b]) => `<p><strong>${escH(jour(a.fields.Date))}</strong><br>• <a href="${lien(a)}">${escH(ligne(a))}</a><br>• <a href="${lien(b)}">${escH(ligne(b))}</a></p>`).join('') + '<p>Si c’est bien un doublon, passez l’un des deux en « Refusé » ou « Archivé ».</p></div>';
+  await sendMail(env, { to: MAIL_ADMIN, subject: fresh.length === 1 ? `Doublon possible : ${fresh[0][0].fields.Titre || 'événement'}` : `${fresh.length} doublons possibles dans l’agenda`, text, html });
+  await jr('mail', `Alerte doublon : ${fresh.length} paire(s)`);
+}
 async function nightly(env) {
   if (!KV) return;
   const t0 = Date.now(); NERR = '';
@@ -677,6 +712,7 @@ async function nightly(env) {
 }
 async function nightlyRun(env) {
   try { await rsvpRecap(env); } catch (e) { console.error('récap rsvp', e.message); NERR += ' récap : ' + e.message; }
+  try { await dupScan(env); } catch (e) { console.error('doublons', e.message); }
   const counts = await getCounts();
   const ids = Object.keys(counts).filter(id => isId(id) && !id.startsWith('recTMP')); // recTMP… : fiches de l'export de dépannage
   let failed = false;
@@ -1152,6 +1188,7 @@ async function route(req, env, ctx) {
       if (!retry) throw e;
       d = await at(env, T_EVENTS, { method: 'POST', body: JSON.stringify({ fields }) });
     }
+    ctx.waitUntil(dupScan(env, d.id).catch(e => console.error('doublons', e.message)));
     return json(req, { ok: true, id: d.id }, 201);
   }
 
