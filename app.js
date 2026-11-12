@@ -406,6 +406,7 @@
     function restart() { cancelAnimationFrame(raf); t0 = 0; if (!paused && !hold && feats.length > 1) raf = requestAnimationFrame(progress); }
     $('#hero-open').addEventListener('click', () => openEvent(feats[cur]));
     $('#hero-prev').addEventListener('click', () => { show(cur - 1); restart(); });
+    $('#hero-down').addEventListener('click', () => { const t = $('#rendez-vous'); if (t) t.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' }); });
     $('#hero-next').addEventListener('click', () => { show(cur + 1); restart(); });
     onMotion(p => { paused = p; restart(); });
     hero.addEventListener('focusin', ev => { if (keyFocus(ev.target)) { hold = true; restart(); } });

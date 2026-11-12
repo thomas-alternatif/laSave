@@ -2077,3 +2077,13 @@ fieldset .code-box { margin: 4px 0 22px; padding: 18px 20px; border-style: dashe
 .field small.ia-note svg { flex: none; margin-top: 1px; color: #fff; }
 .field small.ia-note strong { color: #fff; font-weight: 700; }
 .field small.ia-note { color: rgba(255, 255, 255, .86); font-size: 12.5px; }
+
+/* ════ Flèche « découvrir » entre la une et les rendez-vous ════ */
+.hero-down { position: absolute; left: 50%; bottom: 20px; z-index: 5; width: 48px; height: 48px; margin-left: -24px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 50%; background: none; color: #fff; cursor: pointer; filter: drop-shadow(0 2px 8px rgba(0, 0, 0, .55)); -webkit-tap-highlight-color: transparent; }
+.hero-down svg { overflow: visible; }
+.hero-down .hd-a { animation: hd-flow 2s ease-in-out infinite; }
+.hero-down .hd-b { animation: hd-flow 2s ease-in-out .25s infinite; }
+@keyframes hd-flow { 0% { opacity: 0; transform: translateY(-5px); } 45% { opacity: 1; } 100% { opacity: 0; transform: translateY(6px); } }
+.hero-down:hover .hd-a, .hero-down:hover .hd-b { animation-duration: 1.2s; }
+.hero-down:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { .hero-down .hd-a, .hero-down .hd-b { animation: none; opacity: .9; } }
