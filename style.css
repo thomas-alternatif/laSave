@@ -2075,3 +2075,4 @@ fieldset .code-box { margin: 4px 0 22px; padding: 18px 20px; border-style: dashe
 /* Notice « affiches IA » du formulaire : icône blanche devant le texte */
 .field small.ia-note { display: flex; align-items: flex-start; gap: 8px; margin-top: 8px; }
 .field small.ia-note svg { flex: none; margin-top: 1px; color: #fff; }
+.field small.ia-note strong { color: #fff; font-weight: 700; }
