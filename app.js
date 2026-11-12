@@ -255,11 +255,16 @@
   const GEO = { 'Aussonne': [43.6841, 1.3278], 'Beaupuy': [43.6517, 1.556], 'Bellegarde-Sainte-Marie': [43.6779, 1.0911], 'Brignemont': [43.7664, 0.9993], 'Cabanac-Séguenville': [43.7898, 1.0209], 'Caubiac': [43.7155, 1.0756], 'Cox': [43.7606, 1.0419], 'Daux': [43.6849, 1.2685], 'Drudas': [43.7638, 1.1006], 'Garac': [43.6869, 1.097], 'Le Grès': [43.719, 1.0981], 'Lévignac': [43.6646, 1.2036], 'Lagraulet-Saint-Nicolas': [43.7901, 1.0756], 'Larra': [43.7355, 1.2223], 'Launac': [43.7526, 1.1657], 'Laréole': [43.741, 1.0206], 'Le Burgaud': [43.7919, 1.1484], 'Lasserre-Pradère': [43.637, 1.176], 'Pradère-les-Bourguets': [43.637, 1.176], 'Mérenvielle': [43.6211, 1.171], 'Menville': [43.6789, 1.1888], 'Merville': [43.7227, 1.2916], 'Mondonville': [43.6691, 1.2735], 'Montaigut-sur-Save': [43.6855, 1.2329], 'Pelleport': [43.742, 1.1141], 'Puysségur': [43.7531, 1.067], 'Saint-Cézert': [43.7806, 1.1921], 'Saint-Paul-sur-Save': [43.699, 1.2197], 'Seilh': [43.692, 1.3574], 'Thil': [43.7059, 1.1503], 'Vignaux': [43.6897, 1.0654] };
   const GEOK = Object.fromEntries(Object.keys(GEO).map(n => [plain(n), n]));
   const communeNom = c => { const k = plain(c).replace(/^st /, 'saint ').replace(/^ste /, 'sainte '); return GEOK[k] || ''; };
+  // Lieux connus sous un autre nom que sur les cartes : { nom écrit dans le lieu, commune, ce qu'il faut chercher sur la carte }
+  const LIEUX = [
+    { cle: 'espace la gare', commune: 'Montaigut-sur-Save', carte: 'Salle des fêtes' },
+  ];
   function placeQuery(e) {
     const brut = String(e.Commune || '').trim(), nom = communeNom(brut), commune = nom || brut, cn = plain(brut);
     const parts = String(e.Lieu || '').split(/[,;\n]|\s[-–—/]\s/).map(s => s.trim()).filter(Boolean).filter(p => plain(p) !== cn);
     const adr = parts.filter(p => ADDR.test(p)).map(p => p.slice(ADDR.exec(p).index).trim());
-    const keep = adr.length ? adr : parts;
+    const connu = LIEUX.find(l => l.commune === nom && plain(e.Lieu).includes(plain(l.cle)));
+    const keep = connu ? [connu.carte] : adr.length ? adr : parts;
     const seen = new Set(), out = [];
     [...keep, commune].filter(Boolean).forEach(p => { const k = plain(p); if (k && !seen.has(k)) { seen.add(k); out.push(p); } });
     return out.join(', ');
