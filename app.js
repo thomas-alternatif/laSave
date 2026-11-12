@@ -250,8 +250,12 @@
   // alors on garde « place de la mairie, Montaigut » ; sans adresse dans le texte (« Espace René Fontanilles »), on garde le nom du lieu.
   const ADDR = /(?:\b\d{1,4}\s*(?:bis|ter)?[\s,]+)?\b(?:rue|place|avenue|av\.|chemin|route|rte|impasse|all[ée]e|boulevard|bd|cours|esplanade|parvis|quai|square|lotissement|lieu-dit|passage|promenade|ruelle|r[ée]sidence|zac|hameau)\b/i;
   const plain = s => String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+  // Code postal de chaque commune : « place de la mairie » existe partout, le code postal évite de tomber dans le village voisin
+  const CP = { 'Aussonne': '31840', 'Beaupuy': '31850', 'Bellegarde-Sainte-Marie': '31530', 'Brignemont': '31480', 'Cabanac-Séguenville': '31480', 'Caubiac': '31480', 'Cox': '31480', 'Daux': '31700', 'Drudas': '31480', 'Garac': '31480', 'Le Grès': '31480', 'Lévignac': '31530', 'Lagraulet-Saint-Nicolas': '31480', 'Larra': '31330', 'Launac': '31330', 'Laréole': '31480', 'Le Burgaud': '31330', 'Mérenvielle': '31530', 'Menville': '31530', 'Merville': '31330', 'Mondonville': '31700', 'Montaigut-sur-Save': '31530', 'Pelleport': '31480', 'Pradère-les-Bourguets': '31530', 'Puysségur': '31480', 'Saint-Cézert': '31330', 'Saint-Paul-sur-Save': '31530', 'Seilh': '31840', 'Thil': '31530', 'Vignaux': '31480' };
+  const CPK = Object.fromEntries(Object.keys(CP).map(n => [plain(n), n]));
+  const communeNom = c => { const k = plain(c).replace(/^st /, 'saint ').replace(/^ste /, 'sainte '); return CPK[k] || ''; };
   function placeQuery(e) {
-    const commune = String(e.Commune || '').trim(), cn = plain(commune);
+    const brut = String(e.Commune || '').trim(), nom = communeNom(brut), commune = nom ? CP[nom] + ' ' + nom : brut, cn = plain(brut);
     const parts = String(e.Lieu || '').split(/[,;\n]|\s[-–—/]\s/).map(s => s.trim()).filter(Boolean).filter(p => plain(p) !== cn);
     const adr = parts.filter(p => ADDR.test(p)).map(p => p.slice(ADDR.exec(p).index).trim());
     const keep = adr.length ? adr : parts;
@@ -260,7 +264,7 @@
     return out.join(', ');
   }
   const mapLinks = e => {
-    const q = encodeURIComponent([placeQuery(e), 'Haute-Garonne'].filter(Boolean).join(', '));
+    const q = encodeURIComponent([placeQuery(e), communeNom(e.Commune) ? '' : 'Haute-Garonne'].filter(Boolean).join(', '));
     const g = ['Google Maps', 'https://www.google.com/maps/search/?api=1&query=' + q];
     const a = ['Plans (Apple)', 'https://maps.apple.com/?q=' + q];
     const w = ['Waze', 'https://waze.com/ul?q=' + q + '&navigate=yes'];
