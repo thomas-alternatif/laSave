@@ -258,13 +258,20 @@
   // Lieux connus sous un autre nom que sur les cartes : { nom écrit dans le lieu, commune, ce qu'il faut chercher sur la carte }
   const LIEUX = [
     { cle: 'espace la gare', commune: 'Montaigut-sur-Save', carte: 'Salle des fêtes' },
+    { cle: 'halle', commune: 'Lévignac', carte: 'Place de la Halle' },
+  ];
+  // Lieux « génériques » qui existent dans presque tous les villages : on cherche l'équipement officiel de la commune, jamais celui du voisin
+  const GENERIQUES = [
+    [/^(place|parvis|esplanade)\s+(de\s+la\s+|de\s+l['’]\s*|du\s+)?(mairie|maire)\b/, c => 'Mairie de ' + c],
+    [/^(place|parvis|esplanade)\s+(de\s+l['’]\s*|de\s+la\s+|du\s+)?(eglise)\b/, c => 'Église de ' + c],
   ];
   function placeQuery(e) {
     const brut = String(e.Commune || '').trim(), nom = communeNom(brut), commune = nom || brut, cn = plain(brut);
-    const parts = String(e.Lieu || '').split(/[,;\n]|\s[-–—/]\s/).map(s => s.trim()).filter(Boolean).filter(p => plain(p) !== cn);
+    const parts = String(e.Lieu || '').replace(/\([^)]*\)/g, ' ').split(/[,;\n]|\s[-–—/]\s/).map(s => s.trim()).filter(Boolean).filter(p => plain(p) !== cn);
     const adr = parts.filter(p => ADDR.test(p)).map(p => p.slice(ADDR.exec(p).index).trim());
     const connu = LIEUX.find(l => l.commune === nom && plain(e.Lieu).includes(plain(l.cle)));
-    const keep = connu ? [connu.carte] : adr.length ? adr : parts;
+    let keep = connu ? [connu.carte] : adr.length ? adr : parts;
+    if (!connu) keep = keep.map(p => { const g = GENERIQUES.find(([re]) => re.test(plain(p))); return g ? g[1](commune) : p; });
     const seen = new Set(), out = [];
     [...keep, commune].filter(Boolean).forEach(p => { const k = plain(p); if (k && !seen.has(k)) { seen.add(k); out.push(p); } });
     return out.join(', ');
