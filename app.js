@@ -266,8 +266,8 @@
   }
   const mapLinks = e => {
     const nom = communeNom(e.Commune), c = nom ? GEO[nom] : null, base = placeQuery(e) + (nom ? '' : ', Haute-Garonne');
-    const q = encodeURIComponent(base), at = c ? `@${c[0]},${c[1]},17z` : '';
-    const g = ['Google Maps', c ? `https://www.google.com/maps/search/${q}/${at}` : 'https://www.google.com/maps/search/?api=1&query=' + q];
+    const q = encodeURIComponent(base);
+    const g = ['Google Maps', 'https://www.google.com/maps/dir/?api=1&destination=' + q]; // « itinéraire vers » : Google choisit une seule adresse au lieu d'afficher une liste de commerces
     const a = ['Plans (Apple)', 'https://maps.apple.com/?q=' + q + (c ? `&sll=${c[0]},${c[1]}&sspn=0.02,0.02` : '')];
     const w = ['Waze', 'https://waze.com/ul?q=' + q + (c ? `&ll=${c[0]},${c[1]}` : '') + '&navigate=yes'];
     if (isApple) return [a, g, w];                                       // iPhone, iPad : Plans en premier
