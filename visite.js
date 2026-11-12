@@ -3,6 +3,11 @@
 (() => {
   const API = 'https://go.la-save.fr';
   try {
+    const q = new URLSearchParams(location.search);
+    if (q.has('moi')) { if (q.get('moi') === '0') localStorage.removeItem('lasave_moi'); else localStorage.setItem('lasave_moi', '1'); } // ?moi = ne plus me compter ; ?moi=0 = me recompter
+    if (localStorage.getItem('lasave_moi') || sessionStorage.getItem('lasave_admin')) return; // visites de l'administrateur : pas comptées
+  } catch (_) {}
+  try {
     if (navigator.webdriver) return;                         // robots d'indexation
     if (sessionStorage.getItem('lasave_visite')) return;     // déjà comptée pendant cette session
     sessionStorage.setItem('lasave_visite', '1');

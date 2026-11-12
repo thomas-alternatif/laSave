@@ -30,7 +30,7 @@
     const msg = $('#s-msg'); msg.className = 's-msg'; msg.textContent = 'Connexion…';
     try {
       const d = await call('/admin/login', { method: 'POST', body: JSON.stringify({ pwd: $('#s-pwd').value }) });
-      token = d.token; try { sessionStorage.setItem('lasave_admin', token); } catch (_) {}
+      token = d.token; try { sessionStorage.setItem('lasave_admin', token); localStorage.setItem('lasave_moi', '1'); } catch (_) {}
       msg.textContent = ''; show();
     } catch (e) { msg.className = 's-msg err'; msg.textContent = e.status === 429 ? 'Trop d’essais, réessayez dans quelques minutes.' : e.message; }
   });

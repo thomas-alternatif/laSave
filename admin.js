@@ -11,7 +11,7 @@
   const pl = (n, un, plus) => `${fr(n)} ${n > 1 ? plus : un}`;
   const KEY = 'lasave_admin'; // même session que l'administration du site et les statistiques
   let token = ''; try { token = sessionStorage.getItem(KEY) || ''; } catch (_) {}
-  const saveToken = t => { token = t; try { t ? sessionStorage.setItem(KEY, t) : sessionStorage.removeItem(KEY); } catch (_) {} };
+  const saveToken = t => { token = t; try { t ? sessionStorage.setItem(KEY, t) : sessionStorage.removeItem(KEY); } catch (_) {} if (t) try { localStorage.setItem('lasave_moi', '1'); } catch (_) {} }; // ce navigateur n'est plus compté dans les statistiques
 
   let ov = null, filtre = null, q = '';
 

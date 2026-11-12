@@ -287,7 +287,7 @@
     };
     openDialog($('#sheet'));
     fit($('#ev-title'), 20);
-    try { fetch(`${API}/events/${e.id}/view`, { method: 'POST' }).catch(() => {}); } catch (_) {}
+    try { if (!localStorage.getItem('lasave_moi') && !sessionStorage.getItem('lasave_admin')) fetch(`${API}/events/${e.id}/view`, { method: 'POST' }).catch(() => {}); } catch (_) {}
   }
 
   /* ── Profil organisateur ── */
