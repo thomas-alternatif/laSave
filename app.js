@@ -73,12 +73,12 @@
     return f.toLowerCase().includes(d.toLowerCase()) ? f : d + (f ? ' · ' + f : '');
   };
   const whenOf = e => {
-    if (!e.Date || stale(e)) return isRec(e) ? rhythm(e) : '';
+    if (!e.Date || stale(e) || isLong(e)) return isRec(e) || isLong(e) ? rhythm(e) : '';   // atelier de l'année : le rythme, pas la seule date de la première séance
     let s = fmt(e.Date, { weekday: 'short', day: 'numeric', month: 'short' });
     if (e.Heure) s += ' · ' + hour(e);
     return s;
   };
-  const sortKey = e => e.Date && !stale(e) ? Math.max(new Date(e.Date).getTime(), Date.now()) : 9e15;
+  const sortKey = e => e.Date && !stale(e) && !isLong(e) ? Math.max(new Date(e.Date).getTime(), Date.now()) : 9e15;
   const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; };
   const img = (src, alt = '') => { const i = new Image(); i.src = src; i.alt = alt; i.loading = 'lazy'; i.decoding = 'async'; markImg(i, src); return i; };
   const bg = (node, src) => { node.style.backgroundImage = src ? `url("${String(src).replace(/["\\\n]/g, '')}")` : ''; markImg(node, src); };
@@ -611,6 +611,7 @@
     const tx = el('div', 'poster-tx');
     tx.appendChild(el('span', 'poster-date', whenOf(e)));
     if (/^https:\/\//.test(String(e.Billetterie || ''))) pi.appendChild(el('span', 'tix', 'Billets'));
+    else if (isLong(e) || (isRec(e) && stale(e))) pi.appendChild(el('span', 'tix reg', isLong(e) ? 'Toute l’année' : 'Régulier'));
     tx.appendChild(tel('span', 'poster-t', e.Titre || 'Événement'));
     tx.appendChild(el('span', 'poster-c', e.Commune || e['Catégorie'] || ''));
     b.appendChild(tx);
